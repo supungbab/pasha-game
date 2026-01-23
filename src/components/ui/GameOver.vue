@@ -138,6 +138,12 @@ const isNewRecord = computed(() => {
   gap: 1.25rem;
   justify-content: center;
   overflow: hidden;
+  --primary: #FFD700;
+  --primary-dark: #FFA500;
+  --primary-light: #FFED4E;
+  --secondary: #FFD93D;
+  --secondary-dark: #FFA500;
+  --accent: #FFED4E;
 }
 
 .game-over-header {

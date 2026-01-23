@@ -26,7 +26,7 @@ onMounted(() => {
     <div class="menu-header">
       <h1 class="game-title">
         <span class="title-emoji">🎮</span>
-        빠샤! (PASHA!)
+        빠샤!
       </h1>
       <p class="game-subtitle">30개의 미니게임 챌린지</p>
     </div>
@@ -101,6 +101,12 @@ onMounted(() => {
   gap: 1.5rem;
   justify-content: center;
   overflow: hidden;
+  --primary: #FFD700;
+  --primary-dark: #FFA500;
+  --primary-light: #FFED4E;
+  --secondary: #FFD93D;
+  --secondary-dark: #FFA500;
+  --accent: #FFED4E;
 }
 
 .menu-header {

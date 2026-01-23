@@ -25,8 +25,8 @@
   --lime: #ADFF2F;
 
   /* 🖼️ Background Colors */
-  --bg-main: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-  --bg-main-solid: #667eea;
+  --bg-main: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%);
+  --bg-main-solid: #FFD700;
   --bg-card: #FFFFFF;
   --bg-card-accent: linear-gradient(145deg, #ffffff 0%, #f8f9ff 100%);
   --bg-overlay: rgba(0, 0, 0, 0.7);

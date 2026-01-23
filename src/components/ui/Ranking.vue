@@ -122,6 +122,12 @@ const formatDate = (date: Date): string => {
   flex-direction: column;
   gap: 1rem;
   overflow: hidden;
+  --primary: #FFD700;
+  --primary-dark: #FFA500;
+  --primary-light: #FFED4E;
+  --secondary: #FFD93D;
+  --secondary-dark: #FFA500;
+  --accent: #FFED4E;
 }
 
 .ranking-header {

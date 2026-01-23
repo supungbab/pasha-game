@@ -226,6 +226,13 @@ const handleClearProgress = () => {
   flex-direction: column;
   gap: 1rem;
   overflow: hidden;
+  --primary: #FFD700;
+  --primary-dark: #FFA500;
+  --primary-light: #FFED4E;
+  --secondary: #FFD93D;
+  --secondary-dark: #FFA500;
+  --accent: #FFED4E;
+  --bg-main: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%);
 }
 
 .settings-header {
@@ -234,6 +241,14 @@ const handleClearProgress = () => {
   align-items: center;
   flex-shrink: 0;
   animation: slideUp 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.settings-header :deep(button) {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  width: auto !important;
 }
 
 .settings-title {
