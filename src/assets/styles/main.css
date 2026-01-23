@@ -1,58 +1,80 @@
 /* src/assets/styles/main.css */
+/* 🎮 비시바시 스타일 - 화려하고 팝한 아케이드 게임 느낌! */
+
+@import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Jua&display=swap');
 
 :root {
-  /* Primary Colors */
-  --primary: #FF6B6B;
-  --secondary: #4ECDC4;
-  --accent: #FFE66D;
-  --success: #4CAF50;
-  --warning: #FFC107;
-  --error: #F44336;
-  --info: #2196F3;
+  /* 🌈 Primary Colors - 더 강렬하고 네온 느낌 */
+  --primary: #FF2D55;
+  --primary-dark: #D91A40;
+  --primary-light: #FF6B8A;
+  --secondary: #00D4AA;
+  --secondary-dark: #00B894;
+  --accent: #FFD93D;
+  --accent-dark: #F4C430;
+  --success: #32CD32;
+  --warning: #FF9500;
+  --error: #FF3B30;
+  --info: #007AFF;
 
-  /* Background Colors */
-  --bg-main: #F7FFF7;
+  /* 🎨 Extra Vivid Colors */
+  --purple: #AF52DE;
+  --cyan: #5AC8FA;
+  --pink: #FF2D92;
+  --orange: #FF6B35;
+  --lime: #ADFF2F;
+
+  /* 🖼️ Background Colors */
+  --bg-main: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  --bg-main-solid: #667eea;
   --bg-card: #FFFFFF;
-  --bg-overlay: rgba(0, 0, 0, 0.5);
+  --bg-card-accent: linear-gradient(145deg, #ffffff 0%, #f8f9ff 100%);
+  --bg-overlay: rgba(0, 0, 0, 0.7);
 
-  /* Text Colors */
-  --text-primary: #2C3E50;
-  --text-secondary: #7F8C8D;
+  /* ✏️ Text Colors */
+  --text-primary: #1a1a2e;
+  --text-secondary: #4a4a6a;
   --text-light: #FFFFFF;
   --text-dark: #000000;
+  --text-stroke: #000000;
 
-  /* UI Colors */
-  --border: #E0E0E0;
-  --divider: #EEEEEE;
-  --shadow: rgba(0, 0, 0, 0.1);
+  /* 🎯 UI Colors */
+  --border: #000000;
+  --border-thick: 4px solid #000000;
+  --border-medium: 3px solid #000000;
+  --divider: #2a2a4a;
+  --shadow: rgba(0, 0, 0, 0.3);
+  --shadow-color: rgba(0, 0, 0, 0.5);
 
-  /* Spacing */
+  /* 📏 Spacing */
   --spacing-xs: 0.25rem;
   --spacing-sm: 0.5rem;
   --spacing-md: 1rem;
   --spacing-lg: 1.5rem;
   --spacing-xl: 2rem;
 
-  /* Border Radius */
-  --radius-sm: 0.25rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.5rem;
+  /* 🔘 Border Radius - 더 둥글고 귀여운 느낌 */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
   --radius-full: 9999px;
 
-  /* Font Sizes */
-  --font-xs: 0.75rem;
-  --font-sm: 0.875rem;
-  --font-md: 1rem;
-  --font-lg: 1.25rem;
-  --font-xl: 1.5rem;
-  --font-2xl: 2rem;
-  --font-3xl: 3rem;
+  /* 📝 Font Sizes - 더 크고 임팩트 있게 */
+  --font-xs: 0.8rem;
+  --font-sm: 0.95rem;
+  --font-md: 1.1rem;
+  --font-lg: 1.4rem;
+  --font-xl: 1.8rem;
+  --font-2xl: 2.5rem;
+  --font-3xl: 3.5rem;
+  --font-4xl: 5rem;
 
-  /* Transitions */
-  --transition-fast: 150ms ease;
-  --transition-normal: 300ms ease;
-  --transition-slow: 500ms ease;
+  /* ⚡ Transitions */
+  --transition-fast: 100ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 400ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 /* Reset & Base Styles */
@@ -70,15 +92,17 @@ body {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  color: var(--text-primary);
+  font-family: 'Jua', 'Black Han Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--text-light);
   background: var(--bg-main);
+  background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
+  letter-spacing: 0.02em;
 }
 
 #app {
@@ -88,86 +112,109 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 
-/* Typography */
+/* Typography - 비시바시 스타일 */
 h1, h2, h3, h4, h5, h6 {
   font-weight: bold;
   line-height: 1.2;
+  text-shadow: 3px 3px 0 var(--text-stroke), -1px -1px 0 var(--text-stroke);
+  letter-spacing: 0.05em;
 }
 
 h1 { font-size: var(--font-3xl); }
 h2 { font-size: var(--font-2xl); }
 h3 { font-size: var(--font-xl); }
 
-/* Button Styles */
+/* Button Styles - 아케이드 게임 느낌 */
 button {
   font-family: inherit;
   font-size: var(--font-md);
-  font-weight: 600;
+  font-weight: 700;
   padding: var(--spacing-md) var(--spacing-xl);
-  border: none;
+  border: 4px solid var(--border);
   border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: all var(--transition-normal);
+  transition: all var(--transition-fast);
   touch-action: manipulation;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+  box-shadow: 0 6px 0 rgba(0,0,0,0.3), 0 8px 15px rgba(0,0,0,0.2);
+  position: relative;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 button:active {
-  transform: scale(0.95);
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.2);
 }
 
 button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
 }
 
 .btn-primary {
-  background: var(--primary);
+  background: linear-gradient(180deg, var(--primary-light) 0%, var(--primary) 50%, var(--primary-dark) 100%);
   color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #ff5252;
-  box-shadow: 0 4px 12px var(--shadow);
+  background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%);
+  box-shadow: 0 6px 0 rgba(0,0,0,0.3), 0 10px 25px rgba(255, 45, 85, 0.5);
 }
 
 .btn-secondary {
-  background: var(--secondary);
+  background: linear-gradient(180deg, #00f0c0 0%, var(--secondary) 50%, var(--secondary-dark) 100%);
   color: white;
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: #3bb5ad;
-  box-shadow: 0 4px 12px var(--shadow);
+  background: linear-gradient(180deg, var(--secondary) 0%, var(--secondary-dark) 100%);
+  box-shadow: 0 6px 0 rgba(0,0,0,0.3), 0 10px 25px rgba(0, 212, 170, 0.5);
 }
 
 .btn-success {
-  background: var(--success);
+  background: linear-gradient(180deg, #5dff5d 0%, var(--success) 50%, #228b22 100%);
   color: white;
 }
 
 .btn-success:hover:not(:disabled) {
-  background: #45a049;
+  box-shadow: 0 6px 0 rgba(0,0,0,0.3), 0 10px 25px rgba(50, 205, 50, 0.5);
 }
 
 .btn-danger {
-  background: var(--error);
+  background: linear-gradient(180deg, #ff6b6b 0%, var(--error) 50%, #cc0000 100%);
   color: white;
 }
 
 .btn-danger:hover:not(:disabled) {
-  background: #da190b;
+  box-shadow: 0 6px 0 rgba(0,0,0,0.3), 0 10px 25px rgba(255, 59, 48, 0.5);
 }
 
-/* Card Styles */
+/* Card Styles - 팝한 카드 */
 .card {
   background: var(--bg-card);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   padding: var(--spacing-lg);
-  box-shadow: 0 2px 8px var(--shadow);
+  border: 4px solid var(--border);
+  box-shadow: 6px 6px 0 rgba(0,0,0,0.3), 0 10px 20px rgba(0,0,0,0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary), var(--accent), var(--secondary), var(--purple));
 }
 
 /* Container */
@@ -176,6 +223,7 @@ button:disabled {
   max-width: 500px;
   padding: var(--spacing-md);
   margin: 0 auto;
+  overflow: hidden;
 }
 
 /* Flex Utils */
@@ -230,85 +278,152 @@ button:disabled {
 .font-bold { font-weight: bold; }
 .font-normal { font-weight: normal; }
 
-/* Animations */
+/* Animations - 비시바시 팝한 애니메이션! */
 @keyframes fadeIn {
   from {
     opacity: 0;
+    transform: scale(0.9);
   }
   to {
     opacity: 1;
+    transform: scale(1);
   }
 }
 
 @keyframes slideUp {
   from {
-    transform: translateY(20px);
+    transform: translateY(50px) scale(0.8);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
     opacity: 1;
   }
 }
 
 @keyframes bounce {
   0%, 100% {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
+  }
+  25% {
+    transform: translateY(-15px) scale(1.1);
   }
   50% {
-    transform: translateY(-10px);
+    transform: translateY(-8px) scale(1.05);
+  }
+  75% {
+    transform: translateY(-12px) scale(1.08);
   }
 }
 
 @keyframes pulse {
   0%, 100% {
     transform: scale(1);
+    box-shadow: 0 6px 0 rgba(0,0,0,0.3), 0 8px 15px rgba(0,0,0,0.2);
   }
   50% {
-    transform: scale(1.05);
+    transform: scale(1.08);
+    box-shadow: 0 8px 0 rgba(0,0,0,0.3), 0 15px 30px rgba(255, 45, 85, 0.4);
   }
 }
 
 @keyframes shake {
   0%, 100% {
-    transform: translateX(0);
+    transform: translateX(0) rotate(0deg);
   }
   10%, 30%, 50%, 70%, 90% {
-    transform: translateX(-5px);
+    transform: translateX(-8px) rotate(-2deg);
   }
   20%, 40%, 60%, 80% {
-    transform: translateX(5px);
+    transform: translateX(8px) rotate(2deg);
   }
+}
+
+@keyframes rainbow {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 5px var(--primary), 0 0 10px var(--primary), 0 0 15px var(--primary);
+  }
+  50% {
+    box-shadow: 0 0 20px var(--primary), 0 0 30px var(--primary), 0 0 40px var(--primary);
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
 }
 
 .fade-in {
-  animation: fadeIn var(--transition-normal);
+  animation: fadeIn 0.4s var(--transition-bounce);
 }
 
 .slide-up {
-  animation: slideUp var(--transition-normal);
+  animation: slideUp 0.5s var(--transition-bounce);
 }
 
 .bounce {
-  animation: bounce 1s infinite;
+  animation: bounce 0.8s ease-in-out infinite;
 }
 
 .pulse {
-  animation: pulse 1s infinite;
+  animation: pulse 1.2s ease-in-out infinite;
 }
 
 .shake {
-  animation: shake 0.5s;
+  animation: shake 0.4s;
 }
 
-/* Loading Spinner */
+.pop-in {
+  animation: popIn 0.5s var(--transition-bounce);
+}
+
+.wiggle {
+  animation: wiggle 0.3s ease-in-out infinite;
+}
+
+.glow {
+  animation: glow 1.5s ease-in-out infinite;
+}
+
+.float {
+  animation: float 2s ease-in-out infinite;
+}
+
+/* Loading Spinner - 화려하게! */
 .spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid var(--border);
+  width: 50px;
+  height: 50px;
+  border: 5px solid transparent;
   border-top-color: var(--primary);
+  border-right-color: var(--accent);
+  border-bottom-color: var(--secondary);
+  border-left-color: var(--purple);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
@@ -325,41 +440,79 @@ button:disabled {
   width: 100%;
   height: 100%;
   background: var(--bg-overlay);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  overflow: hidden;
 }
 
-/* Modal */
+/* Modal - 팝한 모달 */
 .modal {
   background: var(--bg-card);
   border-radius: var(--radius-xl);
   padding: var(--spacing-xl);
   max-width: 90%;
-  max-height: 90%;
-  overflow: auto;
-  box-shadow: 0 8px 32px var(--shadow);
+  max-height: 85vh;
+  overflow: hidden;
+  border: 4px solid var(--border);
+  box-shadow: 8px 8px 0 rgba(0,0,0,0.4), 0 15px 40px rgba(0,0,0,0.3);
+  animation: popIn 0.4s var(--transition-bounce);
+}
+
+/* 스크롤 가능한 리스트 전용 */
+.scrollable-list {
+  overflow-y: auto;
+  max-height: 50vh;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 스크롤바 스타일링 */
+.scrollable-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollable-list::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.1);
+  border-radius: 4px;
+}
+
+.scrollable-list::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--primary), var(--secondary));
+  border-radius: 4px;
 }
 
 /* Mobile Optimizations */
 @media (max-width: 768px) {
   :root {
-    --font-xs: 0.7rem;
-    --font-sm: 0.8rem;
-    --font-md: 0.9rem;
-    --font-lg: 1.1rem;
-    --font-xl: 1.3rem;
-    --font-2xl: 1.8rem;
-    --font-3xl: 2.5rem;
+    --font-xs: 0.75rem;
+    --font-sm: 0.85rem;
+    --font-md: 1rem;
+    --font-lg: 1.2rem;
+    --font-xl: 1.5rem;
+    --font-2xl: 2rem;
+    --font-3xl: 2.8rem;
   }
 
   button {
     padding: var(--spacing-sm) var(--spacing-lg);
+    border-width: 3px;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.3), 0 6px 12px rgba(0,0,0,0.2);
+  }
+
+  button:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 rgba(0,0,0,0.3), 0 2px 6px rgba(0,0,0,0.2);
   }
 
   .container {
     padding: var(--spacing-sm);
+  }
+
+  .card {
+    border-width: 3px;
+    box-shadow: 4px 4px 0 rgba(0,0,0,0.3), 0 8px 15px rgba(0,0,0,0.15);
   }
 }
 
@@ -369,4 +522,37 @@ body.no-scroll {
   position: fixed;
   width: 100%;
   height: 100%;
+}
+
+/* 비시바시 유틸리티 클래스 */
+.text-stroke {
+  text-shadow:
+    -2px -2px 0 #000,
+    2px -2px 0 #000,
+    -2px 2px 0 #000,
+    2px 2px 0 #000,
+    3px 3px 0 rgba(0,0,0,0.3);
+}
+
+.text-glow {
+  text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor;
+}
+
+.rainbow-border {
+  border-image: linear-gradient(90deg, var(--primary), var(--accent), var(--secondary), var(--purple), var(--primary)) 1;
+}
+
+.neon-glow {
+  box-shadow:
+    0 0 5px currentColor,
+    0 0 10px currentColor,
+    0 0 20px currentColor,
+    0 0 40px currentColor;
+}
+
+/* 스크린 크기에 맞게 내용 제한 */
+.screen-fit {
+  max-height: 100vh;
+  max-height: 100dvh;
+  overflow: hidden;
 }

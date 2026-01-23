@@ -214,48 +214,81 @@ const handleClearProgress = () => {
 </template>
 
 <style scoped>
+/* 🎮 비시바시 스타일 설정 */
 .settings {
   width: 100%;
   max-width: 600px;
+  height: 100vh;
+  height: 100dvh;
   margin: 0 auto;
-  padding: 2rem 1rem;
-  min-height: 100vh;
+  padding: 1.5rem 1rem;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
+  overflow: hidden;
 }
 
 .settings-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0;
+  animation: slideUp 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 .settings-title {
-  font-size: 2rem;
+  font-size: 2.2rem;
   margin: 0;
-  color: var(--primary);
+  color: var(--accent);
+  text-shadow:
+    3px 3px 0 var(--secondary),
+    -2px -2px 0 #000,
+    2px -2px 0 #000,
+    -2px 2px 0 #000,
+    2px 2px 0 #000;
 }
 
 .settings-content {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
   flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 0.25rem;
+}
+
+/* 스크롤바 스타일 */
+.settings-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.settings-content::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.1);
+  border-radius: 4px;
+}
+
+.settings-content::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--primary), var(--secondary));
+  border-radius: 4px;
 }
 
 .setting-section {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.5rem;
+  animation: slideUp 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 .section-title {
-  font-size: 1.25rem;
-  margin: 0 0 0.5rem 0;
+  font-size: 1.15rem;
+  margin: 0 0 0.25rem 0;
   color: var(--text-primary);
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid var(--border);
+  border-bottom: 3px solid var(--border);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .setting-item {
@@ -263,23 +296,31 @@ const handleClearProgress = () => {
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-  padding: 0.75rem 0;
+  padding: 0.6rem 0.75rem;
+  background: linear-gradient(90deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.05) 100%);
+  border-radius: var(--radius-sm);
+  border-left: 4px solid var(--secondary);
+}
+
+.setting-item:nth-child(odd) {
+  border-left-color: var(--primary);
 }
 
 .setting-label {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.2rem;
   flex: 1;
 }
 
 .setting-label > span:first-child {
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-primary);
+  font-size: 0.95rem;
 }
 
 .setting-desc {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   color: var(--text-secondary);
 }
 
@@ -289,31 +330,63 @@ const handleClearProgress = () => {
 }
 
 .about-section {
-  background: linear-gradient(135deg, rgba(255, 107, 107, 0.05), rgba(78, 205, 196, 0.05));
+  background: linear-gradient(135deg, rgba(255, 45, 85, 0.08), rgba(0, 212, 170, 0.08)) !important;
 }
 
 .about-info {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: var(--text-secondary);
 }
 
 .about-info p {
-  margin: 0.5rem 0;
+  margin: 0.4rem 0;
 }
 
 .about-info strong {
-  color: var(--text-primary);
+  color: var(--primary);
 }
 
 .description {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border);
-  font-size: 0.875rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 2px solid var(--border);
+  font-size: 0.85rem;
   line-height: 1.6;
 }
 
 .settings-footer {
-  margin-top: auto;
+  flex-shrink: 0;
+  animation: slideUp 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@media (max-width: 480px) {
+  .settings {
+    padding: 1rem 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .settings-title {
+    font-size: 1.8rem;
+  }
+
+  .setting-item {
+    padding: 0.5rem 0.6rem;
+    gap: 0.75rem;
+  }
+}
+
+@media (max-height: 700px) {
+  .settings {
+    padding: 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .settings-content {
+    gap: 0.5rem;
+  }
+
+  .setting-item {
+    padding: 0.4rem 0.5rem;
+  }
 }
 </style>

@@ -125,80 +125,109 @@ const isNewRecord = computed(() => {
 </template>
 
 <style scoped>
+/* 🎮 비시바시 스타일 게임 오버 */
 .game-over {
   width: 100%;
   max-width: 500px;
+  height: 100vh;
+  height: 100dvh;
   margin: 0 auto;
-  padding: 2rem 1rem;
+  padding: 1.5rem 1rem;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  min-height: 100vh;
+  gap: 1.25rem;
   justify-content: center;
+  overflow: hidden;
 }
 
 .game-over-header {
   text-align: center;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
   align-items: center;
-  animation: slideUp 0.5s ease-out;
+  animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 .game-over-title {
-  font-size: 2.5rem;
+  font-size: 2.8rem;
   margin: 0;
-  color: var(--error);
+  color: var(--accent);
   font-weight: bold;
+  text-shadow:
+    3px 3px 0 var(--error),
+    -2px -2px 0 #000,
+    2px -2px 0 #000,
+    -2px 2px 0 #000,
+    2px 2px 0 #000,
+    5px 5px 10px rgba(0,0,0,0.4);
+  letter-spacing: 0.1em;
+  animation: shake 0.5s ease-out;
 }
 
 .result-card {
-  animation: slideUp 0.6s ease-out;
+  animation: slideUp 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  overflow: hidden;
 }
 
 .grade-display {
   text-align: center;
-  padding: 2rem 0;
-  border-bottom: 2px solid var(--border);
-  margin-bottom: 1.5rem;
+  padding: 1.5rem 0;
+  border-bottom: 4px solid var(--border);
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, rgba(255,45,85,0.05) 0%, rgba(255,217,61,0.1) 100%);
+  margin: -1rem -1rem 1rem -1rem;
+  padding: 1.5rem 1rem;
 }
 
 .grade-letter {
   font-size: 5rem;
   font-weight: bold;
   line-height: 1;
-  animation: pulse 1s ease-out;
+  animation: popIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  text-shadow:
+    4px 4px 0 rgba(0,0,0,0.3),
+    -2px -2px 0 #000,
+    2px -2px 0 #000,
+    -2px 2px 0 #000,
+    2px 2px 0 #000;
+  filter: drop-shadow(0 5px 15px currentColor);
 }
 
 .grade-label {
   font-size: 1rem;
   margin-top: 0.5rem;
-  opacity: 0.7;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
 .result-stats {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
 }
 
 .stat-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.05) 100%);
+  border-left: 4px solid var(--secondary);
 }
 
-.stat-row:last-child {
-  border-bottom: none;
+.stat-row:nth-child(odd) {
+  border-left-color: var(--primary);
 }
 
 .stat-label {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: var(--text-secondary);
+  font-weight: 600;
 }
 
 .stat-value {
@@ -208,46 +237,98 @@ const isNewRecord = computed(() => {
 }
 
 .stat-value.primary {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   color: var(--primary);
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
 }
 
 .bonus-section {
-  background: rgba(255, 230, 109, 0.1);
-  padding: 1rem;
+  background: linear-gradient(135deg, rgba(255, 217, 61, 0.15) 0%, rgba(255, 149, 0, 0.1) 100%);
+  padding: 0.75rem;
   border-radius: var(--radius-md);
-  border: 2px dashed var(--accent);
+  border: 3px solid var(--accent);
+  box-shadow: inset 0 2px 10px rgba(255, 217, 61, 0.2);
 }
 
 .bonus-section h3 {
-  margin: 0 0 0.75rem 0;
-  font-size: 1rem;
+  margin: 0 0 0.5rem 0;
+  font-size: 0.95rem;
   color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .bonus-row {
   display: flex;
   justify-content: space-between;
   padding: 0.25rem 0;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: var(--text-secondary);
 }
 
 .bonus-row span:last-child {
   font-weight: bold;
-  color: var(--accent);
+  color: var(--warning);
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.1);
 }
 
 .action-buttons {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  animation: slideUp 0.7s ease-out;
+  gap: 0.75rem;
+  animation: slideUp 0.7s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  flex-shrink: 0;
 }
 
 .secondary-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: 0.75rem;
+}
+
+@media (max-width: 480px) {
+  .game-over {
+    padding: 1rem 0.75rem;
+    gap: 1rem;
+  }
+
+  .game-over-title {
+    font-size: 2.2rem;
+  }
+
+  .grade-letter {
+    font-size: 4rem;
+  }
+
+  .stat-value.primary {
+    font-size: 1.4rem;
+  }
+}
+
+@media (max-height: 700px) {
+  .game-over {
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .grade-display {
+    padding: 1rem;
+  }
+
+  .grade-letter {
+    font-size: 3.5rem;
+  }
+
+  .result-stats {
+    gap: 0.35rem;
+  }
+
+  .stat-row {
+    padding: 0.35rem 0.5rem;
+  }
+
+  .bonus-section {
+    padding: 0.5rem;
+  }
 }
 </style>
