@@ -1,13 +1,25 @@
 // src/config/miniGames.ts
 
 import type { MiniGame } from '@/types/minigame';
+import {
+  BalloonPop,
+  FruitSlice,
+  WhackAMole,
+  ColorMatch,
+  CatchBall,
+  NumberMatch,
+  CoinCollector,
+  DodgeIt,
+  StarGather,
+  DrawLine,
+  SortIt
+} from '@/components/minigames';
 
 /**
  * 30개 미니게임 정의
- * 실제 컴포넌트는 나중에 import
  */
 
-// Placeholder component (나중에 실제 컴포넌트로 교체)
+// Placeholder component (아직 구현되지 않은 게임용)
 const PlaceholderComponent = { template: '<div>Coming Soon</div>' };
 
 /**
@@ -25,7 +37,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'count',
     baseTimeLimit: 10,
     baseTargetScore: 60,
-    component: PlaceholderComponent,
+    component: BalloonPop,
     difficulty: 1,
   },
   {
@@ -38,7 +50,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'count',
     baseTimeLimit: 10,
     baseTargetScore: 50,
-    component: PlaceholderComponent,
+    component: FruitSlice,
     difficulty: 2,
   },
   {
@@ -51,7 +63,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'count',
     baseTimeLimit: 10,
     baseTargetScore: 40,
-    component: PlaceholderComponent,
+    component: WhackAMole,
     difficulty: 1,
   },
   {
@@ -90,7 +102,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'speed',
     baseTimeLimit: 10,
     baseTargetScore: 100,
-    component: PlaceholderComponent,
+    component: ColorMatch,
     difficulty: 2,
   },
   {
@@ -129,7 +141,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'count',
     baseTimeLimit: 12,
     baseTargetScore: 45,
-    component: PlaceholderComponent,
+    component: CatchBall,
     difficulty: 2,
   },
   {
@@ -157,7 +169,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'accuracy',
     baseTimeLimit: 10,
     baseTargetScore: 80,
-    component: PlaceholderComponent,
+    component: NumberMatch,
     difficulty: 2,
   },
   {
@@ -263,7 +275,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'count',
     baseTimeLimit: 10,
     baseTargetScore: 50,
-    component: PlaceholderComponent,
+    component: CoinCollector,
     difficulty: 1,
   },
   {
@@ -276,7 +288,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'hybrid',
     baseTimeLimit: 15,
     baseTargetScore: 100,
-    component: PlaceholderComponent,
+    component: DodgeIt,
     difficulty: 3,
   },
   {
@@ -315,7 +327,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'count',
     baseTimeLimit: 10,
     baseTargetScore: 45,
-    component: PlaceholderComponent,
+    component: StarGather,
     difficulty: 2,
   },
   {
@@ -356,7 +368,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'accuracy',
     baseTimeLimit: 10,
     baseTargetScore: 80,
-    component: PlaceholderComponent,
+    component: DrawLine,
     difficulty: 2,
   },
   {
@@ -408,7 +420,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'speed',
     baseTimeLimit: 12,
     baseTargetScore: 100,
-    component: PlaceholderComponent,
+    component: SortIt,
     difficulty: 3,
   },
 ];
