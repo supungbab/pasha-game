@@ -1,48 +1,239 @@
-# pasha-game
+# 🎮 빠샤! (PASHA!)
 
-This template should help get you started developing with Vue 3 in Vite.
+더☆비시바시에서 영감을 받은 모바일 미니게임 모음집
 
-## Recommended IDE Setup
+**빠샤!** - 빠르게 + 샤샥! 의 합성어  
+**PASHA!** - 글로벌 버전 영어 이름
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## 📋 프로젝트 개요
 
-## Recommended Browser Setup
+빠샤!는 30개의 독창적인 미니게임으로 구성된 모바일 게임입니다. 각 게임은 빠른 반응속도와 집중력을 요구하며, 점진적으로 증가하는 난이도로 플레이어에게 도전을 제공합니다.
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+### 주요 특징
 
-## Type Support for `.vue` Imports in TS
+- 🎯 **30개의 다양한 미니게임**
+- 🎲 **매번 다른 순서의 랜덤 플레이**
+- 📈 **5판마다 상승하는 6단계 난이도 시스템**
+- ❤️ **3개의 목숨과 광고 컨티뉴 시스템**
+- 🏆 **글로벌/로컬 랭킹**
+- 🎨 **이미지 없는 Canvas + CSS + 이모지 구현**
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+## 🛠️ 기술 스택
 
-## Customize configuration
+- **Vue.js 3** - 프론트엔드 프레임워크 (Composition API)
+- **Vite** - 빌드 도구
+- **TypeScript** - 타입 안정성
+- **Canvas API** - 게임 렌더링
+- **HTML5 + CSS3** - UI/UX
+- **Web Audio API** - 사운드
+- **Vibration API** - 햅틱 피드백
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+## 📁 프로젝트 구조
 
-## Project Setup
+```
+pasha-game/
+├── src/
+│   ├── components/          # Vue 컴포넌트
+│   │   ├── common/         # 공통 컴포넌트
+│   │   ├── ui/             # UI 컴포넌트
+│   │   └── minigames/      # 미니게임 컴포넌트
+│   ├── composables/        # Vue Composition 함수
+│   ├── utils/              # 유틸리티 함수
+│   ├── types/              # TypeScript 타입
+│   └── config/             # 설정 파일
+├── missions/               # 미니게임 기획서 (MD)
+├── docs/                   # 문서
+│   ├── GAME_DESIGN_DOCUMENT.md
+│   ├── COMPONENT_STRUCTURE.md
+│   └── TECHNICAL_SPEC.md
+├── package.json
+└── README.md
+```
 
-```sh
+## 🎮 게임 시스템
+
+### 기본 플레이 흐름
+1. 30개 미니게임이 랜덤 순서로 제시됨
+2. 각 게임 시작 전 간단한 지시문 표시 (1-2초)
+3. 제한시간 내에 목표 점수 달성 필요
+4. 실패 시 목숨 1개 차감
+5. 목숨이 0이 되면 게임 오버
+6. 광고 시청으로 1회 컨티뉴 가능
+
+### 난이도 시스템
+| 판 수 | 난이도 | 특징 |
+|------|--------|------|
+| 1-5 | ⭐ Lv.1 | 매우 쉬움 - 게임 적응 |
+| 6-10 | ⭐⭐ Lv.2 | 쉬움 - 기본 실력 |
+| 11-15 | ⭐⭐⭐ Lv.3 | 보통 - 집중력 요구 |
+| 16-20 | ⭐⭐⭐⭐ Lv.4 | 어려움 - 높은 반응속도 |
+| 21-25 | ⭐⭐⭐⭐⭐ Lv.5 | 매우 어려움 |
+| 26-30 | 🔥 Lv.6 | 극한 - 최고난이도 |
+
+### 하드 모드
+- 약 12% 확률로 등장
+- 일반 난이도보다 1-2단계 높음
+- 성공 시 보너스 점수
+
+## 🎯 미니게임 카테고리
+
+### 반사신경/타이밍 (10개)
+풍선 터트리기, 과일 자르기, 두더지 잡기, 타이밍 점프, 리듬 탭 등
+
+### 퍼즐/인지 (8개)
+숫자 맞추기, 같은 그림 찾기, 순서 기억, 색깔 이름, 빠른 계산 등
+
+### 액션/수집 (7개)
+동전 모으기, 장애물 피하기, 사다리 오르기, 미로 탈출 등
+
+### 그리기/조작 (5개)
+선 긋기, 물체 회전, 크기 맞추기, 균형 잡기, 순서 나열
+
+> 전체 30개 미니게임 목록은 `missions/MISSIONS_SUMMARY.md` 참조
+
+## 📊 점수 시스템
+
+각 미니게임은 독립적인 점수 시스템을 가집니다:
+
+- **속도 기반**: 남은 시간에 비례한 점수
+- **정확도 기반**: 성공률에 따른 점수
+- **횟수 기반**: 성공 횟수 × 점수
+- **혼합형**: 여러 요소 조합
+
+### 최종 점수 계산
+```
+최종점수 = 게임점수합계 + 난이도보너스 + 하드모드보너스
+
+난이도보너스 = 최고난이도 × 500
+하드모드보너스 = 하드모드성공수 × 200
+```
+
+## 🎨 비주얼 디자인
+
+### 컬러 팔레트
+- 주 색상: `#FF6B6B` `#4ECDC4` `#FFE66D`
+- 배경: `#F7FFF7`
+- 텍스트: `#2C3E50`
+
+### 구현 방식
+- **Canvas**: 게임 오브젝트, 애니메이션
+- **CSS**: UI 요소, 레이아웃
+- **이모지**: 캐릭터, 아이템 표현
+
+## 🚀 개발 로드맵
+
+### Phase 1: 핵심 시스템 (1-2주)
+- [x] 프로젝트 세팅
+- [ ] 게임 상태 관리
+- [ ] 난이도 시스템
+- [ ] 공통 컴포넌트
+
+### Phase 2: 미니게임 개발 (4-6주)
+- [ ] 미니게임 1-10
+- [ ] 미니게임 11-20
+- [ ] 미니게임 21-30
+
+### Phase 3: 부가 기능 (1-2주)
+- [ ] 사운드/진동 시스템
+- [ ] 랭킹 시스템
+- [ ] 광고 SDK 연동
+
+### Phase 4: 테스트 & 최적화 (1-2주)
+- [ ] 난이도 밸런싱
+- [ ] 성능 최적화
+- [ ] 버그 수정
+
+## 📝 개발 가이드
+
+### 설치
+```bash
 npm install
 ```
 
-### Compile and Hot-Reload for Development
-
-```sh
+### 개발 서버 실행
+```bash
 npm run dev
 ```
 
-### Type-Check, Compile and Minify for Production
-
-```sh
+### 빌드
+```bash
 npm run build
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+### 새 미니게임 추가 방법
 
-```sh
-npm run lint
+1. `missions/` 에 기획서 작성 (mission-XX.md)
+2. `src/components/minigames/` 에 컴포넌트 작성
+3. `MiniGameProps` 인터페이스 구현
+4. 게임 로직 및 렌더링 구현
+5. 난이도별 밸런싱 테스트
+
+### 미니게임 템플릿
+
+```vue
+<template>
+  <GameCanvas
+    ref="canvasRef"
+    @tap="handleTap"
+    @swipe="handleSwipe"
+  />
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
+
+const props = defineProps<MiniGameProps>();
+const emit = defineEmits<{
+  complete: [result: MiniGameResult]
+}>();
+
+// 게임 로직 구현
+</script>
 ```
+
+## 📖 문서
+
+- [게임 기획서](docs/GAME_DESIGN_DOCUMENT.md)
+- [컴포넌트 구조](docs/COMPONENT_STRUCTURE.md)
+- [미니게임 목록](missions/MISSIONS_SUMMARY.md)
+- [개별 미니게임 기획](missions/)
+
+## 🎯 성능 목표
+
+- **프레임레이트**: 60 FPS 유지
+- **로딩 시간**: 3초 이내
+- **메모리**: 100MB 이하
+- **배터리**: 최적화된 렌더링
+
+## 📱 지원 환경
+
+- **모바일**: iOS 14+, Android 8+
+- **브라우저**: Chrome, Safari, Firefox (최신 2개 버전)
+- **해상도**: 360x640 ~ 1440x3040
+
+## 🔮 향후 계획 (TODO)
+
+- [ ] 업적 시스템
+- [ ] 일일 미션
+- [ ] 스킨/테마 커스터마이징
+- [ ] 재화 시스템 (코인, 젬)
+- [ ] 친구 대결 모드
+- [ ] 시즌별 이벤트
+
+## 📄 라이선스
+
+MIT License
+
+## 👥 기여
+
+기여는 언제나 환영합니다! 이슈를 등록하거나 PR을 보내주세요.
+
+## 📧 연락처
+
+문의사항은 이슈 트래커를 이용해주세요.
+
+---
+
+**버전**: 1.0.0  
+**최종 수정**: 2026-01-22
