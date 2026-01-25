@@ -1,471 +1,547 @@
 <template>
   <div class="game-view">
-    <header class="game-header">
-      <h1>빠샤! 미니게임</h1>
-      <div v-if="!currentGame" class="game-selector">
-        <h2>미니게임 선택</h2>
-        <div class="game-grid">
-          <button
-            v-for="game in availableGames"
-            :key="game.id"
-            class="game-button"
-            @click="selectGame(game.id)"
-          >
-            <span class="game-emoji">{{ game.instructionEmoji }}</span>
-            <span class="game-name">{{ game.name }}</span>
-          </button>
+    <!-- Game HUD -->
+    <header class="game-hud">
+      <div class="hud-left">
+        <div class="stage-info">
+          <span class="stage-number">STAGE {{ gameState.state.value.currentStage }}</span>
+          <span class="difficulty-badge">{{ difficultyEmoji }} Lv.{{ gameState.state.value.currentDifficulty }}</span>
+          <span v-if="gameState.state.value.isHardMode" class="hard-mode-badge">🔥 HARD</span>
+        </div>
+      </div>
+      <div class="hud-center">
+        <div class="score-display">
+          <span class="score-label">SCORE</span>
+          <span class="score-value">{{ gameState.state.value.score }}</span>
+        </div>
+      </div>
+      <div class="hud-right">
+        <div class="lives-display">
+          <span v-for="i in 3" :key="i" class="life-icon" :class="{ active: i <= gameState.state.value.lives }">
+            {{ i <= gameState.state.value.lives ? '❤️' : '🖤' }}
+          </span>
         </div>
       </div>
     </header>
 
-    <main v-if="currentGame" class="game-area">
-      <div class="game-info">
-        <div class="info-item">
-          <span class="label">점수</span>
-          <span class="value">{{ currentScore }}</span>
-        </div>
-        <div class="info-item">
-          <span class="label">목표</span>
-          <span class="value">{{ targetScore }}</span>
-        </div>
-        <div class="info-item">
-          <span class="label">시간</span>
-          <span class="value">{{ timeRemaining.toFixed(1) }}s</span>
-        </div>
-        <button class="back-btn" @click="exitGame">나가기</button>
+    <!-- Instruction Phase -->
+    <div v-if="gameState.state.value.phase === 'instruction'" class="instruction-screen">
+      <div class="instruction-content">
+        <div class="instruction-emoji">{{ currentGameData?.instructionEmoji }}</div>
+        <h2 class="instruction-title">{{ currentGameData?.name }}</h2>
+        <p class="instruction-text">{{ currentGameData?.instruction }}</p>
+        <div class="countdown">{{ instructionCountdown }}</div>
       </div>
+    </div>
 
+    <!-- Playing Phase -->
+    <main v-else-if="gameState.state.value.phase === 'playing'" class="game-area">
       <component
-        :is="currentGame.component"
-        :difficulty="difficulty"
-        :time-limit="currentGame.baseTimeLimit"
-        :target-score="targetScore"
-        :is-hard-mode="isHardMode"
+        v-if="currentGameData"
+        :is="currentGameData.component"
+        :difficulty="gameState.state.value.currentDifficulty"
+        :time-limit="adjustedTimeLimit"
+        :target-score="adjustedTargetScore"
+        :is-hard-mode="gameState.state.value.isHardMode"
         @complete="handleGameComplete"
       />
     </main>
 
-    <div v-if="showResult" class="result-overlay">
-      <div class="result-modal">
-        <h2 :class="{ success: gameResult?.success, fail: !gameResult?.success }">
-          {{ gameResult?.success ? '성공!' : '실패!' }}
+    <!-- Result Phase -->
+    <div v-else-if="gameState.state.value.phase === 'result'" class="result-screen">
+      <div class="result-content">
+        <div class="result-icon" :class="{ success: lastResult?.success }">
+          {{ lastResult?.success ? '✅' : '❌' }}
+        </div>
+        <h2 class="result-title" :class="{ success: lastResult?.success, fail: !lastResult?.success }">
+          {{ lastResult?.success ? '성공!' : '실패!' }}
         </h2>
         <div class="result-stats">
-          <p>점수: {{ gameResult?.score }}</p>
-          <p v-if="gameResult?.accuracy !== undefined">정확도: {{ gameResult?.accuracy }}%</p>
-          <p v-if="gameResult?.count !== undefined">수집: {{ gameResult?.count }}개</p>
-        </div>
-        <div class="result-buttons">
-          <button @click="retryGame">다시 하기</button>
-          <button @click="exitGame">메뉴로</button>
+          <p class="result-score">+{{ lastResult?.score }} 점</p>
+          <p v-if="lastResult?.accuracy !== undefined" class="result-accuracy">정확도: {{ lastResult?.accuracy }}%</p>
         </div>
       </div>
     </div>
-
-    <footer class="game-footer">
-      <div class="difficulty-control">
-        <label>난이도: </label>
-        <select v-model="difficulty">
-          <option :value="1">Lv.1 (쉬움)</option>
-          <option :value="2">Lv.2</option>
-          <option :value="3">Lv.3</option>
-          <option :value="4">Lv.4</option>
-          <option :value="5">Lv.5</option>
-          <option :value="6">Lv.6 (어려움)</option>
-        </select>
-        <label class="hard-mode">
-          <input type="checkbox" v-model="isHardMode" />
-          하드모드
-        </label>
-      </div>
-    </footer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
+import { useGameState } from '@/composables/useGameState';
 import { MINI_GAMES } from '@/config/miniGames';
 import { IMPLEMENTED_MINIGAME_IDS } from '@/components/minigames';
-import type { MiniGame, MiniGameResult } from '@/types/minigame';
+import { DIFFICULTY_TIERS, GAME_CONSTANTS, DIFFICULTY_MULTIPLIERS } from '@/types/game';
+import type { MiniGameResult } from '@/types/minigame';
+import type { GameResult } from '@/types/game';
 
-// Game state
-const currentGame = ref<MiniGame | null>(null);
-const difficulty = ref(1);
-const isHardMode = ref(false);
-const showResult = ref(false);
-const gameResult = ref<MiniGameResult | null>(null);
-const currentScore = ref(0);
-const timeRemaining = ref(10);
+// Emits
+const emit = defineEmits<{
+  gameover: [result: GameResult];
+  complete: [result: GameResult];
+}>();
 
-// Available games (only implemented ones)
-const availableGames = computed(() =>
+// Game state management
+const gameState = useGameState();
+
+// Instruction countdown
+const instructionCountdown = ref(3);
+let instructionTimer: number | null = null;
+
+// Result auto-proceed
+let resultTimer: number | null = null;
+
+// Last result
+const lastResult = ref<MiniGameResult | null>(null);
+
+// Get implemented games
+const implementedGames = computed(() =>
   MINI_GAMES.filter(game => IMPLEMENTED_MINIGAME_IDS.includes(game.id))
 );
 
-// Target score based on difficulty
-const targetScore = computed(() => {
-  if (!currentGame.value) return 0;
-  const baseScore = currentGame.value.baseTargetScore;
-  return Math.round(baseScore * (1 + (difficulty.value - 1) * 0.15));
+// Current game data
+const currentGameData = computed(() => gameState.queue.value.current);
+
+// Difficulty emoji
+const difficultyEmoji = computed(() => {
+  const tier = DIFFICULTY_TIERS.find(t => t.level === gameState.state.value.currentDifficulty);
+  return tier?.emoji || '⭐';
 });
 
-// Select a game
-function selectGame(gameId: number) {
-  const game = MINI_GAMES.find(g => g.id === gameId);
-  if (game) {
-    currentGame.value = game;
-    currentScore.value = 0;
-    timeRemaining.value = game.baseTimeLimit;
-    showResult.value = false;
-    gameResult.value = null;
+// Adjusted time limit based on difficulty
+const adjustedTimeLimit = computed(() => {
+  if (!currentGameData.value) return 10;
+  const baseTime = currentGameData.value.baseTimeLimit;
+  const multiplier = DIFFICULTY_MULTIPLIERS[gameState.state.value.currentDifficulty].timeLimit;
+  return Math.max(5, Math.round(baseTime * multiplier));
+});
+
+// Adjusted target score based on difficulty
+const adjustedTargetScore = computed(() => {
+  if (!currentGameData.value) return 100;
+  const baseScore = currentGameData.value.baseTargetScore;
+  const multiplier = DIFFICULTY_MULTIPLIERS[gameState.state.value.currentDifficulty].targetScore;
+  return Math.round(baseScore * multiplier);
+});
+
+// Initialize game on mount
+onMounted(() => {
+  gameState.initGame(implementedGames.value);
+  gameState.startGame();
+});
+
+// Watch for phase changes
+watch(() => gameState.state.value.phase, (newPhase) => {
+  if (newPhase === 'instruction') {
+    startInstructionCountdown();
+  } else if (newPhase === 'result') {
+    startResultTimer();
+  } else if (newPhase === 'gameover') {
+    // Emit game over event to parent
+    const result: GameResult = {
+      finalScore: gameState.state.value.score,
+      clearedStages: gameState.state.value.currentStage - 1,
+      maxDifficulty: gameState.state.value.maxDifficultyReached as any,
+      hardModeCount: gameState.state.value.hardModeCleared,
+      playTime: gameState.state.value.playTime,
+      continueUsed: gameState.state.value.continueUsed,
+      history: [...gameState.history.value],
+      bonusScore: {
+        difficulty: gameState.state.value.maxDifficultyReached * GAME_CONSTANTS.DIFFICULTY_BONUS_PER_LEVEL,
+        hardMode: gameState.state.value.hardModeCleared * GAME_CONSTANTS.HARD_MODE_BONUS
+      }
+    };
+    emit('gameover', result);
+  } else if (newPhase === 'complete') {
+    // Emit complete event to parent
+    const result: GameResult = {
+      finalScore: gameState.state.value.score,
+      clearedStages: GAME_CONSTANTS.TOTAL_STAGES,
+      maxDifficulty: gameState.state.value.maxDifficultyReached as any,
+      hardModeCount: gameState.state.value.hardModeCleared,
+      playTime: gameState.state.value.playTime,
+      continueUsed: gameState.state.value.continueUsed,
+      history: [...gameState.history.value],
+      bonusScore: {
+        difficulty: gameState.state.value.maxDifficultyReached * GAME_CONSTANTS.DIFFICULTY_BONUS_PER_LEVEL,
+        hardMode: gameState.state.value.hardModeCleared * GAME_CONSTANTS.HARD_MODE_BONUS
+      }
+    };
+    emit('complete', result);
   }
+});
+
+// Start instruction countdown
+function startInstructionCountdown() {
+  instructionCountdown.value = 3;
+
+  if (instructionTimer) clearInterval(instructionTimer);
+
+  instructionTimer = window.setInterval(() => {
+    instructionCountdown.value--;
+
+    if (instructionCountdown.value <= 0) {
+      if (instructionTimer) clearInterval(instructionTimer);
+      gameState.startMiniGame();
+    }
+  }, 1000);
+}
+
+// Start result auto-proceed timer
+function startResultTimer() {
+  if (resultTimer) clearTimeout(resultTimer);
+
+  resultTimer = window.setTimeout(() => {
+    gameState.proceedToNext();
+  }, GAME_CONSTANTS.RESULT_DISPLAY_DURATION * 1000);
 }
 
 // Handle game completion
 function handleGameComplete(result: MiniGameResult) {
-  gameResult.value = result;
-  currentScore.value = result.score;
-  timeRemaining.value = result.timeRemaining;
-  showResult.value = true;
-}
-
-// Retry the same game
-function retryGame() {
-  if (currentGame.value) {
-    const gameId = currentGame.value.id;
-    currentGame.value = null;
-    setTimeout(() => selectGame(gameId), 100);
-  }
-}
-
-// Exit to menu
-function exitGame() {
-  currentGame.value = null;
-  showResult.value = false;
-  gameResult.value = null;
+  lastResult.value = result;
+  gameState.completeMiniGame(result);
 }
 </script>
 
 <style scoped>
 .game-view {
-  min-height: 100vh;
-  min-height: 100dvh;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
   background: linear-gradient(135deg, #FFFFFF 0%, #FFF8DC 100%);
-  display: flex;
-  flex-direction: column;
   font-family: 'Pretendard', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  color: #424242;
-}
-
-.game-header {
-  padding: 1.25rem 1rem 0.75rem;
-  text-align: center;
-  color: #212121;
-  animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-.game-header h1 {
-  margin: 0 0 0.5rem 0;
-  font-size: 2.4rem;
-  letter-spacing: 0.1em;
-  font-weight: 700;
-}
-
-.game-selector h2 {
-  margin: 0 0 0.75rem 0;
-  font-size: 1.3rem;
-  font-weight: 600;
-}
-
-.game-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 0.75rem;
-  max-width: 680px;
-  margin: 0 auto;
-}
-
-.game-button {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0.9rem 0.6rem;
-  border-radius: 16px;
-  background: linear-gradient(180deg, #FFD700 0%, #FFC107 100%);
-  border: none;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
-}
-
-.game-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(255, 215, 0, 0.4);
-}
-
-.game-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
-}
-
-.game-emoji {
-  font-size: 2.1rem;
-  margin-bottom: 0.25rem;
-  filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.1));
-}
-
-.game-name {
-  font-size: 0.9rem;
-  color: #212121;
-  font-weight: 700;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.game-area {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0.75rem;
-}
-
-.game-info {
-  display: flex;
-  gap: 1.25rem;
-  align-items: center;
-  padding: 0.5rem 1.25rem;
-  background: #FFFFFF;
-  border-radius: 20px;
-  margin-bottom: 0.75rem;
-  border: 2px solid #FFF8DC;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.info-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 70px;
-}
-
-.info-item .label {
-  font-size: 0.75rem;
-  color: #424242;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-weight: 400;
-}
-
-.info-item .value {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #212121;
-}
-
-.back-btn {
-  padding: 0.5rem 1.2rem;
-  border-radius: 16px;
-  border: none;
-  background: linear-gradient(180deg, #FF9800 0%, #F9A825 100%);
-  color: #FFFFFF;
-  cursor: pointer;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
-  transition: all 0.2s ease;
-}
-
-.back-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(255, 152, 0, 0.4);
-}
-
-.back-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
-}
-
-.result-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-}
-
-.result-modal {
-  background: #FFFFFF;
-  padding: 1.75rem 2.25rem;
-  border-radius: 24px;
-  text-align: center;
-  min-width: 280px;
-  max-width: 360px;
-  border: 2px solid #FFF8DC;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  animation: popIn 0.45s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  position: relative;
   overflow: hidden;
 }
 
-.result-modal::before {
-  content: '★';
-  position: absolute;
-  top: -24px;
-  left: 10%;
-  font-size: 3rem;
-  color: #FFD700;
-  opacity: 0.2;
+/* Game HUD */
+.game-hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.95);
+  border-bottom: 2px solid #FFD700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
 }
 
-.result-modal::after {
-  content: '★';
-  position: absolute;
-  bottom: -24px;
-  right: 8%;
-  font-size: 3rem;
-  color: #FFC107;
-  opacity: 0.2;
+.hud-left,
+.hud-center,
+.hud-right {
+  flex: 1;
 }
 
-.result-modal h2 {
-  margin: 0 0 0.75rem;
-  font-size: 2.2rem;
+.hud-center {
+  display: flex;
+  justify-content: center;
+}
+
+.hud-right {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.stage-info {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.stage-number {
+  font-size: 0.95rem;
   font-weight: 700;
+  color: #212121;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-.result-modal h2.success {
+.difficulty-badge {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  background: linear-gradient(180deg, #FFD700 0%, #FFC107 100%);
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #212121;
+  box-shadow: 0 2px 6px rgba(255, 215, 0, 0.3);
+}
+
+.hard-mode-badge {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  background: linear-gradient(180deg, #FF6B6B 0%, #EE5A52 100%);
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  box-shadow: 0 2px 6px rgba(255, 107, 107, 0.4);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.score-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.score-label {
+  font-size: 0.7rem;
+  color: #757575;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.score-value {
+  font-size: 1.6rem;
+  font-weight: 700;
   color: #FFD700;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
 }
 
-.result-modal h2.fail {
-  color: #FF9800;
+.lives-display {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.life-icon {
+  font-size: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.life-icon.active {
+  filter: drop-shadow(0 2px 4px rgba(255, 0, 0, 0.3));
+}
+
+/* Instruction Screen */
+.instruction-screen {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.instruction-content {
+  text-align: center;
+  padding: 2rem;
+  animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.instruction-emoji {
+  font-size: 6rem;
+  margin-bottom: 1rem;
+  filter: drop-shadow(4px 4px 0 rgba(0, 0, 0, 0.1));
+  animation: bounce 1s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.instruction-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #212121;
+  margin: 0 0 1rem 0;
+  letter-spacing: 0.05em;
+}
+
+.instruction-text {
+  font-size: 1.3rem;
+  color: #424242;
+  margin: 0 0 1.5rem 0;
+  font-weight: 500;
+}
+
+.countdown {
+  font-size: 4rem;
+  font-weight: 700;
+  color: #FFD700;
+  text-shadow: 3px 3px 0 rgba(0, 0, 0, 0.1);
+  animation: scaleIn 0.3s ease;
+}
+
+@keyframes scaleIn {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Game Area */
+.game-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Result Screen */
+.result-screen {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.result-content {
+  text-align: center;
+  padding: 2rem;
+  animation: popIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.result-icon {
+  font-size: 6rem;
+  margin-bottom: 1rem;
+  filter: drop-shadow(4px 4px 0 rgba(0, 0, 0, 0.1));
+}
+
+.result-icon.success {
+  animation: successPop 0.5s ease;
+}
+
+@keyframes successPop {
+  0% {
+    transform: scale(0) rotate(0deg);
+  }
+  50% {
+    transform: scale(1.2) rotate(180deg);
+  }
+  100% {
+    transform: scale(1) rotate(360deg);
+  }
+}
+
+.result-title {
+  font-size: 3rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+  letter-spacing: 0.05em;
+}
+
+.result-title.success {
+  color: #4CAF50;
+  text-shadow: 3px 3px 0 rgba(76, 175, 80, 0.2);
+}
+
+.result-title.fail {
+  color: #FF6B6B;
+  text-shadow: 3px 3px 0 rgba(255, 107, 107, 0.2);
 }
 
 .result-stats {
   margin-bottom: 1rem;
-  font-size: 1rem;
-  color: #424242;
 }
 
-.result-stats p {
-  margin: 0.15rem 0;
-  font-size: 1.05rem;
-  font-weight: 400;
-}
-
-.result-buttons {
-  display: flex;
-  gap: 0.75rem;
-  justify-content: center;
-}
-
-.result-buttons button {
-  padding: 0.7rem 1.4rem;
-  border-radius: 16px;
-  border: none;
-  font-size: 0.95rem;
+.result-score {
+  font-size: 2rem;
   font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  color: #FFD700;
+  margin: 0.5rem 0;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
 }
 
-.result-buttons button:first-child {
-  background: linear-gradient(180deg, #00BCD4 0%, #0097A7 100%);
-  color: #FFFFFF;
-  box-shadow: 0 4px 12px rgba(0, 188, 212, 0.3);
-}
-
-.result-buttons button:last-child {
-  background: linear-gradient(180deg, #F5F5F5 0%, #E0E0E0 100%);
+.result-accuracy {
+  font-size: 1.2rem;
   color: #424242;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin: 0.3rem 0;
 }
 
-.result-buttons button:hover {
-  transform: translateY(-2px);
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-.result-buttons button:first-child:hover {
-  box-shadow: 0 6px 16px rgba(0, 188, 212, 0.4);
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
-.result-buttons button:last-child:hover {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-}
-
-.result-buttons button:active {
-  transform: translateY(0);
-}
-
-.game-footer {
-  padding: 0.8rem 1rem 1.1rem;
-  background: #F5F5F5;
-  border-top: 2px solid #E0E0E0;
-}
-
-.difficulty-control {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  color: #424242;
-  font-size: 0.9rem;
-}
-
-.difficulty-control select {
-  padding: 0.45rem 0.9rem;
-  border-radius: 12px;
-  border: 2px solid #E0E0E0;
-  font-size: 0.9rem;
-  outline: none;
-  background: #FFFFFF;
-  color: #424242;
-}
-
-.difficulty-control select:focus {
-  border-color: #FFD700;
-  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
-}
-
-.hard-mode {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  margin-left: 0.75rem;
-  padding: 0.2rem 0.6rem;
-  border-radius: 12px;
-  background: #FFFFFF;
-  border: 2px solid #E0E0E0;
-}
-
-.hard-mode input {
-  width: 18px;
-  height: 18px;
-}
-
+/* Mobile responsive */
 @media (max-width: 600px) {
-  .game-header h1 {
+  .game-hud {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .stage-number {
+    font-size: 0.85rem;
+  }
+
+  .difficulty-badge,
+  .hard-mode-badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+  }
+
+  .score-value {
+    font-size: 1.3rem;
+  }
+
+  .life-icon {
+    font-size: 1.2rem;
+  }
+
+  .instruction-emoji {
+    font-size: 4rem;
+  }
+
+  .instruction-title {
     font-size: 2rem;
   }
 
-  .game-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .game-info {
-    gap: 0.75rem;
-    padding-inline: 0.8rem;
-  }
-
-  .info-item .value {
+  .instruction-text {
     font-size: 1.1rem;
+  }
+
+  .countdown {
+    font-size: 3rem;
+  }
+
+  .result-icon {
+    font-size: 4rem;
+  }
+
+  .result-title {
+    font-size: 2.2rem;
+  }
+
+  .result-score {
+    font-size: 1.6rem;
   }
 }
 </style>

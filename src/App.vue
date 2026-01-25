@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { RouterView } from 'vue-router';
-import { MainMenu, GameOver, Ranking, Settings } from '@/components/ui';
+import { MainMenu, GameView, GameOver, Ranking, Settings } from '@/components/ui';
 import type { GameResult } from '@/types/game';
 
 type AppState = 'menu' | 'playing' | 'gameover' | 'ranking' | 'settings';
@@ -62,24 +62,11 @@ const showSettingsScreen = computed(() => appState.value === 'settings');
 
     <!-- Game Play -->
     <Transition name="fade">
-      <div v-if="showPlaying" class="game-container">
-        <div class="placeholder-game">
-          <h1>🎮 게임 플레이 화면</h1>
-          <p>미니게임 컴포넌트가 여기에 표시됩니다</p>
-          <button @click="handleGameOver({
-            finalScore: 1250,
-            clearedStages: 15,
-            maxDifficulty: 3,
-            hardModeCount: 2,
-            playTime: 180,
-            continueUsed: false,
-            history: [],
-            bonusScore: { difficulty: 1500, hardMode: 400 }
-          })">
-            테스트: 게임 오버
-          </button>
-        </div>
-      </div>
+      <GameView
+        v-if="showPlaying"
+        @gameover="handleGameOver"
+        @complete="handleGameOver"
+      />
     </Transition>
 
     <!-- Game Over -->
