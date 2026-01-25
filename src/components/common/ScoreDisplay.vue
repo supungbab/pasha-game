@@ -79,35 +79,38 @@ watch(() => props.currentScore, (newScore) => {
 
 <style scoped>
 .score-display {
-  padding: 0.75rem 1rem;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 1rem;
-  min-width: 10rem;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  min-width: 160px;
   transition: all 0.3s ease;
+  border: 2px solid #FFF8DC;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .score-display.complete {
   background: #4CAF50;
   color: white;
+  border-color: #4CAF50;
 }
 
 .score-text {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin-bottom: 0.5rem;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
 }
 
 .label {
-  font-size: 1rem;
-  opacity: 0.8;
+  font-size: 14px;
+  color: #424242;
 }
 
 .current {
-  font-size: 1.5rem;
-  color: #FF6B6B;
+  font-size: 24px;
+  color: #FFD700;
 }
 
 .score-display.complete .current {
@@ -116,25 +119,26 @@ watch(() => props.currentScore, (newScore) => {
 
 .separator {
   opacity: 0.5;
+  color: #757575;
 }
 
 .target {
-  font-size: 1rem;
-  opacity: 0.7;
+  font-size: 16px;
+  color: #757575;
 }
 
 .progress-bar {
-  height: 0.5rem;
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 0.25rem;
+  height: 8px;
+  background: #F5F5F5;
+  border-radius: 999px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(to right, #FF6B6B, #4ECDC4);
+  background: #FFD700;
   transition: width 0.3s ease;
-  border-radius: 0.25rem;
+  border-radius: 999px;
 }
 
 .score-display.complete .progress-fill {

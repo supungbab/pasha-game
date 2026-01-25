@@ -60,160 +60,127 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* 🎮 비시바시 스타일 모달 */
+/* 캐주얼 미니게임 모달 */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: var(--z-modal);
+  z-index: 1000;
   padding: 1rem;
   overflow: hidden;
 }
 
 .modal-container {
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
+  background: #FFFFFF;
+  border-radius: 24px;
   max-width: 90%;
   max-height: 85vh;
   overflow: hidden;
-  box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.4), 0 15px 50px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
-  border: 4px solid var(--border);
+  border: 2px solid #FFF8DC;
   position: relative;
-}
-
-/* 상단 레인보우 라인 */
-.modal-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 5px;
-  background: linear-gradient(90deg,
-    var(--primary) 0%,
-    var(--accent) 25%,
-    var(--secondary) 50%,
-    var(--purple, #AF52DE) 75%,
-    var(--primary) 100%
-  );
-  background-size: 200% 100%;
-  animation: rainbow-slide 3s linear infinite;
-}
-
-@keyframes rainbow-slide {
-  0% { background-position: 0% 0; }
-  100% { background-position: 200% 0; }
 }
 
 .modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.25rem 1.5rem;
-  padding-top: calc(1.25rem + 5px);
-  border-bottom: 3px solid var(--border);
-  background: linear-gradient(180deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.05) 100%);
+  padding: 20px 24px;
+  border-bottom: 2px solid #F5F5F5;
 }
 
 .modal-title {
   margin: 0;
-  font-size: 1.4rem;
-  color: var(--text-primary);
-  text-shadow: 1px 1px 0 rgba(0,0,0,0.1);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: 24px;
+  font-weight: 700;
+  color: #212121;
 }
 
 .modal-close {
-  background: linear-gradient(180deg, #FF6B6B 0%, var(--error) 100%);
-  border: 3px solid var(--border);
-  font-size: 1.2rem;
+  background: #F44336;
+  border: none;
+  font-size: 20px;
   cursor: pointer;
   padding: 0;
-  width: 2.2rem;
-  height: 2.2rem;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
+  border-radius: 12px;
+  transition: all 0.2s ease;
   color: white;
-  box-shadow: 0 3px 0 rgba(0,0,0,0.3);
-  text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+  box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3);
 }
 
 .modal-close:hover {
-  box-shadow: 0 3px 0 rgba(0,0,0,0.3), 0 5px 15px rgba(255, 59, 48, 0.4);
+  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+  transform: translateY(-1px);
 }
 
 .modal-close:active {
-  transform: translateY(2px);
-  box-shadow: 0 1px 0 rgba(0,0,0,0.3);
+  transform: translateY(0);
 }
 
 .modal-body {
-  padding: 1.5rem;
+  padding: 24px;
   flex: 1;
-  overflow: hidden;
-  color: var(--text-primary);
-  font-size: 1rem;
+  overflow: auto;
+  color: #424242;
+  font-size: 16px;
   line-height: 1.6;
 }
 
 .modal-body p {
-  margin: 0.5rem 0;
+  margin: 8px 0;
 }
 
 .modal-footer {
-  padding: 1rem 1.5rem;
-  border-top: 3px solid var(--border);
+  padding: 16px 24px;
+  border-top: 2px solid #F5F5F5;
   display: flex;
-  gap: 0.75rem;
+  gap: 12px;
   justify-content: flex-end;
-  background: linear-gradient(180deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.05) 100%);
 }
 
-/* Transitions - 팝한 애니메이션 */
+/* Transitions */
 .modal-enter-active {
-  animation: fadeIn 0.2s ease-out;
+  animation: fadeIn 0.3s ease;
 }
 
 .modal-leave-active {
-  animation: fadeOut 0.15s ease-out;
+  animation: fadeOut 0.3s ease;
 }
 
 .modal-enter-active .modal-container {
-  animation: popIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  animation: scaleIn 0.3s ease;
 }
 
 .modal-leave-active .modal-container {
-  animation: popOut 0.2s ease-out;
+  animation: scaleOut 0.3s ease;
 }
 
-@keyframes popIn {
-  0% {
-    transform: scale(0.5);
+@keyframes scaleIn {
+  from {
+    transform: scale(0.9);
     opacity: 0;
   }
-  70% {
-    transform: scale(1.05);
-  }
-  100% {
+  to {
     transform: scale(1);
     opacity: 1;
   }
 }
 
-@keyframes popOut {
+@keyframes scaleOut {
   from {
     transform: scale(1);
     opacity: 1;
@@ -235,26 +202,20 @@ onUnmounted(() => {
 }
 
 @media (max-width: 480px) {
-  .modal-container {
-    border-width: 3px;
-    box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0, 0, 0, 0.3);
-  }
-
   .modal-header {
-    padding: 1rem;
-    padding-top: calc(1rem + 5px);
+    padding: 16px;
   }
 
   .modal-title {
-    font-size: 1.2rem;
+    font-size: 20px;
   }
 
   .modal-body {
-    padding: 1rem;
+    padding: 16px;
   }
 
   .modal-footer {
-    padding: 0.75rem 1rem;
+    padding: 12px 16px;
   }
 }
 </style>

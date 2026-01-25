@@ -46,19 +46,20 @@ const handleInput = (event: Event) => {
 .slider-container {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: 16px;
   width: 100%;
 }
 
 .slider {
   flex: 1;
-  height: 0.5rem;
+  height: 8px;
   -webkit-appearance: none;
   appearance: none;
-  background: var(--border);
-  border-radius: var(--radius-full);
+  background: #F5F5F5;
+  border-radius: 999px;
   outline: none;
   cursor: pointer;
+  border: 1px solid #E0E0E0;
 }
 
 .slider:disabled {
@@ -70,18 +71,18 @@ const handleInput = (event: Event) => {
 .slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 1.25rem;
-  height: 1.25rem;
-  background: var(--primary);
+  width: 20px;
+  height: 20px;
+  background: #FFD700;
   border-radius: 50%;
   cursor: pointer;
-  transition: all var(--transition-fast);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
 }
 
 .slider::-webkit-slider-thumb:hover {
   transform: scale(1.1);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
 }
 
 .slider::-webkit-slider-thumb:active {
@@ -90,56 +91,50 @@ const handleInput = (event: Event) => {
 
 /* Firefox */
 .slider::-moz-range-thumb {
-  width: 1.25rem;
-  height: 1.25rem;
-  background: var(--primary);
+  width: 20px;
+  height: 20px;
+  background: #FFD700;
   border: none;
   border-radius: 50%;
   cursor: pointer;
-  transition: all var(--transition-fast);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
 }
 
 .slider::-moz-range-thumb:hover {
   transform: scale(1.1);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
 }
 
 .slider::-moz-range-thumb:active {
   transform: scale(0.95);
 }
 
-/* Track fill effect */
+/* Track */
 .slider::-webkit-slider-runnable-track {
-  height: 0.5rem;
-  background: linear-gradient(
-    to right,
-    var(--primary) 0%,
-    var(--primary) calc(var(--value, 50) * 1%),
-    var(--border) calc(var(--value, 50) * 1%),
-    var(--border) 100%
-  );
-  border-radius: var(--radius-full);
+  height: 8px;
+  background: #F5F5F5;
+  border-radius: 999px;
 }
 
 .slider::-moz-range-track {
-  height: 0.5rem;
-  background: var(--border);
-  border-radius: var(--radius-full);
+  height: 8px;
+  background: #F5F5F5;
+  border-radius: 999px;
 }
 
 .slider::-moz-range-progress {
-  height: 0.5rem;
-  background: var(--primary);
-  border-radius: var(--radius-full);
+  height: 8px;
+  background: #FFD700;
+  border-radius: 999px;
 }
 
 /* Value display */
 .slider-value {
-  font-size: var(--font-md);
-  font-weight: bold;
-  min-width: 2.5rem;
+  font-size: 16px;
+  font-weight: 700;
+  min-width: 40px;
   text-align: right;
-  color: var(--text-primary);
+  color: #212121;
 }
 </style>

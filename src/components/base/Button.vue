@@ -40,115 +40,90 @@ const handleClick = () => {
 </template>
 
 <style scoped>
-/* 🎮 비시바시 스타일 버튼 */
+/* 캐주얼 미니게임 버튼 */
 .btn {
   font-family: inherit;
   font-weight: 700;
-  border: 4px solid var(--border);
-  border-radius: var(--radius-lg);
+  border: none;
+  border-radius: 16px;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 0.2s ease;
   touch-action: manipulation;
   user-select: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
-  box-shadow: 0 6px 0 rgba(0,0,0,0.4), 0 8px 20px rgba(0,0,0,0.2);
   position: relative;
   overflow: hidden;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
-.btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-  transition: left 0.5s;
-}
-
-.btn:hover::before {
-  left: 100%;
+.btn:hover:not(.btn-disabled) {
+  transform: translateY(-2px);
 }
 
 .btn:active:not(.btn-disabled) {
-  transform: translateY(4px);
-  box-shadow: 0 2px 0 rgba(0,0,0,0.4), 0 4px 8px rgba(0,0,0,0.2);
+  transform: translateY(0);
 }
 
-/* Variants - 그라디언트로 더 화려하게 */
+/* Variants */
 .btn-primary {
-  background: linear-gradient(180deg, #FF6B8A 0%, var(--primary) 50%, #D91A40 100%);
-  color: white;
+  background: linear-gradient(180deg, #FFD700 0%, #FFC107 100%);
+  color: #212121;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
 }
 
 .btn-primary:hover:not(.btn-disabled) {
-  background: linear-gradient(180deg, var(--primary) 0%, #D91A40 100%);
-  box-shadow: 0 6px 0 rgba(0,0,0,0.4), 0 12px 30px rgba(255, 45, 85, 0.5);
+  box-shadow: 0 6px 16px rgba(255, 215, 0, 0.4);
 }
 
 .btn-secondary {
-  background: linear-gradient(180deg, #00F0C0 0%, var(--secondary) 50%, var(--secondary-dark) 100%);
-  color: white;
+  background: linear-gradient(180deg, #00BCD4 0%, #0097A7 100%);
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(0, 188, 212, 0.3);
 }
 
 .btn-secondary:hover:not(.btn-disabled) {
-  background: linear-gradient(180deg, var(--secondary) 0%, var(--secondary-dark) 100%);
-  box-shadow: 0 6px 0 rgba(0,0,0,0.4), 0 12px 30px rgba(0, 212, 170, 0.5);
+  box-shadow: 0 6px 16px rgba(0, 188, 212, 0.4);
 }
 
 .btn-success {
-  background: linear-gradient(180deg, #5DFF5D 0%, var(--success) 50%, #228B22 100%);
-  color: white;
+  background: linear-gradient(180deg, #4CAF50 0%, #388E3C 100%);
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
 }
 
 .btn-success:hover:not(.btn-disabled) {
-  box-shadow: 0 6px 0 rgba(0,0,0,0.4), 0 12px 30px rgba(50, 205, 50, 0.5);
+  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
 }
 
 .btn-danger {
-  background: linear-gradient(180deg, #FF6B6B 0%, var(--error) 50%, #CC0000 100%);
-  color: white;
+  background: linear-gradient(180deg, #F44336 0%, #D32F2F 100%);
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
 }
 
 .btn-danger:hover:not(.btn-disabled) {
-  box-shadow: 0 6px 0 rgba(0,0,0,0.4), 0 12px 30px rgba(255, 59, 48, 0.5);
+  box-shadow: 0 6px 16px rgba(244, 67, 54, 0.4);
 }
 
-/* Sizes - 더 크고 임팩트 있게 */
+/* Sizes */
 .btn-small {
-  padding: 0.6rem 1.2rem;
-  font-size: 0.9rem;
-  border-width: 3px;
-  box-shadow: 0 4px 0 rgba(0,0,0,0.4), 0 6px 15px rgba(0,0,0,0.2);
-}
-
-.btn-small:active:not(.btn-disabled) {
-  transform: translateY(3px);
-  box-shadow: 0 1px 0 rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.2);
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 12px;
 }
 
 .btn-medium {
-  padding: 0.9rem 1.8rem;
-  font-size: 1.1rem;
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 16px;
 }
 
 .btn-large {
-  padding: 1.2rem 2.5rem;
-  font-size: 1.4rem;
-  border-width: 5px;
-  box-shadow: 0 8px 0 rgba(0,0,0,0.4), 0 12px 25px rgba(0,0,0,0.2);
-}
-
-.btn-large:active:not(.btn-disabled) {
-  transform: translateY(6px);
-  box-shadow: 0 2px 0 rgba(0,0,0,0.4), 0 4px 10px rgba(0,0,0,0.2);
+  padding: 16px 32px;
+  font-size: 18px;
+  border-radius: 20px;
 }
 
 /* Full Width */
@@ -162,23 +137,5 @@ const handleClick = () => {
   cursor: not-allowed;
   transform: none !important;
   filter: grayscale(50%);
-}
-
-@media (max-width: 768px) {
-  .btn {
-    border-width: 3px;
-    box-shadow: 0 4px 0 rgba(0,0,0,0.4), 0 6px 15px rgba(0,0,0,0.2);
-  }
-
-  .btn:active:not(.btn-disabled) {
-    transform: translateY(3px);
-    box-shadow: 0 1px 0 rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.2);
-  }
-
-  .btn-large {
-    padding: 1rem 2rem;
-    font-size: 1.2rem;
-    border-width: 4px;
-  }
 }
 </style>

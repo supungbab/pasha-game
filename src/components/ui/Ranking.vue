@@ -110,7 +110,6 @@ const formatDate = (date: Date): string => {
 </template>
 
 <style scoped>
-/* 🎮 비시바시 스타일 랭킹 */
 .ranking {
   width: 100%;
   max-width: 600px;
@@ -122,12 +121,7 @@ const formatDate = (date: Date): string => {
   flex-direction: column;
   gap: 1rem;
   overflow: hidden;
-  --primary: #FFD700;
-  --primary-dark: #FFA500;
-  --primary-light: #FFED4E;
-  --secondary: #FFD93D;
-  --secondary-dark: #FFA500;
-  --accent: #FFED4E;
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFF8DC 100%);
 }
 
 .ranking-header {
@@ -141,13 +135,8 @@ const formatDate = (date: Date): string => {
 .ranking-title {
   font-size: 2.2rem;
   margin: 0;
-  color: var(--accent);
-  text-shadow:
-    3px 3px 0 var(--primary),
-    -2px -2px 0 #000,
-    2px -2px 0 #000,
-    -2px 2px 0 #000,
-    2px 2px 0 #000;
+  color: #212121;
+  font-weight: 700;
 }
 
 .ranking-toggle {
@@ -156,33 +145,32 @@ const formatDate = (date: Date): string => {
   justify-content: center;
   gap: 1rem;
   padding: 0.75rem 1rem;
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
-  border: 3px solid var(--border);
-  box-shadow: 4px 4px 0 rgba(0,0,0,0.3);
+  background: #FFFFFF;
+  border-radius: 20px;
+  border: 2px solid #FFF8DC;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   flex-shrink: 0;
   animation: slideUp 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 .ranking-toggle span {
   font-weight: 700;
-  color: var(--text-secondary);
-  transition: all var(--transition-fast);
+  color: #424242;
+  transition: all 0.2s ease;
   text-transform: uppercase;
   font-size: 0.9rem;
   letter-spacing: 0.05em;
 }
 
 .ranking-toggle span.active {
-  color: var(--primary);
-  text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
+  color: #FFD700;
 }
 
 .coming-soon,
 .no-data {
   text-align: center;
   padding: 2rem 1rem;
-  color: var(--text-light);
+  color: #424242;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -194,10 +182,9 @@ const formatDate = (date: Date): string => {
 .no-data p {
   margin: 0.5rem 0;
   font-size: 1.1rem;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  font-weight: 400;
 }
 
-/* 🏆 랭킹 리스트 - 스크롤 가능! */
 .ranking-list {
   display: flex;
   flex-direction: column;
@@ -210,18 +197,17 @@ const formatDate = (date: Date): string => {
   animation: slideUp 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
-/* 스크롤바 스타일 */
 .ranking-list::-webkit-scrollbar {
   width: 8px;
 }
 
 .ranking-list::-webkit-scrollbar-track {
-  background: rgba(0,0,0,0.1);
+  background: #F5F5F5;
   border-radius: 4px;
 }
 
 .ranking-list::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, var(--accent), var(--primary));
+  background: linear-gradient(180deg, #FFD700 0%, #FFC107 100%);
   border-radius: 4px;
 }
 
@@ -229,15 +215,15 @@ const formatDate = (date: Date): string => {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  transition: all var(--transition-fast);
+  transition: all 0.3s ease;
   cursor: default;
   animation: slideUp 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 .ranking-item.top-three {
-  border: 3px solid var(--accent) !important;
-  background: linear-gradient(135deg, rgba(255, 217, 61, 0.15), rgba(255, 149, 0, 0.1)) !important;
-  box-shadow: 0 0 15px rgba(255, 217, 61, 0.3), 4px 4px 0 rgba(0,0,0,0.3) !important;
+  border: 2px solid #FFD700 !important;
+  background: #FFFFFF !important;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3) !important;
 }
 
 .rank-number {
@@ -246,20 +232,19 @@ const formatDate = (date: Date): string => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
+  font-weight: 700;
   flex-shrink: 0;
-  background: linear-gradient(135deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.1) 100%);
-  border-radius: var(--radius-md);
+  background: #F5F5F5;
+  border-radius: 12px;
 }
 
 .rank-emoji {
   font-size: 1.8rem;
-  filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.3));
 }
 
 .rank-text {
   font-size: 1.3rem;
-  color: var(--text-secondary);
+  color: #424242;
   font-weight: 700;
 }
 
@@ -270,8 +255,8 @@ const formatDate = (date: Date): string => {
 
 .player-name {
   font-size: 1rem;
-  font-weight: bold;
-  color: var(--text-primary);
+  font-weight: 700;
+  color: #212121;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -280,7 +265,7 @@ const formatDate = (date: Date): string => {
 
 .player-stats {
   font-size: 0.8rem;
-  color: var(--text-secondary);
+  color: #424242;
   font-weight: 600;
 }
 
@@ -291,15 +276,15 @@ const formatDate = (date: Date): string => {
 
 .score {
   font-size: 1.2rem;
-  font-weight: bold;
-  color: var(--primary);
+  font-weight: 700;
+  color: #FFD700;
   margin-bottom: 0.15rem;
-  text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
 }
 
 .date {
   font-size: 0.7rem;
-  color: var(--text-secondary);
+  color: #424242;
+  font-weight: 400;
 }
 
 .ranking-footer {

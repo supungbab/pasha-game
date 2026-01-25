@@ -28,112 +28,106 @@ const props = withDefaults(defineProps<Props>(), {
 </template>
 
 <style scoped>
-/* 🎮 비시바시 스타일 배지 */
+/* 캐주얼 미니게임 배지 */
 .badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   white-space: nowrap;
-  border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
-  border: 2px solid var(--border);
-  box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
-  text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  border: none;
 }
 
 /* Sizes */
 .badge-small {
-  padding: 0.2rem 0.6rem;
-  font-size: 0.7rem;
-  border-width: 2px;
-  box-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 8px;
 }
 
 .badge-medium {
-  padding: 0.3rem 0.8rem;
-  font-size: 0.8rem;
+  padding: 6px 12px;
+  font-size: 14px;
+  border-radius: 12px;
 }
 
 .badge-large {
-  padding: 0.5rem 1.2rem;
-  font-size: 0.95rem;
-  border-width: 3px;
-  box-shadow: 3px 3px 0 rgba(0,0,0,0.3);
+  padding: 8px 16px;
+  font-size: 16px;
+  border-radius: 16px;
 }
 
-/* Variants - 그라디언트로 더 화려하게 */
+/* Variants */
 .badge-primary {
-  background: linear-gradient(180deg, #FF6B8A 0%, var(--primary) 100%);
-  color: white;
+  background: #FFD700;
+  color: #212121;
 }
 
 .badge-secondary {
-  background: linear-gradient(180deg, #00F0C0 0%, var(--secondary) 100%);
-  color: white;
+  background: #00BCD4;
+  color: #FFFFFF;
 }
 
 .badge-success {
-  background: linear-gradient(180deg, #5DFF5D 0%, var(--success) 100%);
-  color: white;
+  background: #4CAF50;
+  color: #FFFFFF;
 }
 
 .badge-warning {
-  background: linear-gradient(180deg, #FFE066 0%, var(--warning) 100%);
-  color: var(--text-dark);
-  text-shadow: none;
+  background: #FFC107;
+  color: #212121;
 }
 
 .badge-error {
-  background: linear-gradient(180deg, #FF6B6B 0%, var(--error) 100%);
-  color: white;
+  background: #F44336;
+  color: #FFFFFF;
 }
 
 .badge-info {
-  background: linear-gradient(180deg, #5AC8FA 0%, var(--info) 100%);
-  color: white;
+  background: #00BCD4;
+  color: #FFFFFF;
 }
 
 /* Outlined */
 .badge-outlined {
-  background: rgba(255,255,255,0.9);
-  border-width: 3px;
+  background: transparent;
+  border: 2px solid;
 }
 
 .badge-outlined.badge-primary {
-  color: var(--primary);
-  border-color: var(--primary);
+  color: #FFD700;
+  border-color: #FFD700;
 }
 
 .badge-outlined.badge-secondary {
-  color: var(--secondary);
-  border-color: var(--secondary);
+  color: #00BCD4;
+  border-color: #00BCD4;
 }
 
 .badge-outlined.badge-success {
-  color: var(--success);
-  border-color: var(--success);
+  color: #4CAF50;
+  border-color: #4CAF50;
 }
 
 .badge-outlined.badge-warning {
-  color: var(--warning);
-  border-color: var(--warning);
+  color: #FFC107;
+  border-color: #FFC107;
 }
 
 .badge-outlined.badge-error {
-  color: var(--error);
-  border-color: var(--error);
+  color: #F44336;
+  border-color: #F44336;
 }
 
 .badge-outlined.badge-info {
-  color: var(--info);
-  border-color: var(--info);
+  color: #00BCD4;
+  border-color: #00BCD4;
 }
 
 /* Rounded */
 .badge-rounded {
-  border-radius: var(--radius-full);
+  border-radius: 999px;
 }
 </style>

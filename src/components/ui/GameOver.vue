@@ -125,7 +125,6 @@ const isNewRecord = computed(() => {
 </template>
 
 <style scoped>
-/* 🎮 비시바시 스타일 게임 오버 */
 .game-over {
   width: 100%;
   max-width: 500px;
@@ -138,12 +137,7 @@ const isNewRecord = computed(() => {
   gap: 1.25rem;
   justify-content: center;
   overflow: hidden;
-  --primary: #FFD700;
-  --primary-dark: #FFA500;
-  --primary-light: #FFED4E;
-  --secondary: #FFD93D;
-  --secondary-dark: #FFA500;
-  --accent: #FFED4E;
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFF8DC 100%);
 }
 
 .game-over-header {
@@ -158,15 +152,8 @@ const isNewRecord = computed(() => {
 .game-over-title {
   font-size: 2.8rem;
   margin: 0;
-  color: var(--accent);
-  font-weight: bold;
-  text-shadow:
-    3px 3px 0 var(--error),
-    -2px -2px 0 #000,
-    2px -2px 0 #000,
-    -2px 2px 0 #000,
-    2px 2px 0 #000,
-    5px 5px 10px rgba(0,0,0,0.4);
+  color: #FFD700;
+  font-weight: 700;
   letter-spacing: 0.1em;
   animation: shake 0.5s ease-out;
 }
@@ -179,31 +166,24 @@ const isNewRecord = computed(() => {
 .grade-display {
   text-align: center;
   padding: 1.5rem 0;
-  border-bottom: 4px solid var(--border);
+  border-bottom: 2px solid #FFF8DC;
   margin-bottom: 1rem;
-  background: linear-gradient(135deg, rgba(255,45,85,0.05) 0%, rgba(255,217,61,0.1) 100%);
+  background: #FFFFFF;
   margin: -1rem -1rem 1rem -1rem;
   padding: 1.5rem 1rem;
 }
 
 .grade-letter {
   font-size: 5rem;
-  font-weight: bold;
+  font-weight: 700;
   line-height: 1;
   animation: popIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  text-shadow:
-    4px 4px 0 rgba(0,0,0,0.3),
-    -2px -2px 0 #000,
-    2px -2px 0 #000,
-    -2px 2px 0 #000,
-    2px 2px 0 #000;
-  filter: drop-shadow(0 5px 15px currentColor);
 }
 
 .grade-label {
   font-size: 1rem;
   margin-top: 0.5rem;
-  color: var(--text-secondary);
+  color: #424242;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -221,47 +201,48 @@ const isNewRecord = computed(() => {
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem 0.75rem;
-  border-radius: var(--radius-sm);
-  background: linear-gradient(90deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.05) 100%);
-  border-left: 4px solid var(--secondary);
+  border-radius: 12px;
+  background: #FFFFFF;
+  border-left: 4px solid #FFC107;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .stat-row:nth-child(odd) {
-  border-left-color: var(--primary);
+  border-left-color: #FFD700;
 }
 
 .stat-label {
   font-size: 0.9rem;
-  color: var(--text-secondary);
+  color: #424242;
   font-weight: 600;
 }
 
 .stat-value {
   font-size: 1.1rem;
-  font-weight: bold;
-  color: var(--text-primary);
+  font-weight: 700;
+  color: #212121;
 }
 
 .stat-value.primary {
   font-size: 1.6rem;
-  color: var(--primary);
-  text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
+  color: #FFD700;
 }
 
 .bonus-section {
-  background: linear-gradient(135deg, rgba(255, 217, 61, 0.15) 0%, rgba(255, 149, 0, 0.1) 100%);
+  background: #FFFFFF;
   padding: 0.75rem;
-  border-radius: var(--radius-md);
-  border: 3px solid var(--accent);
-  box-shadow: inset 0 2px 10px rgba(255, 217, 61, 0.2);
+  border-radius: 16px;
+  border: 2px solid #FFF8DC;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .bonus-section h3 {
   margin: 0 0 0.5rem 0;
   font-size: 0.95rem;
-  color: var(--text-primary);
+  color: #212121;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  font-weight: 600;
 }
 
 .bonus-row {
@@ -269,13 +250,12 @@ const isNewRecord = computed(() => {
   justify-content: space-between;
   padding: 0.25rem 0;
   font-size: 0.9rem;
-  color: var(--text-secondary);
+  color: #424242;
 }
 
 .bonus-row span:last-child {
-  font-weight: bold;
-  color: var(--warning);
-  text-shadow: 1px 1px 0 rgba(0,0,0,0.1);
+  font-weight: 700;
+  color: #FF9800;
 }
 
 .action-buttons {

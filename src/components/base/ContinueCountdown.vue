@@ -86,35 +86,37 @@ const handleDecline = () => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: var(--z-modal);
-  padding: 1rem;
+  z-index: 1000;
+  padding: 16px;
 }
 
 .continue-container {
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
-  padding: 2rem;
+  background: #FFFFFF;
+  border-radius: 24px;
+  padding: 32px;
   max-width: 400px;
   width: 100%;
   text-align: center;
-  animation: slideUp var(--transition-normal);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+  border: 2px solid #FFF8DC;
 }
 
 .continue-title {
-  font-size: 2rem;
-  margin: 0 0 1.5rem 0;
-  color: var(--error);
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 24px 0;
+  color: #F44336;
 }
 
 .countdown-circle {
   position: relative;
   width: 150px;
   height: 150px;
-  margin: 0 auto 1.5rem;
+  margin: 0 auto 24px;
 }
 
 .countdown-svg {
@@ -125,16 +127,16 @@ const handleDecline = () => {
 
 .countdown-bg {
   fill: none;
-  stroke: var(--border);
+  stroke: #F5F5F5;
   stroke-width: 8;
 }
 
 .countdown-progress {
   fill: none;
-  stroke: var(--primary);
+  stroke: #FFD700;
   stroke-width: 8;
   stroke-linecap: round;
-  stroke-dasharray: 282.7; /* 2 * π * 45 */
+  stroke-dasharray: 282.7;
   transition: stroke-dashoffset 1s linear;
 }
 
@@ -143,42 +145,43 @@ const handleDecline = () => {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 4rem;
-  font-weight: bold;
-  color: var(--primary);
+  font-size: 64px;
+  font-weight: 700;
+  color: #FFD700;
 }
 
 .continue-message {
-  font-size: var(--font-lg);
-  margin: 0 0 1.5rem 0;
+  font-size: 18px;
+  margin: 0 0 24px 0;
   line-height: 1.6;
-  color: var(--text-primary);
+  color: #424242;
 }
 
 .continue-actions {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 .btn-continue {
   width: 100%;
-  padding: 1rem;
-  font-size: var(--font-md);
-  font-weight: bold;
-  background: var(--success);
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 700;
+  background: #4CAF50;
   color: white;
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: 16px;
   cursor: pointer;
-  transition: all var(--transition-normal);
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
 }
 
 .btn-continue:hover {
   background: #45a049;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
 }
 
 .btn-continue:active {
@@ -187,33 +190,33 @@ const handleDecline = () => {
 
 .btn-decline {
   width: 100%;
-  padding: 0.75rem;
-  font-size: var(--font-sm);
-  font-weight: normal;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 400;
   background: transparent;
-  color: var(--text-secondary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  color: #757575;
+  border: 2px solid #E0E0E0;
+  border-radius: 16px;
   cursor: pointer;
-  transition: all var(--transition-normal);
+  transition: all 0.2s ease;
 }
 
 .btn-decline:hover {
   background: rgba(0, 0, 0, 0.05);
-  color: var(--error);
-  border-color: var(--error);
+  color: #F44336;
+  border-color: #F44336;
 }
 
 .continue-note {
-  font-size: var(--font-xs);
-  color: var(--text-secondary);
+  font-size: 12px;
+  color: #757575;
   margin: 0;
 }
 
 /* Transitions */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity var(--transition-normal);
+  transition: opacity 0.3s ease;
 }
 
 .fade-enter-from,

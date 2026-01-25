@@ -441,11 +441,18 @@ onUnmounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
 }
 
 canvas {
   max-width: 100%;
   max-height: 100%;
   touch-action: none;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: #FFFFFF;
 }
 </style>

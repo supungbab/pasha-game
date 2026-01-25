@@ -88,125 +88,100 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* 🎮 비시바시 스타일 메인 메뉴 */
+/* 캐주얼 미니게임 메인 메뉴 */
 .main-menu {
   width: 100%;
   max-width: 500px;
   height: 100vh;
   height: 100dvh;
   margin: 0 auto;
-  padding: 1.5rem 1rem;
+  padding: 24px 16px;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 24px;
   justify-content: center;
   overflow: hidden;
-  --primary: #FFD700;
-  --primary-dark: #FFA500;
-  --primary-light: #FFED4E;
-  --secondary: #FFD93D;
-  --secondary-dark: #FFA500;
-  --accent: #FFED4E;
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFF8DC 100%);
 }
 
 .menu-header {
   text-align: center;
-  animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 .game-title {
-  font-size: 3.5rem;
-  margin: 0 0 0.5rem 0;
-  color: var(--accent);
-  font-weight: bold;
-  text-shadow:
-    4px 4px 0 var(--primary),
-    -2px -2px 0 #000,
-    2px -2px 0 #000,
-    -2px 2px 0 #000,
-    2px 2px 0 #000,
-    6px 6px 10px rgba(0,0,0,0.3);
-  letter-spacing: 0.1em;
+  font-size: 56px;
+  margin: 0 0 8px 0;
+  color: #FFD700;
+  font-weight: 700;
+  text-shadow: 2px 2px 0 #F9A825;
+  letter-spacing: 0.05em;
 }
 
 .title-emoji {
   display: inline-block;
-  animation: bounce 0.8s ease-in-out infinite;
-  filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.5));
 }
 
 .game-subtitle {
-  font-size: 1.3rem;
-  color: var(--text-light);
+  font-size: 20px;
+  color: #424242;
   margin: 0;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-  letter-spacing: 0.15em;
-}
-
-.stats-card {
-  animation: slideUp 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  font-weight: 600;
 }
 
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
+  gap: 16px;
 }
 
 .stat-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
-  padding: 0.5rem;
-  background: linear-gradient(135deg, rgba(255,45,85,0.1) 0%, rgba(0,212,170,0.1) 100%);
-  border-radius: var(--radius-md);
-  border: 2px solid rgba(0,0,0,0.1);
+  gap: 4px;
+  padding: 12px;
+  background: #FFF8DC;
+  border-radius: 12px;
+  border: 2px solid #FFD700;
 }
 
 .stat-label {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
+  font-size: 12px;
+  color: #757575;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
 .stat-value {
-  font-size: 1.6rem;
-  font-weight: bold;
-  color: var(--primary);
-  text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
+  font-size: 24px;
+  font-weight: 700;
+  color: #FFD700;
 }
 
 .menu-buttons {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  animation: slideUp 0.7s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  gap: 16px;
 }
 
 .start-button {
-  animation: pulse 1.5s ease-in-out infinite;
-  font-size: 1.5rem !important;
+  font-size: 24px !important;
 }
 
 .secondary-buttons {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: 16px;
 }
 
 .menu-footer {
   text-align: center;
-  color: rgba(255,255,255,0.7);
-  font-size: 0.85rem;
-  animation: fadeIn 1s ease-out;
+  color: #757575;
+  font-size: 14px;
   flex-shrink: 0;
 }
 
 .version {
-  margin: 0 0 0.25rem 0;
+  margin: 0 0 4px 0;
   font-weight: 600;
 }
 
@@ -216,56 +191,56 @@ onMounted(() => {
 
 @media (max-width: 480px) {
   .main-menu {
-    padding: 1rem 0.75rem;
-    gap: 1.25rem;
+    padding: 16px 12px;
+    gap: 20px;
   }
 
   .game-title {
-    font-size: 2.8rem;
+    font-size: 44px;
   }
 
   .game-subtitle {
-    font-size: 1.1rem;
+    font-size: 18px;
   }
 
   .stats-grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
+    gap: 8px;
   }
 
   .stat-item {
-    padding: 0.4rem;
+    padding: 8px;
   }
 
   .stat-label {
-    font-size: 0.7rem;
+    font-size: 11px;
   }
 
   .stat-value {
-    font-size: 1.3rem;
+    font-size: 20px;
   }
 
   .start-button {
-    font-size: 1.3rem !important;
+    font-size: 20px !important;
   }
 }
 
 @media (max-height: 700px) {
   .main-menu {
-    gap: 1rem;
-    padding: 0.75rem;
+    gap: 16px;
+    padding: 12px;
   }
 
   .game-title {
-    font-size: 2.5rem;
+    font-size: 40px;
   }
 
   .stats-grid {
-    gap: 0.5rem;
+    gap: 8px;
   }
 
   .menu-buttons {
-    gap: 0.75rem;
+    gap: 12px;
   }
 }
 </style>

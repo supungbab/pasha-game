@@ -1,37 +1,37 @@
 /* src/assets/styles/variables.css */
-/* 🎮 비시바시 스타일 게임 변수 */
+/* 캐주얼 미니게임 변수 */
 
 :root {
-  /* 🎯 Difficulty Colors - 더 강렬하게 */
-  --difficulty-1: #32CD32;
-  --difficulty-2: #7FFF00;
-  --difficulty-3: #FFD93D;
-  --difficulty-4: #FF9500;
-  --difficulty-5: #FF6B35;
-  --difficulty-6: #FF2D55;
+  /* Difficulty Colors - 난이도별 색상 */
+  --difficulty-1: #4CAF50;
+  --difficulty-2: #8BC34A;
+  --difficulty-3: #FFC107;
+  --difficulty-4: #FF9800;
+  --difficulty-5: #FF5722;
+  --difficulty-6: #F44336;
 
-  /* 🏆 Grade Colors - 화려한 그라디언트용 */
-  --grade-s: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  /* Grade Colors - 등급별 색상 (2-stop gradients only) */
+  --grade-s: linear-gradient(180deg, #FFD700 0%, #FFC107 100%);
   --grade-s-solid: #FFD700;
-  --grade-a: linear-gradient(135deg, #32CD32 0%, #228B22 100%);
-  --grade-a-solid: #32CD32;
-  --grade-b: linear-gradient(135deg, #007AFF 0%, #0055CC 100%);
-  --grade-b-solid: #007AFF;
-  --grade-c: linear-gradient(135deg, #FFD93D 0%, #FFA500 100%);
-  --grade-c-solid: #FFD93D;
-  --grade-f: linear-gradient(135deg, #FF3B30 0%, #CC0000 100%);
-  --grade-f-solid: #FF3B30;
+  --grade-a: linear-gradient(180deg, #4CAF50 0%, #45a049 100%);
+  --grade-a-solid: #4CAF50;
+  --grade-b: linear-gradient(180deg, #2196F3 0%, #1976D2 100%);
+  --grade-b-solid: #2196F3;
+  --grade-c: linear-gradient(180deg, #FF9800 0%, #F57C00 100%);
+  --grade-c-solid: #FF9800;
+  --grade-f: linear-gradient(180deg, #F44336 0%, #D32F2F 100%);
+  --grade-f-solid: #F44336;
 
-  /* 🎈 Game Object Colors */
-  --balloon-red: #FF2D55;
-  --balloon-cyan: #00D4AA;
-  --balloon-yellow: #FFD93D;
-  --balloon-blue: #007AFF;
+  /* Game Object Colors */
+  --balloon-red: #F44336;
+  --balloon-cyan: #00BCD4;
+  --balloon-yellow: #FFD700;
+  --balloon-blue: #2196F3;
   --balloon-gold: #FFD700;
-  --balloon-purple: #AF52DE;
-  --balloon-pink: #FF2D92;
+  --balloon-purple: #9C27B0;
+  --balloon-pink: #E91E63;
 
-  /* 📚 Z-index Layers */
+  /* Z-index Layers */
   --z-background: 0;
   --z-content: 1;
   --z-header: 10;
@@ -40,20 +40,18 @@
   --z-toast: 2000;
   --z-tooltip: 3000;
 
-  /* 🎮 Game Canvas */
+  /* Game Canvas */
   --canvas-width: 400px;
   --canvas-height: 600px;
-  --canvas-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --canvas-bg: linear-gradient(135deg, #FFFFFF 0%, #FFF8DC 100%);
 
-  /* 📏 Header Height */
+  /* Header Height */
   --header-height: 60px;
   --footer-height: 60px;
 
-  /* 📱 Safe Area (for mobile notches) */
+  /* Safe Area (for mobile notches) */
   --safe-area-top: env(safe-area-inset-top);
   --safe-area-bottom: env(safe-area-inset-bottom);
   --safe-area-left: env(safe-area-inset-left);
   --safe-area-right: env(safe-area-inset-right);
 }
-
-/* 🌙 Dark Mode는 비시바시에서 그라디언트 배경 사용으로 불필요 */

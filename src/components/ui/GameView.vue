@@ -147,27 +147,20 @@ function exitGame() {
 </script>
 
 <style scoped>
-/* 🎮 비시바시 스타일 게임 화면 */
 .game-view {
   min-height: 100vh;
   min-height: 100dvh;
-  background: var(--bg-main);
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFF8DC 100%);
   display: flex;
   flex-direction: column;
-  font-family: 'Jua', 'Black Han Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  color: var(--text-light);
+  font-family: 'Pretendard', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #424242;
 }
 
 .game-header {
   padding: 1.25rem 1rem 0.75rem;
   text-align: center;
-  color: var(--text-light);
-  text-shadow:
-    3px 3px 0 var(--text-stroke),
-    -2px -2px 0 #000,
-    2px -2px 0 #000,
-    -2px 2px 0 #000,
-    2px 2px 0 #000;
+  color: #212121;
   animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
@@ -175,12 +168,13 @@ function exitGame() {
   margin: 0 0 0.5rem 0;
   font-size: 2.4rem;
   letter-spacing: 0.1em;
+  font-weight: 700;
 }
 
 .game-selector h2 {
   margin: 0 0 0.75rem 0;
   font-size: 1.3rem;
-  text-shadow: 2px 2px 0 var(--text-stroke);
+  font-weight: 600;
 }
 
 .game-grid {
@@ -196,34 +190,33 @@ function exitGame() {
   flex-direction: column;
   align-items: center;
   padding: 0.9rem 0.6rem;
-  border-radius: var(--radius-lg);
-  background: linear-gradient(145deg, #ffffff 0%, #ffeef5 50%, #fff9d9 100%);
-  border: 3px solid var(--border);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #FFD700 0%, #FFC107 100%);
+  border: none;
   cursor: pointer;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast), filter var(--transition-fast);
-  box-shadow: 0 5px 0 rgba(0, 0, 0, 0.3), 0 10px 18px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
 }
 
 .game-button:hover {
-  transform: translateY(-3px) scale(1.03);
-  box-shadow: 0 7px 0 rgba(0, 0, 0, 0.35), 0 14px 24px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 215, 0, 0.4);
 }
 
 .game-button:active {
-  transform: translateY(3px) scale(0.98);
-  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.35), 0 4px 10px rgba(0, 0, 0, 0.25);
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
 }
 
 .game-emoji {
   font-size: 2.1rem;
   margin-bottom: 0.25rem;
-  filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.4));
-  animation: bounce 1.1s ease-in-out infinite;
+  filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.1));
 }
 
 .game-name {
   font-size: 0.9rem;
-  color: #333;
+  color: #212121;
   font-weight: 700;
   text-align: center;
   text-transform: uppercase;
@@ -243,11 +236,11 @@ function exitGame() {
   gap: 1.25rem;
   align-items: center;
   padding: 0.5rem 1.25rem;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 228, 181, 0.98) 100%);
-  border-radius: 999px;
+  background: #FFFFFF;
+  border-radius: 20px;
   margin-bottom: 0.75rem;
-  border: 3px solid var(--border);
-  box-shadow: 0 5px 0 rgba(0, 0, 0, 0.3);
+  border: 2px solid #FFF8DC;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .info-item {
@@ -259,46 +252,46 @@ function exitGame() {
 
 .info-item .label {
   font-size: 0.75rem;
-  color: #555;
+  color: #424242;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+  font-weight: 400;
 }
 
 .info-item .value {
   font-size: 1.3rem;
-  font-weight: 800;
-  color: #222;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.2);
+  font-weight: 700;
+  color: #212121;
 }
 
 .back-btn {
   padding: 0.5rem 1.2rem;
-  border-radius: 999px;
-  border: 3px solid var(--border);
-  background: linear-gradient(180deg, #ff6b6b 0%, #ff3b30 100%);
-  color: #fff;
+  border-radius: 16px;
+  border: none;
+  background: linear-gradient(180deg, #FF9800 0%, #F9A825 100%);
+  color: #FFFFFF;
   cursor: pointer;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  box-shadow: 0 5px 0 rgba(0, 0, 0, 0.4);
-  transition: all var(--transition-fast);
+  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+  transition: all 0.2s ease;
 }
 
 .back-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 7px 0 rgba(0, 0, 0, 0.4), 0 10px 18px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 6px 16px rgba(255, 152, 0, 0.4);
 }
 
 .back-btn:active {
-  transform: translateY(3px);
-  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4), 0 4px 8px rgba(0, 0, 0, 0.25);
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
 }
 
 .result-overlay {
   position: fixed;
   inset: 0;
-  background: var(--bg-overlay);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -306,14 +299,14 @@ function exitGame() {
 }
 
 .result-modal {
-  background: var(--bg-card);
+  background: #FFFFFF;
   padding: 1.75rem 2.25rem;
-  border-radius: var(--radius-xl);
+  border-radius: 24px;
   text-align: center;
   min-width: 280px;
   max-width: 360px;
-  border: 4px solid var(--border);
-  box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.4), 0 15px 40px rgba(0, 0, 0, 0.35);
+  border: 2px solid #FFF8DC;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   animation: popIn 0.45s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   position: relative;
   overflow: hidden;
@@ -325,8 +318,8 @@ function exitGame() {
   top: -24px;
   left: 10%;
   font-size: 3rem;
-  color: #ffed4e;
-  opacity: 0.7;
+  color: #FFD700;
+  opacity: 0.2;
 }
 
 .result-modal::after {
@@ -335,40 +328,34 @@ function exitGame() {
   bottom: -24px;
   right: 8%;
   font-size: 3rem;
-  color: #ff6b8a;
-  opacity: 0.6;
+  color: #FFC107;
+  opacity: 0.2;
 }
 
 .result-modal h2 {
   margin: 0 0 0.75rem;
   font-size: 2.2rem;
-  text-shadow:
-    3px 3px 0 var(--text-stroke),
-    -2px -2px 0 #000,
-    2px -2px 0 #000,
-    -2px 2px 0 #000,
-    2px 2px 0 #000;
+  font-weight: 700;
 }
 
 .result-modal h2.success {
-  color: #ffed4e;
-  animation: bounce 0.8s ease-in-out infinite;
+  color: #FFD700;
 }
 
 .result-modal h2.fail {
-  color: #ff3b30;
-  animation: shake 0.45s;
+  color: #FF9800;
 }
 
 .result-stats {
   margin-bottom: 1rem;
   font-size: 1rem;
-  color: #333;
+  color: #424242;
 }
 
 .result-stats p {
   margin: 0.15rem 0;
   font-size: 1.05rem;
+  font-weight: 400;
 }
 
 .result-buttons {
@@ -379,41 +366,48 @@ function exitGame() {
 
 .result-buttons button {
   padding: 0.7rem 1.4rem;
-  border-radius: 999px;
-  border: 3px solid var(--border);
+  border-radius: 16px;
+  border: none;
   font-size: 0.95rem;
-  font-weight: 800;
+  font-weight: 700;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 0.2s ease;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  box-shadow: 0 5px 0 rgba(0, 0, 0, 0.4);
 }
 
 .result-buttons button:first-child {
-  background: linear-gradient(180deg, #5ac8fa 0%, #007aff 100%);
-  color: #fff;
+  background: linear-gradient(180deg, #00BCD4 0%, #0097A7 100%);
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(0, 188, 212, 0.3);
 }
 
 .result-buttons button:last-child {
-  background: linear-gradient(180deg, #bdc3c7 0%, #7f8c8d 100%);
-  color: #fff;
+  background: linear-gradient(180deg, #F5F5F5 0%, #E0E0E0 100%);
+  color: #424242;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .result-buttons button:hover {
-  transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 7px 0 rgba(0, 0, 0, 0.4), 0 12px 20px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+.result-buttons button:first-child:hover {
+  box-shadow: 0 6px 16px rgba(0, 188, 212, 0.4);
+}
+
+.result-buttons button:last-child:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
 .result-buttons button:active {
-  transform: translateY(3px) scale(0.97);
-  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4), 0 4px 8px rgba(0, 0, 0, 0.25);
+  transform: translateY(0);
 }
 
 .game-footer {
   padding: 0.8rem 1rem 1.1rem;
-  background: rgba(0, 0, 0, 0.25);
-  border-top: 3px solid rgba(0, 0, 0, 0.4);
+  background: #F5F5F5;
+  border-top: 2px solid #E0E0E0;
 }
 
 .difficulty-control {
@@ -421,20 +415,23 @@ function exitGame() {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  color: var(--text-light);
+  color: #424242;
   font-size: 0.9rem;
 }
 
 .difficulty-control select {
   padding: 0.45rem 0.9rem;
-  border-radius: 999px;
-  border: 2px solid var(--border);
+  border-radius: 12px;
+  border: 2px solid #E0E0E0;
   font-size: 0.9rem;
   outline: none;
+  background: #FFFFFF;
+  color: #424242;
 }
 
 .difficulty-control select:focus {
-  box-shadow: 0 0 0 3px rgba(255, 237, 78, 0.7);
+  border-color: #FFD700;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
 }
 
 .hard-mode {
@@ -443,9 +440,9 @@ function exitGame() {
   gap: 0.35rem;
   margin-left: 0.75rem;
   padding: 0.2rem 0.6rem;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.35);
-  border: 2px solid rgba(0, 0, 0, 0.6);
+  border-radius: 12px;
+  background: #FFFFFF;
+  border: 2px solid #E0E0E0;
 }
 
 .hard-mode input {

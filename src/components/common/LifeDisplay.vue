@@ -36,12 +36,15 @@ const hearts = computed(() => {
 <style scoped>
 .life-display {
   display: inline-flex;
-  gap: 0.25rem;
-  padding: 0.5rem;
+  gap: 4px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  border: 2px solid #FFF8DC;
 }
 
 .heart {
-  font-size: 1.5rem;
+  font-size: 24px;
   display: inline-block;
   transition: transform 0.3s ease;
 }

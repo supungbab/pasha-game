@@ -214,7 +214,6 @@ const handleClearProgress = () => {
 </template>
 
 <style scoped>
-/* 🎮 비시바시 스타일 설정 */
 .settings {
   width: 100%;
   max-width: 600px;
@@ -226,13 +225,7 @@ const handleClearProgress = () => {
   flex-direction: column;
   gap: 1rem;
   overflow: hidden;
-  --primary: #FFD700;
-  --primary-dark: #FFA500;
-  --primary-light: #FFED4E;
-  --secondary: #FFD93D;
-  --secondary-dark: #FFA500;
-  --accent: #FFED4E;
-  --bg-main: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%);
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFF8DC 100%);
 }
 
 .settings-header {
@@ -249,18 +242,15 @@ const handleClearProgress = () => {
   background: transparent !important;
   padding: 0 !important;
   width: auto !important;
+  font-size: 1.5rem;
+  color: #424242;
 }
 
 .settings-title {
   font-size: 2.2rem;
   margin: 0;
-  color: var(--accent);
-  text-shadow:
-    3px 3px 0 var(--secondary),
-    -2px -2px 0 #000,
-    2px -2px 0 #000,
-    -2px 2px 0 #000,
-    2px 2px 0 #000;
+  color: #212121;
+  font-weight: 700;
 }
 
 .settings-content {
@@ -274,18 +264,17 @@ const handleClearProgress = () => {
   padding-right: 0.25rem;
 }
 
-/* 스크롤바 스타일 */
 .settings-content::-webkit-scrollbar {
   width: 8px;
 }
 
 .settings-content::-webkit-scrollbar-track {
-  background: rgba(0,0,0,0.1);
+  background: #F5F5F5;
   border-radius: 4px;
 }
 
 .settings-content::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, var(--primary), var(--secondary));
+  background: linear-gradient(180deg, #FFD700 0%, #FFC107 100%);
   border-radius: 4px;
 }
 
@@ -299,11 +288,12 @@ const handleClearProgress = () => {
 .section-title {
   font-size: 1.15rem;
   margin: 0 0 0.25rem 0;
-  color: var(--text-primary);
+  color: #212121;
   padding-bottom: 0.5rem;
-  border-bottom: 3px solid var(--border);
+  border-bottom: 2px solid #FFF8DC;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  font-weight: 600;
 }
 
 .setting-item {
@@ -312,13 +302,14 @@ const handleClearProgress = () => {
   align-items: center;
   gap: 1rem;
   padding: 0.6rem 0.75rem;
-  background: linear-gradient(90deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.05) 100%);
-  border-radius: var(--radius-sm);
-  border-left: 4px solid var(--secondary);
+  background: #FFFFFF;
+  border-radius: 12px;
+  border-left: 4px solid #FFC107;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .setting-item:nth-child(odd) {
-  border-left-color: var(--primary);
+  border-left-color: #FFD700;
 }
 
 .setting-label {
@@ -330,13 +321,14 @@ const handleClearProgress = () => {
 
 .setting-label > span:first-child {
   font-weight: 700;
-  color: var(--text-primary);
+  color: #212121;
   font-size: 0.95rem;
 }
 
 .setting-desc {
   font-size: 0.8rem;
-  color: var(--text-secondary);
+  color: #424242;
+  font-weight: 400;
 }
 
 .language-selector {
@@ -345,12 +337,12 @@ const handleClearProgress = () => {
 }
 
 .about-section {
-  background: linear-gradient(135deg, rgba(255, 45, 85, 0.08), rgba(0, 212, 170, 0.08)) !important;
+  background: #FFFFFF !important;
 }
 
 .about-info {
   font-size: 0.9rem;
-  color: var(--text-secondary);
+  color: #424242;
 }
 
 .about-info p {
@@ -358,13 +350,14 @@ const handleClearProgress = () => {
 }
 
 .about-info strong {
-  color: var(--primary);
+  color: #FFD700;
+  font-weight: 700;
 }
 
 .description {
   margin-top: 0.75rem;
   padding-top: 0.75rem;
-  border-top: 2px solid var(--border);
+  border-top: 2px solid #FFF8DC;
   font-size: 0.85rem;
   line-height: 1.6;
 }

@@ -36,96 +36,82 @@ const handleToggle = () => {
 </template>
 
 <style scoped>
-/* 🎮 비시바시 스타일 토글 */
+/* 캐주얼 미니게임 토글 */
 .toggle {
   position: relative;
-  border: 3px solid var(--border);
-  border-radius: var(--radius-full);
-  background: linear-gradient(180deg, #e0e0e0 0%, #bdbdbd 100%);
+  border: none;
+  border-radius: 999px;
+  background: #E0E0E0;
   cursor: pointer;
-  transition: all var(--transition-fast);
-  padding: 3px;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2), 0 2px 0 rgba(0,0,0,0.2);
+  transition: all 0.2s ease;
+  padding: 2px;
 }
 
 .toggle:focus {
-  outline: 3px solid var(--primary);
+  outline: 2px solid #FFD700;
   outline-offset: 2px;
 }
 
 /* Sizes */
 .toggle-small {
-  width: 2.8rem;
-  height: 1.4rem;
+  width: 44px;
+  height: 24px;
 }
 
 .toggle-small .toggle-thumb {
-  width: 1rem;
-  height: 1rem;
+  width: 20px;
+  height: 20px;
 }
 
 .toggle-medium {
-  width: 3.4rem;
-  height: 1.7rem;
+  width: 52px;
+  height: 28px;
 }
 
 .toggle-medium .toggle-thumb {
-  width: 1.3rem;
-  height: 1.3rem;
+  width: 24px;
+  height: 24px;
 }
 
 .toggle-large {
-  width: 4rem;
-  height: 2rem;
+  width: 64px;
+  height: 32px;
 }
 
 .toggle-large .toggle-thumb {
-  width: 1.6rem;
-  height: 1.6rem;
+  width: 28px;
+  height: 28px;
 }
 
 /* Thumb */
 .toggle-thumb {
   display: block;
   border-radius: 50%;
-  background: linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%);
-  transition: transform var(--transition-fast);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.8);
-  border: 2px solid var(--border);
+  background: #FFFFFF;
+  transition: transform 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* Active */
 .toggle-active {
-  background: linear-gradient(180deg, #5DFF5D 0%, var(--success) 100%);
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1), 0 2px 0 rgba(0,0,0,0.2), 0 0 10px rgba(50, 205, 50, 0.4);
+  background: #4CAF50;
 }
 
 .toggle-small.toggle-active .toggle-thumb {
-  transform: translateX(1.4rem);
+  transform: translateX(20px);
 }
 
 .toggle-medium.toggle-active .toggle-thumb {
-  transform: translateX(1.7rem);
+  transform: translateX(24px);
 }
 
 .toggle-large.toggle-active .toggle-thumb {
-  transform: translateX(2rem);
+  transform: translateX(32px);
 }
 
 /* Disabled */
 .toggle-disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  filter: grayscale(50%);
-}
-
-@media (max-width: 480px) {
-  .toggle {
-    border-width: 2px;
-  }
-
-  .toggle-thumb {
-    border-width: 2px;
-  }
 }
 </style>

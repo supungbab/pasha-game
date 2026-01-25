@@ -56,24 +56,23 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: var(--z-modal);
+  z-index: 1000;
 }
 
 .instruction-content {
   text-align: center;
   color: white;
-  animation: bounce 1s ease-in-out infinite;
 }
 
 .instruction-emoji {
-  font-size: 5rem;
-  margin-bottom: 1rem;
+  font-size: 80px;
+  margin-bottom: 16px;
   animation: pulse 1s ease-in-out infinite;
 }
 
 .instruction-text {
-  font-size: 2rem;
-  font-weight: bold;
+  font-size: 32px;
+  font-weight: 700;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
   margin: 0;
 }
@@ -81,7 +80,7 @@ onMounted(() => {
 /* Transitions */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity var(--transition-normal);
+  transition: opacity 0.3s ease;
 }
 
 .fade-enter-from,
@@ -90,15 +89,6 @@ onMounted(() => {
 }
 
 /* Animations */
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
 @keyframes pulse {
   0%, 100% {
     transform: scale(1);
