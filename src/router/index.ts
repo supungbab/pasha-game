@@ -7,6 +7,17 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: () => import('../components/ui/GameView.vue')
+    },
+    // Dev only routes for testing minigames
+    {
+      path: '/test',
+      name: 'minigame-test-list',
+      component: () => import('../views/MiniGameTestList.vue')
+    },
+    {
+      path: '/test/:id',
+      name: 'minigame-test-player',
+      component: () => import('../views/MiniGameTestPlayer.vue')
     }
   ]
 })

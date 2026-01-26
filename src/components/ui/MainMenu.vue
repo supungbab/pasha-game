@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { Button, Card } from '@/components/base';
 import { getHighScore, getGameStats } from '@/utils/storage';
 
@@ -9,11 +10,20 @@ const emit = defineEmits<{
   showSettings: [];
 }>();
 
+const router = useRouter();
+
 const highScore = ref(0);
 const stats = ref({
   totalPlays: 0,
   bestStage: 0
 });
+
+// Check if in development mode
+const isDev = computed(() => import.meta.env.DEV);
+
+function goToTestMode() {
+  router.push({ name: 'minigame-test-list' });
+}
 
 onMounted(() => {
   highScore.value = getHighScore();
@@ -78,6 +88,18 @@ onMounted(() => {
           ⚙️ 설정
         </Button>
       </div>
+
+      <!-- Dev Mode: Test Button -->
+      <Button
+        v-if="isDev"
+        variant="secondary"
+        size="medium"
+        full-width
+        class="dev-test-button"
+        @click="goToTestMode"
+      >
+        🧪 미니게임 테스트 (DEV)
+      </Button>
     </div>
 
     <div class="menu-footer">
@@ -171,6 +193,13 @@ onMounted(() => {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+}
+
+.dev-test-button {
+  margin-top: 8px;
+  background: linear-gradient(180deg, #5E35B1 0%, #4527A0 100%) !important;
+  color: white !important;
+  border-color: #311B92 !important;
 }
 
 .menu-footer {
