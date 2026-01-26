@@ -28,42 +28,33 @@ const color = computed(() => getDifficultyColor(props.level));
 .difficulty-badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
   background: var(--color);
   color: white;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   font-weight: 700;
-  font-size: 14px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  font-size: var(--font-sm);
+  box-shadow: var(--shadow-sm);
 }
 
 .difficulty-badge.hard-mode {
   background: var(--color);
-  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
-  animation: hardModePulse 1s infinite;
+  box-shadow: var(--shadow-danger-hover);
+  animation: pulse 1s infinite;
 }
 
 .hard-mode-icon {
-  font-size: 18px;
+  font-size: var(--font-lg);
   animation: flame 0.5s infinite;
 }
 
 .emoji {
-  font-size: 16px;
+  font-size: var(--font-md);
 }
 
 .name {
   text-shadow: none;
-}
-
-@keyframes hardModePulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
 }
 
 @keyframes flame {

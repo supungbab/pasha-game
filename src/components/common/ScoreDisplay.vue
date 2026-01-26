@@ -79,38 +79,38 @@ watch(() => props.currentScore, (newScore) => {
 
 <style scoped>
 .score-display {
-  padding: 12px 16px;
+  padding: 12px var(--spacing-md);
   background: rgba(255, 255, 255, 0.95);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   min-width: 160px;
   transition: all 0.3s ease;
-  border: 2px solid #FFF8DC;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 2px solid var(--neutral-cream);
+  box-shadow: var(--shadow-sm);
 }
 
 .score-display.complete {
-  background: #4CAF50;
+  background: var(--success);
   color: white;
-  border-color: #4CAF50;
+  border-color: var(--success);
 }
 
 .score-text {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 18px;
+  gap: var(--spacing-sm);
+  font-size: var(--font-lg);
   font-weight: 700;
-  margin-bottom: 8px;
+  margin-bottom: var(--spacing-sm);
 }
 
 .label {
-  font-size: 14px;
-  color: #424242;
+  font-size: var(--font-sm);
+  color: var(--text-medium);
 }
 
 .current {
-  font-size: 24px;
-  color: #FFD700;
+  font-size: var(--radius-2xl);
+  color: var(--primary-yellow);
 }
 
 .score-display.complete .current {
@@ -119,26 +119,26 @@ watch(() => props.currentScore, (newScore) => {
 
 .separator {
   opacity: 0.5;
-  color: #757575;
+  color: var(--text-light);
 }
 
 .target {
-  font-size: 16px;
-  color: #757575;
+  font-size: var(--font-md);
+  color: var(--text-light);
 }
 
 .progress-bar {
-  height: 8px;
-  background: #F5F5F5;
-  border-radius: 999px;
+  height: var(--spacing-sm);
+  background: var(--light-gray);
+  border-radius: var(--radius-full);
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: #FFD700;
+  background: var(--primary-yellow);
   transition: width 0.3s ease;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
 }
 
 .score-display.complete .progress-fill {

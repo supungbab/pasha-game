@@ -46,24 +46,24 @@ const handleInput = (event: Event) => {
 .slider-container {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--spacing-md);
   width: 100%;
 }
 
 .slider {
   flex: 1;
-  height: 8px;
+  height: var(--spacing-sm);
   -webkit-appearance: none;
   appearance: none;
-  background: #F5F5F5;
-  border-radius: 999px;
+  background: var(--light-gray);
+  border-radius: var(--radius-full);
   outline: none;
   cursor: pointer;
-  border: 1px solid #E0E0E0;
+  border: 1px solid var(--border-color);
 }
 
 .slider:disabled {
-  opacity: 0.5;
+  opacity: var(--opacity-disabled);
   cursor: not-allowed;
 }
 
@@ -73,7 +73,7 @@ const handleInput = (event: Event) => {
   appearance: none;
   width: 20px;
   height: 20px;
-  background: #FFD700;
+  background: var(--primary-yellow);
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -93,7 +93,7 @@ const handleInput = (event: Event) => {
 .slider::-moz-range-thumb {
   width: 20px;
   height: 20px;
-  background: #FFD700;
+  background: var(--primary-yellow);
   border: none;
   border-radius: 50%;
   cursor: pointer;
@@ -112,29 +112,29 @@ const handleInput = (event: Event) => {
 
 /* Track */
 .slider::-webkit-slider-runnable-track {
-  height: 8px;
-  background: #F5F5F5;
-  border-radius: 999px;
+  height: var(--spacing-sm);
+  background: var(--light-gray);
+  border-radius: var(--radius-full);
 }
 
 .slider::-moz-range-track {
-  height: 8px;
-  background: #F5F5F5;
-  border-radius: 999px;
+  height: var(--spacing-sm);
+  background: var(--light-gray);
+  border-radius: var(--radius-full);
 }
 
 .slider::-moz-range-progress {
-  height: 8px;
-  background: #FFD700;
-  border-radius: 999px;
+  height: var(--spacing-sm);
+  background: var(--primary-yellow);
+  border-radius: var(--radius-full);
 }
 
 /* Value display */
 .slider-value {
-  font-size: 16px;
+  font-size: var(--font-md);
   font-weight: 700;
   min-width: 40px;
   text-align: right;
-  color: #212121;
+  color: var(--text-dark);
 }
 </style>

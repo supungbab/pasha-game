@@ -35,59 +35,59 @@ const props = withDefaults(defineProps<Props>(), {
   justify-content: center;
   font-weight: 700;
   white-space: nowrap;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   transition: all 0.2s ease;
   border: none;
 }
 
 /* Sizes */
 .badge-small {
-  padding: 4px 8px;
-  font-size: 12px;
-  border-radius: 8px;
+  padding: 4px var(--spacing-sm);
+  font-size: var(--font-xs);
+  border-radius: var(--radius-sm);
 }
 
 .badge-medium {
-  padding: 6px 12px;
-  font-size: 14px;
-  border-radius: 12px;
+  padding: 6px var(--spacing-md);
+  font-size: var(--font-sm);
+  border-radius: var(--radius-md);
 }
 
 .badge-large {
-  padding: 8px 16px;
-  font-size: 16px;
-  border-radius: 16px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-md);
+  border-radius: var(--radius-lg);
 }
 
 /* Variants */
 .badge-primary {
-  background: #FFD700;
-  color: #212121;
+  background: var(--primary-yellow);
+  color: var(--text-dark);
 }
 
 .badge-secondary {
-  background: #00BCD4;
-  color: #FFFFFF;
+  background: var(--cyan);
+  color: var(--white);
 }
 
 .badge-success {
-  background: #4CAF50;
-  color: #FFFFFF;
+  background: var(--success);
+  color: var(--white);
 }
 
 .badge-warning {
-  background: #FFC107;
-  color: #212121;
+  background: var(--secondary-yellow);
+  color: var(--text-dark);
 }
 
 .badge-error {
-  background: #F44336;
-  color: #FFFFFF;
+  background: var(--error);
+  color: var(--white);
 }
 
 .badge-info {
-  background: #00BCD4;
-  color: #FFFFFF;
+  background: var(--cyan);
+  color: var(--white);
 }
 
 /* Outlined */
@@ -97,37 +97,37 @@ const props = withDefaults(defineProps<Props>(), {
 }
 
 .badge-outlined.badge-primary {
-  color: #FFD700;
-  border-color: #FFD700;
+  color: var(--primary-yellow);
+  border-color: var(--primary-yellow);
 }
 
 .badge-outlined.badge-secondary {
-  color: #00BCD4;
-  border-color: #00BCD4;
+  color: var(--cyan);
+  border-color: var(--cyan);
 }
 
 .badge-outlined.badge-success {
-  color: #4CAF50;
-  border-color: #4CAF50;
+  color: var(--success);
+  border-color: var(--success);
 }
 
 .badge-outlined.badge-warning {
-  color: #FFC107;
-  border-color: #FFC107;
+  color: var(--secondary-yellow);
+  border-color: var(--secondary-yellow);
 }
 
 .badge-outlined.badge-error {
-  color: #F44336;
-  border-color: #F44336;
+  color: var(--error);
+  border-color: var(--error);
 }
 
 .badge-outlined.badge-info {
-  color: #00BCD4;
-  border-color: #00BCD4;
+  color: var(--cyan);
+  border-color: var(--cyan);
 }
 
 /* Rounded */
 .badge-rounded {
-  border-radius: 999px;
+  border-radius: var(--radius-full);
 }
 </style>

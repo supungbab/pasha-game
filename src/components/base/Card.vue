@@ -46,10 +46,10 @@ const emit = defineEmits<{
 <style scoped>
 /* 캐주얼 미니게임 카드 */
 .card {
-  background: #FFFFFF;
-  border-radius: 20px;
+  background: var(--white);
+  border-radius: var(--radius-xl);
   transition: all 0.3s ease;
-  border: 2px solid #FFF8DC;
+  border: 2px solid var(--neutral-cream);
   position: relative;
   overflow: hidden;
 }
@@ -60,11 +60,11 @@ const emit = defineEmits<{
 }
 
 .card-padding-small {
-  padding: 8px;
+  padding: var(--spacing-sm);
 }
 
 .card-padding-medium {
-  padding: 20px;
+  padding: var(--radius-xl);
 }
 
 .card-padding-large {
@@ -73,15 +73,15 @@ const emit = defineEmits<{
 
 /* Elevation */
 .card-elevation-low {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-sm);
 }
 
 .card-elevation-medium {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .card-elevation-high {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-lg);
 }
 
 /* Clickable */
@@ -92,7 +92,7 @@ const emit = defineEmits<{
 
 .card-clickable:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-lg);
 }
 
 .card-clickable:active {
@@ -101,28 +101,28 @@ const emit = defineEmits<{
 
 /* Header */
 .card-header {
-  padding-bottom: 16px;
-  border-bottom: 2px solid #F5F5F5;
-  margin-bottom: 16px;
+  padding-bottom: var(--spacing-md);
+  border-bottom: 2px solid var(--divider-color);
+  margin-bottom: var(--spacing-md);
 }
 
 .card-title {
   margin: 0;
-  font-size: 20px;
+  font-size: var(--radius-xl);
   font-weight: 700;
-  color: #212121;
+  color: var(--text-dark);
 }
 
 /* Body */
 .card-body {
   flex: 1;
-  color: #424242;
+  color: var(--text-medium);
 }
 
 /* Footer */
 .card-footer {
-  padding-top: 16px;
-  border-top: 2px solid #F5F5F5;
-  margin-top: 16px;
+  padding-top: var(--spacing-md);
+  border-top: 2px solid var(--divider-color);
+  margin-top: var(--spacing-md);
 }
 </style>

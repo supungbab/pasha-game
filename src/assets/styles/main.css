@@ -64,6 +64,34 @@
   --transition-fast: 150ms ease;
   --transition-normal: 250ms ease;
   --transition-slow: 350ms ease;
+
+  /* Shadow System */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 6px 16px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.15);
+
+  /* Button Shadows with Colors */
+  --shadow-primary: 0 4px 12px rgba(255, 215, 0, 0.3);
+  --shadow-primary-hover: 0 6px 16px rgba(255, 215, 0, 0.4);
+  --shadow-success: 0 4px 12px rgba(76, 175, 80, 0.3);
+  --shadow-success-hover: 0 6px 16px rgba(76, 175, 80, 0.4);
+  --shadow-danger: 0 4px 12px rgba(244, 67, 54, 0.3);
+  --shadow-danger-hover: 0 6px 16px rgba(244, 67, 54, 0.4);
+  --shadow-cyan: 0 4px 12px rgba(0, 188, 212, 0.3);
+  --shadow-cyan-hover: 0 6px 16px rgba(0, 188, 212, 0.4);
+
+  /* Button Gradients */
+  --gradient-primary: linear-gradient(180deg, #FFD700 0%, #FFC107 100%);
+  --gradient-success: linear-gradient(180deg, #4CAF50 0%, #388E3C 100%);
+  --gradient-danger: linear-gradient(180deg, #F44336 0%, #D32F2F 100%);
+  --gradient-cyan: linear-gradient(180deg, #00BCD4 0%, #0097A7 100%);
+
+  /* Additional Colors */
+  --cyan: #00BCD4;
+
+  /* Disabled State */
+  --opacity-disabled: 0.5;
 }
 
 /* Reset & Base Styles */
@@ -134,19 +162,19 @@ button:active {
 }
 
 button:disabled {
-  opacity: 0.5;
+  opacity: var(--opacity-disabled);
   cursor: not-allowed;
   transform: none;
 }
 
 .btn-primary {
-  background: linear-gradient(180deg, #FFD700 0%, #FFC107 100%);
+  background: var(--gradient-primary);
   color: var(--text-dark);
-  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+  box-shadow: var(--shadow-primary);
 }
 
 .btn-primary:hover:not(:disabled) {
-  box-shadow: 0 6px 16px rgba(255, 215, 0, 0.4);
+  box-shadow: var(--shadow-primary-hover);
   transform: translateY(-2px);
 }
 
@@ -154,24 +182,24 @@ button:disabled {
   background: var(--white);
   color: var(--text-dark);
   border: 2px solid var(--border-color);
-  box-shadow: 0 2px 8px var(--shadow-color);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-secondary:hover:not(:disabled) {
   background: var(--light-gray);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-lg);
 }
 
 .btn-success {
-  background: linear-gradient(180deg, #4CAF50 0%, #45a049 100%);
+  background: var(--gradient-success);
   color: white;
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  box-shadow: var(--shadow-success);
 }
 
 .btn-danger {
   background: var(--error);
   color: white;
-  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+  box-shadow: var(--shadow-danger);
 }
 
 /* Card Styles */
@@ -180,7 +208,7 @@ button:disabled {
   border-radius: var(--radius-xl);
   padding: var(--spacing-lg);
   border: 2px solid var(--neutral-cream);
-  box-shadow: 0 2px 8px var(--shadow-color);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Container */
@@ -374,7 +402,7 @@ button:disabled {
   max-height: 85vh;
   overflow: hidden;
   border: 2px solid var(--neutral-cream);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-xl);
   animation: popIn 0.3s ease;
 }
 

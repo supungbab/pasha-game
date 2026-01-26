@@ -37,14 +37,14 @@ const hearts = computed(() => {
 .life-display {
   display: inline-flex;
   gap: 4px;
-  padding: 8px;
+  padding: var(--spacing-sm);
   background: rgba(255, 255, 255, 0.95);
-  border-radius: 16px;
-  border: 2px solid #FFF8DC;
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--neutral-cream);
 }
 
 .heart {
-  font-size: 24px;
+  font-size: var(--radius-2xl);
   display: inline-block;
   transition: transform 0.3s ease;
 }

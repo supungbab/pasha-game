@@ -45,7 +45,7 @@ const handleClick = () => {
   font-family: inherit;
   font-weight: 700;
   border: none;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   cursor: pointer;
   transition: all 0.2s ease;
   touch-action: manipulation;
@@ -53,7 +53,7 @@ const handleClick = () => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
   position: relative;
   overflow: hidden;
 }
@@ -68,62 +68,62 @@ const handleClick = () => {
 
 /* Variants */
 .btn-primary {
-  background: linear-gradient(180deg, #FFD700 0%, #FFC107 100%);
-  color: #212121;
-  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+  background: var(--gradient-primary);
+  color: var(--text-dark);
+  box-shadow: var(--shadow-primary);
 }
 
 .btn-primary:hover:not(.btn-disabled) {
-  box-shadow: 0 6px 16px rgba(255, 215, 0, 0.4);
+  box-shadow: var(--shadow-primary-hover);
 }
 
 .btn-secondary {
-  background: linear-gradient(180deg, #00BCD4 0%, #0097A7 100%);
-  color: #FFFFFF;
-  box-shadow: 0 4px 12px rgba(0, 188, 212, 0.3);
+  background: var(--gradient-cyan);
+  color: var(--white);
+  box-shadow: var(--shadow-cyan);
 }
 
 .btn-secondary:hover:not(.btn-disabled) {
-  box-shadow: 0 6px 16px rgba(0, 188, 212, 0.4);
+  box-shadow: var(--shadow-cyan-hover);
 }
 
 .btn-success {
-  background: linear-gradient(180deg, #4CAF50 0%, #388E3C 100%);
-  color: #FFFFFF;
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  background: var(--gradient-success);
+  color: var(--white);
+  box-shadow: var(--shadow-success);
 }
 
 .btn-success:hover:not(.btn-disabled) {
-  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+  box-shadow: var(--shadow-success-hover);
 }
 
 .btn-danger {
-  background: linear-gradient(180deg, #F44336 0%, #D32F2F 100%);
-  color: #FFFFFF;
-  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+  background: var(--gradient-danger);
+  color: var(--white);
+  box-shadow: var(--shadow-danger);
 }
 
 .btn-danger:hover:not(.btn-disabled) {
-  box-shadow: 0 6px 16px rgba(244, 67, 54, 0.4);
+  box-shadow: var(--shadow-danger-hover);
 }
 
 /* Sizes */
 .btn-small {
-  padding: 8px 16px;
-  font-size: 14px;
-  border-radius: 12px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-sm);
+  border-radius: var(--radius-md);
 }
 
 .btn-medium {
   padding: 12px 24px;
-  font-size: 16px;
-  border-radius: 16px;
+  font-size: var(--font-md);
+  border-radius: var(--radius-lg);
 }
 
 .btn-large {
-  padding: 16px 32px;
-  font-size: 18px;
-  border-radius: 20px;
+  padding: var(--spacing-md) 32px;
+  font-size: var(--font-lg);
+  border-radius: var(--radius-xl);
 }
 
 /* Full Width */
@@ -133,7 +133,7 @@ const handleClick = () => {
 
 /* Disabled */
 .btn-disabled {
-  opacity: 0.5;
+  opacity: var(--opacity-disabled);
   cursor: not-allowed;
   transform: none !important;
   filter: grayscale(50%);

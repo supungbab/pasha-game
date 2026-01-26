@@ -40,15 +40,15 @@ const handleToggle = () => {
 .toggle {
   position: relative;
   border: none;
-  border-radius: 999px;
-  background: #E0E0E0;
+  border-radius: var(--radius-full);
+  background: var(--border-color);
   cursor: pointer;
   transition: all 0.2s ease;
   padding: 2px;
 }
 
 .toggle:focus {
-  outline: 2px solid #FFD700;
+  outline: 2px solid var(--primary-yellow);
   outline-offset: 2px;
 }
 
@@ -87,14 +87,14 @@ const handleToggle = () => {
 .toggle-thumb {
   display: block;
   border-radius: 50%;
-  background: #FFFFFF;
+  background: var(--white);
   transition: transform 0.2s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* Active */
 .toggle-active {
-  background: #4CAF50;
+  background: var(--success);
 }
 
 .toggle-small.toggle-active .toggle-thumb {
@@ -111,7 +111,7 @@ const handleToggle = () => {
 
 /* Disabled */
 .toggle-disabled {
-  opacity: 0.5;
+  opacity: var(--opacity-disabled);
   cursor: not-allowed;
 }
 </style>

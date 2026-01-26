@@ -91,27 +91,27 @@ defineExpose({
 .timer {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
   background: rgba(255, 255, 255, 0.95);
-  border-radius: 16px;
-  font-size: 18px;
+  border-radius: var(--radius-lg);
+  font-size: var(--font-lg);
   font-weight: 700;
-  color: #212121;
+  color: var(--text-dark);
   transition: all 0.3s ease;
-  border: 2px solid #FFF8DC;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 2px solid var(--neutral-cream);
+  box-shadow: var(--shadow-sm);
 }
 
 .timer.warning {
-  background: #FF5722;
+  background: var(--warning);
   color: white;
-  border-color: #FF5722;
+  border-color: var(--warning);
   animation: blink 0.5s infinite;
 }
 
 .timer-icon {
-  font-size: 24px;
+  font-size: var(--radius-2xl);
 }
 
 .timer-value {

@@ -13,7 +13,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   max: 100,
   showLabel: false,
-  color: '#FFD700',
+  color: 'var(--primary-yellow)',
   height: 'medium',
   animated: true
 });
@@ -47,21 +47,21 @@ const label = computed(() => {
 .progress-bar-container {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-sm);
   width: 100%;
 }
 
 .progress-bar {
   flex: 1;
-  background: #F5F5F5;
-  border-radius: 999px;
+  background: var(--light-gray);
+  border-radius: var(--radius-full);
   overflow: hidden;
   position: relative;
-  border: 1px solid #E0E0E0;
+  border: 1px solid var(--border-color);
 }
 
 .progress-bar-small {
-  height: 8px;
+  height: var(--spacing-sm);
 }
 
 .progress-bar-medium {
@@ -69,12 +69,12 @@ const label = computed(() => {
 }
 
 .progress-bar-large {
-  height: 16px;
+  height: var(--spacing-md);
 }
 
 .progress-fill {
   height: 100%;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   transition: width 0.3s ease;
 }
 
@@ -83,10 +83,10 @@ const label = computed(() => {
 }
 
 .progress-label {
-  font-size: 14px;
+  font-size: var(--font-sm);
   font-weight: 700;
   min-width: 3rem;
   text-align: right;
-  color: #424242;
+  color: var(--text-medium);
 }
 </style>
