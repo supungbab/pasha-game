@@ -1,0 +1,432 @@
+<template>
+  <div class="pattern-copy">
+    <div class="game-header">
+      <div class="round-info">{{ currentRound }}/{{ totalRounds }}</div>
+    </div>
+
+    <div class="game-area">
+      <!-- 패턴 표시 영역 -->
+      <div v-if="gamePhase === 'showing'" class="pattern-display">
+        <div class="title">패턴을 기억하세요!</div>
+        <div class="pattern-grid">
+          <div
+            v-for="(tile, index) in pattern"
+            :key="index"
+            class="pattern-tile"
+            :class="{
+              active: tile.isActive,
+              highlight: highlightIndex === index
+            }"
+            :style="{ backgroundColor: tile.color }"
+          >
+            {{ tile.emoji }}
+          </div>
+        </div>
+      </div>
+
+      <!-- 입력 영역 -->
+      <div v-else-if="gamePhase === 'input'" class="input-area">
+        <div class="title">패턴을 재현하세요!</div>
+        <div class="pattern-grid">
+          <div
+            v-for="(tile, index) in pattern"
+            :key="index"
+            class="pattern-tile clickable"
+            :class="{
+              selected: userPattern[index],
+              correct: userPattern[index] && pattern[index].isActive,
+              wrong: userPattern[index] && !pattern[index].isActive
+            }"
+            :style="{ backgroundColor: tile.color }"
+            @click="handleTileClick(index)"
+          >
+            {{ userPattern[index] ? tile.emoji : '' }}
+          </div>
+        </div>
+        <button class="submit-btn" @click="submitPattern" :disabled="!canSubmit">
+          확인
+        </button>
+      </div>
+
+      <!-- 결과 표시 -->
+      <div v-else-if="gamePhase === 'result'" class="result-display">
+        <div class="result-emoji">{{ isCorrect ? '✅' : '❌' }}</div>
+        <div class="result-text">{{ isCorrect ? '정답!' : '틀렸습니다!' }}</div>
+      </div>
+    </div>
+
+    <div class="score-display">
+      점수: {{ score }} / {{ props.targetScore }}
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
+
+const props = defineProps<MiniGameProps>();
+const emit = defineEmits<{
+  complete: [result: MiniGameResult];
+}>();
+
+// 게임 상태
+const gamePhase = ref<'showing' | 'input' | 'result'>('showing');
+const currentRound = ref(0);
+const score = ref(0);
+const pattern = ref<Array<{ color: string; emoji: string; isActive: boolean }>>([]);
+const userPattern = ref<boolean[]>([]);
+const highlightIndex = ref(-1);
+const isCorrect = ref(false);
+
+let startTime = 0;
+let gameCompleted = false;
+let timeoutId: number;
+let showTimeoutId: number;
+
+// 색상 및 이모지 풀
+const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E2'];
+const emojis = ['⬜', '🟦', '🟧', '🟩', '🟪', '🟨', '🟥', '⬛'];
+
+// 난이도별 설정
+const gridSize = computed(() => {
+  return Math.min(3 + Math.floor((props.difficulty - 1) / 2), 4); // 3x3 ~ 4x4
+});
+
+const totalRounds = computed(() => {
+  return Math.min(3 + props.difficulty, 7); // 4~7 라운드
+});
+
+const patternLength = computed(() => {
+  return Math.min(3 + props.difficulty, 8); // 4~8개 활성화
+});
+
+const canSubmit = computed(() => {
+  return userPattern.value.filter(Boolean).length > 0;
+});
+
+// 패턴 생성
+function generatePattern() {
+  const size = gridSize.value * gridSize.value;
+  pattern.value = [];
+
+  for (let i = 0; i < size; i++) {
+    pattern.value.push({
+      color: colors[i % colors.length],
+      emoji: emojis[i % emojis.length],
+      isActive: false
+    });
+  }
+
+  // 랜덤하게 타일 활성화
+  const activeCount = patternLength.value;
+  const activeIndices = new Set<number>();
+
+  while (activeIndices.size < activeCount) {
+    const randomIndex = Math.floor(Math.random() * size);
+    activeIndices.add(randomIndex);
+  }
+
+  activeIndices.forEach(index => {
+    pattern.value[index].isActive = true;
+  });
+}
+
+// 패턴 표시
+function showPattern() {
+  gamePhase.value = 'showing';
+  generatePattern();
+
+  // 활성 타일을 순차적으로 하이라이트
+  const activeTiles = pattern.value
+    .map((tile, index) => ({ tile, index }))
+    .filter(({ tile }) => tile.isActive);
+
+  let currentIndex = 0;
+  const highlightInterval = setInterval(() => {
+    if (currentIndex < activeTiles.length) {
+      highlightIndex.value = activeTiles[currentIndex].index;
+      currentIndex++;
+    } else {
+      clearInterval(highlightInterval);
+      highlightIndex.value = -1;
+
+      // 표시 시간 후 입력 단계로
+      showTimeoutId = window.setTimeout(() => {
+        gamePhase.value = 'input';
+        userPattern.value = new Array(pattern.value.length).fill(false);
+      }, 500);
+    }
+  }, 600);
+}
+
+// 타일 클릭
+function handleTileClick(index: number) {
+  if (gamePhase.value !== 'input') return;
+
+  userPattern.value[index] = !userPattern.value[index];
+
+  // 진동 피드백
+  if (navigator.vibrate) {
+    navigator.vibrate(20);
+  }
+}
+
+// 패턴 제출
+function submitPattern() {
+  if (!canSubmit.value || gamePhase.value !== 'input') return;
+
+  // 정답 확인
+  let correct = true;
+  for (let i = 0; i < pattern.value.length; i++) {
+    if (pattern.value[i].isActive !== userPattern.value[i]) {
+      correct = false;
+      break;
+    }
+  }
+
+  isCorrect.value = correct;
+  gamePhase.value = 'result';
+
+  // 점수 계산
+  if (correct) {
+    const roundScore = 100 / totalRounds.value;
+    score.value += roundScore;
+  }
+
+  // 진동 피드백
+  if (navigator.vibrate) {
+    navigator.vibrate(correct ? [50, 50, 50] : [100]);
+  }
+
+  // 다음 라운드 또는 게임 종료
+  setTimeout(() => {
+    if (currentRound.value >= totalRounds.value) {
+      completeGame();
+    } else {
+      currentRound.value++;
+      showPattern();
+    }
+  }, 1000);
+}
+
+// 게임 완료
+function completeGame() {
+  if (gameCompleted) return;
+  gameCompleted = true;
+
+  const timeElapsed = (Date.now() - startTime) / 1000;
+  const timeRemaining = Math.max(props.timeLimit - timeElapsed, 0);
+
+  const result: MiniGameResult = {
+    success: score.value >= props.targetScore,
+    score: Math.floor(score.value),
+    timeRemaining,
+    accuracy: score.value / 100
+  };
+
+  emit('complete', result);
+}
+
+// 게임 초기화
+onMounted(() => {
+  startTime = Date.now();
+  currentRound.value = 1;
+  showPattern();
+
+  // 제한시간 타이머
+  timeoutId = window.setTimeout(() => {
+    if (!gameCompleted) {
+      completeGame();
+    }
+  }, props.timeLimit * 1000);
+});
+
+// 정리
+onUnmounted(() => {
+  if (timeoutId) clearTimeout(timeoutId);
+  if (showTimeoutId) clearTimeout(showTimeoutId);
+});
+</script>
+
+<style scoped>
+.pattern-copy {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  position: relative;
+}
+
+.game-header {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.round-info {
+  background: rgba(255, 255, 255, 0.3);
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+}
+
+.game-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 20px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.pattern-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-size, 3), 1fr);
+  gap: 10px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.pattern-tile {
+  width: 70px;
+  height: 70px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.pattern-tile.active {
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
+}
+
+.pattern-tile.highlight {
+  transform: scale(1.1);
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.8);
+  animation: highlight-pulse 0.6s ease;
+}
+
+@keyframes highlight-pulse {
+  0%, 100% {
+    transform: scale(1.1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+.pattern-tile.clickable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.pattern-tile.clickable:hover {
+  transform: scale(1.05);
+}
+
+.pattern-tile.clickable:active {
+  transform: scale(0.95);
+}
+
+.pattern-tile.selected {
+  border: 3px solid white;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+}
+
+.pattern-tile.correct {
+  border-color: #4CAF50;
+}
+
+.pattern-tile.wrong {
+  border-color: #f44336;
+}
+
+.submit-btn {
+  margin-top: 30px;
+  padding: 15px 40px;
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  background: linear-gradient(135deg, #FFD700 0%, #FFC107 100%);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.result-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.result-emoji {
+  font-size: 100px;
+  animation: result-pop 0.5s ease;
+}
+
+@keyframes result-pop {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.result-text {
+  font-size: 32px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.score-display {
+  margin-top: 20px;
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 12px 24px;
+  border-radius: 20px;
+}
+</style>

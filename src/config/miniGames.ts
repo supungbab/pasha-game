@@ -5,22 +5,38 @@ import {
   BalloonPop,
   FruitSlice,
   WhackAMole,
+  PerfectJump,
+  RhythmTap,
   ColorMatch,
+  SpeedClick,
+  ReactionTest,
   CatchBall,
+  QuickShoot,
   NumberMatch,
+  FindPair,
+  MemorySequence,
+  ColorWord,
+  QuickMath,
+  PatternCopy,
+  HiddenObject,
+  SlidePuzzle,
   CoinCollector,
   DodgeIt,
+  LadderClimb,
+  MazeEscape,
   StarGather,
+  JumpUp,
+  SpeedRun,
   DrawLine,
+  RotateObject,
+  SizeMatch,
+  BalanceIt,
   SortIt
 } from '@/components/minigames';
 
 /**
- * 30개 미니게임 정의
+ * 30개 미니게임 정의 - 모두 구현 완료!
  */
-
-// Placeholder component (아직 구현되지 않은 게임용)
-const PlaceholderComponent = { template: '<div>Coming Soon</div>' };
 
 /**
  * 전체 미니게임 목록
@@ -76,7 +92,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'accuracy',
     baseTimeLimit: 12,
     baseTargetScore: 70,
-    component: PlaceholderComponent,
+    component: PerfectJump,
     difficulty: 2,
   },
   {
@@ -89,7 +105,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'accuracy',
     baseTimeLimit: 15,
     baseTargetScore: 80,
-    component: PlaceholderComponent,
+    component: RhythmTap,
     difficulty: 3,
   },
   {
@@ -115,7 +131,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'count',
     baseTimeLimit: 5,
     baseTargetScore: 50,
-    component: PlaceholderComponent,
+    component: SpeedClick,
     difficulty: 1,
   },
   {
@@ -128,7 +144,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'speed',
     baseTimeLimit: 10,
     baseTargetScore: 150,
-    component: PlaceholderComponent,
+    component: ReactionTest,
     difficulty: 2,
   },
   {
@@ -154,7 +170,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'accuracy',
     baseTimeLimit: 15,
     baseTargetScore: 70,
-    component: PlaceholderComponent,
+    component: QuickShoot,
     difficulty: 3,
   },
 
@@ -182,7 +198,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'speed',
     baseTimeLimit: 15,
     baseTargetScore: 100,
-    component: PlaceholderComponent,
+    component: FindPair,
     difficulty: 3,
   },
   {
@@ -195,7 +211,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'accuracy',
     baseTimeLimit: 20,
     baseTargetScore: 100,
-    component: PlaceholderComponent,
+    component: MemorySequence,
     difficulty: 4,
   },
   {
@@ -208,7 +224,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'accuracy',
     baseTimeLimit: 10,
     baseTargetScore: 70,
-    component: PlaceholderComponent,
+    component: ColorWord,
     difficulty: 3,
   },
   {
@@ -221,7 +237,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'speed',
     baseTimeLimit: 12,
     baseTargetScore: 80,
-    component: PlaceholderComponent,
+    component: QuickMath,
     difficulty: 3,
   },
   {
@@ -234,7 +250,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'accuracy',
     baseTimeLimit: 15,
     baseTargetScore: 100,
-    component: PlaceholderComponent,
+    component: PatternCopy,
     difficulty: 3,
   },
   {
@@ -247,7 +263,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'speed',
     baseTimeLimit: 10,
     baseTargetScore: 100,
-    component: PlaceholderComponent,
+    component: HiddenObject,
     difficulty: 2,
   },
   {
@@ -260,7 +276,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'speed',
     baseTimeLimit: 20,
     baseTargetScore: 150,
-    component: PlaceholderComponent,
+    component: SlidePuzzle,
     difficulty: 4,
   },
 
@@ -301,7 +317,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'speed',
     baseTimeLimit: 12,
     baseTargetScore: 120,
-    component: PlaceholderComponent,
+    component: LadderClimb,
     difficulty: 2,
   },
   {
@@ -314,7 +330,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'speed',
     baseTimeLimit: 15,
     baseTargetScore: 150,
-    component: PlaceholderComponent,
+    component: MazeEscape,
     difficulty: 4,
   },
   {
@@ -340,7 +356,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'hybrid',
     baseTimeLimit: 15,
     baseTargetScore: 80,
-    component: PlaceholderComponent,
+    component: JumpUp,
     difficulty: 3,
   },
   {
@@ -353,7 +369,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'speed',
     baseTimeLimit: 10,
     baseTargetScore: 100,
-    component: PlaceholderComponent,
+    component: SpeedRun,
     difficulty: 2,
   },
 
@@ -381,7 +397,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'accuracy',
     baseTimeLimit: 12,
     baseTargetScore: 70,
-    component: PlaceholderComponent,
+    component: RotateObject,
     difficulty: 3,
   },
   {
@@ -394,7 +410,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'accuracy',
     baseTimeLimit: 10,
     baseTargetScore: 80,
-    component: PlaceholderComponent,
+    component: SizeMatch,
     difficulty: 2,
   },
   {
@@ -407,7 +423,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'hybrid',
     baseTimeLimit: 15,
     baseTargetScore: 100,
-    component: PlaceholderComponent,
+    component: BalanceIt,
     difficulty: 4,
   },
   {

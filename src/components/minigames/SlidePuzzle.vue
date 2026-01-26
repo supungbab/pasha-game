@@ -1,0 +1,340 @@
+<template>
+  <div class="slide-puzzle">
+    <div class="game-area">
+      <div class="puzzle-grid" :style="gridStyle">
+        <div
+          v-for="(tile, index) in tiles"
+          :key="index"
+          class="puzzle-tile"
+          :class="{ empty: tile === 0, correct: isCorrectPosition(index, tile) }"
+          @click="moveTile(index)"
+        >
+          <span v-if="tile !== 0">{{ tile }}</span>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat">이동: {{ moves }}</div>
+        <button class="shuffle-btn" @click="shufflePuzzle">
+          🔄 섞기
+        </button>
+      </div>
+    </div>
+
+    <div class="ui-overlay">
+      <div class="score-display">
+        점수: {{ score }}
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
+
+const props = defineProps<MiniGameProps>();
+const emit = defineEmits<{
+  complete: [result: MiniGameResult];
+}>();
+
+// 게임 상태
+const tiles = ref<number[]>([]);
+const moves = ref(0);
+const score = ref(0);
+let isSolved = false;
+
+let gameCompleted = false;
+let startTime = 0;
+let timeoutId: number | null = null;
+
+// 난이도별 그리드 크기 (3x3 또는 4x4)
+const gridSize = computed(() => {
+  return props.difficulty <= 3 ? 3 : 4;
+});
+
+const gridStyle = computed(() => {
+  return {
+    gridTemplateColumns: `repeat(${gridSize.value}, 1fr)`,
+    gridTemplateRows: `repeat(${gridSize.value}, 1fr)`
+  };
+});
+
+// 빈 타일의 인덱스 찾기
+function getEmptyIndex(): number {
+  return tiles.value.indexOf(0);
+}
+
+// 이동 가능한지 확인
+function canMove(index: number): boolean {
+  const emptyIndex = getEmptyIndex();
+  const size = gridSize.value;
+
+  const row = Math.floor(index / size);
+  const col = index % size;
+  const emptyRow = Math.floor(emptyIndex / size);
+  const emptyCol = emptyIndex % size;
+
+  // 같은 행에서 인접하거나, 같은 열에서 인접해야 함
+  return (
+    (row === emptyRow && Math.abs(col - emptyCol) === 1) ||
+    (col === emptyCol && Math.abs(row - emptyRow) === 1)
+  );
+}
+
+// 타일 이동
+function moveTile(index: number) {
+  if (gameCompleted || isSolved || !canMove(index)) return;
+
+  const emptyIndex = getEmptyIndex();
+
+  // 타일 교환
+  [tiles.value[index], tiles.value[emptyIndex]] = [tiles.value[emptyIndex], tiles.value[index]];
+
+  moves.value++;
+
+  // 진동 피드백
+  if (navigator.vibrate) {
+    navigator.vibrate(20);
+  }
+
+  // 완성 체크
+  if (checkSolved()) {
+    handleSolved();
+  }
+}
+
+// 올바른 위치인지 확인
+function isCorrectPosition(index: number, tile: number): boolean {
+  if (tile === 0) return true;
+  return index === tile - 1;
+}
+
+// 퍼즐 완성 확인
+function checkSolved(): boolean {
+  for (let i = 0; i < tiles.value.length - 1; i++) {
+    if (tiles.value[i] !== i + 1) return false;
+  }
+  return tiles.value[tiles.value.length - 1] === 0;
+}
+
+// 퍼즐 완성 처리
+function handleSolved() {
+  isSolved = true;
+
+  // 점수 계산: 기본 점수 - 이동 횟수 페널티
+  const baseScore = 100;
+  const movePenalty = moves.value * 2;
+  score.value = Math.max(baseScore - movePenalty, 20);
+
+  // 진동 피드백
+  if (navigator.vibrate) {
+    navigator.vibrate([50, 50, 50, 50, 50]);
+  }
+
+  // 게임 완료
+  setTimeout(() => {
+    completeGame();
+  }, 1000);
+}
+
+// 퍼즐 섞기
+function shufflePuzzle() {
+  if (gameCompleted) return;
+
+  const size = gridSize.value;
+  const totalTiles = size * size;
+
+  // 초기화
+  tiles.value = Array.from({ length: totalTiles }, (_, i) => i);
+
+  // 랜덤 이동으로 섞기 (해결 가능한 상태 보장)
+  const shuffleMoves = 100 + props.difficulty * 20;
+
+  for (let i = 0; i < shuffleMoves; i++) {
+    const emptyIndex = getEmptyIndex();
+    const validMoves: number[] = [];
+
+    const row = Math.floor(emptyIndex / size);
+    const col = emptyIndex % size;
+
+    // 상하좌우 이동 가능한 타일 찾기
+    if (row > 0) validMoves.push(emptyIndex - size); // 위
+    if (row < size - 1) validMoves.push(emptyIndex + size); // 아래
+    if (col > 0) validMoves.push(emptyIndex - 1); // 왼쪽
+    if (col < size - 1) validMoves.push(emptyIndex + 1); // 오른쪽
+
+    if (validMoves.length > 0) {
+      const randomMove = validMoves[Math.floor(Math.random() * validMoves.length)];
+      [tiles.value[emptyIndex], tiles.value[randomMove]] = [tiles.value[randomMove], tiles.value[emptyIndex]];
+    }
+  }
+
+  moves.value = 0;
+  isSolved = false;
+}
+
+// 게임 완료
+function completeGame() {
+  if (gameCompleted) return;
+  gameCompleted = true;
+
+  const elapsed = (Date.now() - startTime) / 1000;
+  const timeRemaining = Math.max(props.timeLimit - elapsed, 0);
+
+  const result: MiniGameResult = {
+    success: score.value >= props.targetScore,
+    score: score.value,
+    timeRemaining,
+    count: moves.value
+  };
+
+  setTimeout(() => {
+    emit('complete', result);
+  }, 500);
+}
+
+onMounted(() => {
+  startTime = Date.now();
+  shufflePuzzle();
+
+  // 제한시간 타이머
+  timeoutId = window.setTimeout(() => {
+    if (!gameCompleted) {
+      completeGame();
+    }
+  }, props.timeLimit * 1000);
+});
+
+onUnmounted(() => {
+  if (timeoutId) {
+    clearTimeout(timeoutId);
+  }
+});
+</script>
+
+<style scoped>
+.slide-puzzle {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow: hidden;
+  padding: 20px;
+}
+
+.game-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+}
+
+.puzzle-grid {
+  display: grid;
+  gap: 8px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  width: 400px;
+  height: 400px;
+}
+
+.puzzle-tile {
+  background: linear-gradient(135deg, #FFD700, #FFC107);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  font-weight: 800;
+  color: #2c3e50;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  user-select: none;
+}
+
+.puzzle-tile:not(.empty):hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.puzzle-tile:not(.empty):active {
+  transform: scale(0.95);
+}
+
+.puzzle-tile.empty {
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2);
+  cursor: default;
+}
+
+.puzzle-tile.correct {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+}
+
+.stats {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.stat {
+  font-size: 28px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  padding: 12px 24px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.shuffle-btn {
+  padding: 12px 24px;
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  background: linear-gradient(135deg, #FF6B6B, #EE5A6F);
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.shuffle-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.shuffle-btn:active {
+  transform: translateY(0);
+}
+
+.ui-overlay {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.score-display {
+  font-size: 28px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  padding: 12px 24px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+</style>
