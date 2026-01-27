@@ -159,6 +159,8 @@ function getDifficultyStars(difficulty: number): string {
   min-height: 100vh;
   background: linear-gradient(135deg, #FFFFFF 0%, #FFF8DC 100%);
   padding: 1rem;
+  overflow-y: auto;
+  padding-bottom: 2rem;
 }
 
 .test-header {

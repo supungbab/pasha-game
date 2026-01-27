@@ -14,6 +14,42 @@ const STORAGE_KEYS = {
 } as const;
 
 /**
+ * 안전한 JSON 파싱 (오류 시 기본값 반환)
+ */
+function safeJsonParse<T>(json: string, fallback: T): T {
+  try {
+    return JSON.parse(json) as T;
+  } catch {
+    console.warn('[storage] Failed to parse JSON, using fallback');
+    return fallback;
+  }
+}
+
+/**
+ * 안전한 Date 파싱 (유효하지 않은 날짜 시 현재 시간 반환)
+ */
+function safeParseDate(dateValue: unknown): Date {
+  if (!dateValue) return new Date();
+
+  const date = new Date(dateValue as string | number);
+  if (isNaN(date.getTime())) {
+    return new Date();
+  }
+  return date;
+}
+
+/**
+ * 플레이어 이름 검증 및 정제
+ */
+function sanitizePlayerName(name: string): string {
+  // 최대 20자, 앞뒤 공백 제거, 위험한 문자 제거
+  return name
+    .trim()
+    .slice(0, 20)
+    .replace(/[<>'"&]/g, '');
+}
+
+/**
  * 기본 설정값
  */
 function getDefaultSettings(): GameSettings {
@@ -50,7 +86,8 @@ export function saveSettings(settings: GameSettings): void {
  */
 export function getSettings(): GameSettings {
   const stored = localStorage.getItem(STORAGE_KEYS.SETTINGS);
-  return stored ? JSON.parse(stored) : getDefaultSettings();
+  if (!stored) return getDefaultSettings();
+  return safeJsonParse(stored, getDefaultSettings());
 }
 
 /**
@@ -82,13 +119,13 @@ export function saveLocalRanking(entry: Omit<RankingEntry, 'rank'>): void {
 export function getLocalRankings(): RankingEntry[] {
   const stored = localStorage.getItem(STORAGE_KEYS.LOCAL_RANKINGS);
   if (!stored) return [];
-  
-  const rankings: RankingEntry[] = JSON.parse(stored);
-  
-  // Date 객체로 변환
+
+  const rankings = safeJsonParse<RankingEntry[]>(stored, []);
+
+  // Date 객체로 안전하게 변환
   return rankings.map(entry => ({
     ...entry,
-    playDate: new Date(entry.playDate)
+    playDate: safeParseDate(entry.playDate)
   }));
 }
 
@@ -96,7 +133,8 @@ export function getLocalRankings(): RankingEntry[] {
  * 플레이어 이름 저장
  */
 export function savePlayerName(name: string): void {
-  localStorage.setItem(STORAGE_KEYS.PLAYER_NAME, name);
+  const sanitized = sanitizePlayerName(name);
+  localStorage.setItem(STORAGE_KEYS.PLAYER_NAME, sanitized);
 }
 
 /**
@@ -122,12 +160,14 @@ export function saveGameStats(stats: GameStats): void {
 
 export function getGameStats(): GameStats {
   const stored = localStorage.getItem(STORAGE_KEYS.GAME_STATS);
-  return stored ? JSON.parse(stored) : {
+  const defaultStats: GameStats = {
     totalPlays: 0,
     totalScore: 0,
     bestStage: 0,
     totalPlayTime: 0
   };
+  if (!stored) return defaultStats;
+  return safeJsonParse(stored, defaultStats);
 }
 
 export function updateGameStats(
@@ -178,11 +218,12 @@ export function getPlayerData(): PlayerData | null {
   const stored = localStorage.getItem(STORAGE_KEYS.PLAYER_DATA);
   if (!stored) return null;
 
-  const data: PlayerData = JSON.parse(stored);
+  const data = safeJsonParse<PlayerData | null>(stored, null);
+  if (!data) return null;
 
-  // Date 객체로 변환
+  // Date 객체로 안전하게 변환
   if (data.lastPlayedAt) {
-    data.lastPlayedAt = new Date(data.lastPlayedAt);
+    data.lastPlayedAt = safeParseDate(data.lastPlayedAt);
   }
 
   return data;

@@ -3,3 +3,4 @@
 export { useGameState } from './useGameState';
 export { useAudio } from './useAudio';
 export { useCanvas } from './useCanvas';
+export { useCleanupTimers } from './useCleanupTimers';

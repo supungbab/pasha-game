@@ -3,9 +3,15 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { getMiniGameById } from '@/config/miniGames';
 import { IMPLEMENTED_MINIGAME_IDS } from '@/components/minigames';
-import { DIFFICULTY_MULTIPLIERS } from '@/types/game';
+import { DIFFICULTY_MULTIPLIERS, type DifficultyLevel } from '@/types/game';
 import { Button } from '@/components/base';
 import type { MiniGameResult } from '@/types/minigame';
+
+// Debug logging
+const DEBUG = true;
+function log(...args: any[]) {
+  if (DEBUG) console.log('[TestPlayer]', ...args);
+}
 
 const router = useRouter();
 const route = useRoute();
@@ -17,6 +23,7 @@ const testHardMode = ref(false);
 // Game state
 const gameState = ref<'setup' | 'playing' | 'result'>('setup');
 const lastResult = ref<MiniGameResult | null>(null);
+const gameKey = ref(0); // Key for forcing component re-mount
 
 // Get game data
 const gameId = computed(() => parseInt(route.params.id as string));
@@ -27,14 +34,16 @@ const isImplemented = computed(() => IMPLEMENTED_MINIGAME_IDS.includes(gameId.va
 const adjustedTimeLimit = computed(() => {
   if (!gameData.value) return 10;
   const baseTime = gameData.value.baseTimeLimit;
-  const multiplier = DIFFICULTY_MULTIPLIERS[testDifficulty.value].timeLimit;
+  const diffLevel = testDifficulty.value as DifficultyLevel;
+  const multiplier = DIFFICULTY_MULTIPLIERS[diffLevel]?.timeLimit ?? 1;
   return Math.max(5, Math.round(baseTime * multiplier));
 });
 
 const adjustedTargetScore = computed(() => {
   if (!gameData.value) return 100;
   const baseScore = gameData.value.baseTargetScore;
-  const multiplier = DIFFICULTY_MULTIPLIERS[testDifficulty.value].targetScore;
+  const diffLevel = testDifficulty.value as DifficultyLevel;
+  const multiplier = DIFFICULTY_MULTIPLIERS[diffLevel]?.targetScore ?? 1;
   return Math.round(baseScore * multiplier);
 });
 
@@ -49,11 +58,17 @@ const difficulties = [
 ];
 
 function startGame() {
+  log('startGame called');
+  log('gameData:', gameData.value);
+  log('gameData.component:', gameData.value?.component);
+  gameKey.value++; // Force component re-mount
   gameState.value = 'playing';
   lastResult.value = null;
+  log('gameState changed to:', gameState.value);
 }
 
 function handleGameComplete(result: MiniGameResult) {
+  log('handleGameComplete called with:', result);
   lastResult.value = result;
   gameState.value = 'result';
 }
@@ -87,7 +102,11 @@ watch(gameId, () => {
 });
 
 onMounted(() => {
+  log('onMounted - gameId:', gameId.value);
+  log('onMounted - gameData:', gameData.value);
+  log('onMounted - isImplemented:', isImplemented.value);
   if (!gameData.value || !isImplemented.value) {
+    log('Redirecting to test list - game not found or not implemented');
     router.push({ name: 'minigame-test-list' });
   }
 });
@@ -226,7 +245,9 @@ onMounted(() => {
 
       <main class="game-container">
         <component
+          v-if="gameData?.component"
           :is="gameData.component"
+          :key="`game-${gameId}-${gameKey}`"
           :difficulty="testDifficulty"
           :time-limit="adjustedTimeLimit"
           :target-score="adjustedTargetScore"
@@ -304,12 +325,14 @@ onMounted(() => {
 .test-player {
   min-height: 100vh;
   background: linear-gradient(135deg, #FFFFFF 0%, #FFF8DC 100%);
+  overflow-y: auto;
 }
 
 /* Setup Screen */
 .setup-screen {
   min-height: 100vh;
   padding: 1rem;
+  padding-bottom: 3rem;
 }
 
 .player-header {
@@ -516,11 +539,20 @@ onMounted(() => {
   gap: 1rem;
 }
 
-/* Playing Screen */
+/* Playing Screen - fixed position to prevent scrolling */
 .playing-screen {
-  min-height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFF8DC 100%);
+  z-index: 100;
 }
 
 .playing-header {
@@ -595,6 +627,8 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  min-height: 0; /* Important for flex children */
+  width: 100%;
 }
 
 /* Result Screen */

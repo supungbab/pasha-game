@@ -8,6 +8,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
 import { useCanvas } from '@/composables/useCanvas';
+import { useCleanupTimers } from '@/composables/useCleanupTimers';
 import { pointInCircle } from '@/utils/canvas';
 
 const props = defineProps<MiniGameProps>();
@@ -23,9 +24,12 @@ const { ctx, helper, width, height, clear, getCanvasCoordinates } = useCanvas(ca
   backgroundColor: '#8B4513'
 });
 
+// Timer utilities
+const { safeSetTimeout, safeSetInterval, clearInterval, cancelAnimationFrame } = useCleanupTimers();
+
 // Game state
 const score = ref(0);
-const timeRemaining = ref(props.timeLimit);
+const timeRemainingMs = ref(props.timeLimit * 1000);
 const isGameOver = ref(false);
 const holes = ref<Hole[]>([]);
 const hitEffects = ref<HitEffect[]>([]);
@@ -66,9 +70,9 @@ interface HitEffect {
   color: string;
 }
 
-let animationId: number;
-let spawnInterval: number;
-let timerInterval: number;
+let animationId: number = 0;
+let spawnInterval: number = 0;
+let timerInterval: number = 0;
 
 // Grid settings
 const GRID_COLS = 3;
@@ -303,7 +307,7 @@ function endGame() {
   const result: MiniGameResult = {
     success: score.value >= props.targetScore,
     score: score.value,
-    timeRemaining: timeRemaining.value,
+    timeRemaining: timeRemainingMs.value / 1000,
     count: Math.floor(score.value / 5)
   };
 
@@ -315,33 +319,32 @@ function startGame() {
   initHoles();
 
   // Spawn moles periodically
-  spawnInterval = window.setInterval(spawnMole, difficultySettings.value.spawnRate);
+  spawnInterval = safeSetInterval(spawnMole, difficultySettings.value.spawnRate);
 
-  // Timer countdown
-  timerInterval = window.setInterval(() => {
-    timeRemaining.value -= 0.1;
-    if (timeRemaining.value <= 0) {
-      timeRemaining.value = 0;
+  // Timer countdown (정수 밀리초 사용)
+  timerInterval = safeSetInterval(() => {
+    timeRemainingMs.value -= 100;
+    if (timeRemainingMs.value <= 0) {
+      timeRemainingMs.value = 0;
       endGame();
     }
   }, 100);
 
   // Initial moles
-  setTimeout(spawnMole, 200);
-  setTimeout(spawnMole, 500);
+  safeSetTimeout(spawnMole, 200);
+  safeSetTimeout(spawnMole, 500);
 
   // Start game loop
   gameLoop();
 }
 
 onMounted(() => {
-  setTimeout(startGame, 100);
+  safeSetTimeout(startGame, 100);
 });
 
+// useCleanupTimers가 자동으로 모든 타이머를 정리합니다
 onUnmounted(() => {
-  cancelAnimationFrame(animationId);
-  clearInterval(spawnInterval);
-  clearInterval(timerInterval);
+  isGameOver.value = true;
 });
 </script>
 

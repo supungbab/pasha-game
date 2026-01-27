@@ -44,11 +44,15 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
+import { useCleanupTimers } from '@/composables/useCleanupTimers';
 
 const props = defineProps<MiniGameProps>();
 const emit = defineEmits<{
   complete: [result: MiniGameResult];
 }>();
+
+// 타이머 유틸리티
+const { safeSetTimeout } = useCleanupTimers();
 
 type GameState = 'waiting' | 'watching' | 'playing';
 
@@ -71,7 +75,6 @@ const score = ref(0);
 
 let gameCompleted = false;
 let startTime = 0;
-let timeoutId: number | null = null;
 
 // 난이도별 설정
 const tileCount = 9; // 3x3 그리드
@@ -150,7 +153,7 @@ function handleTileClick(tile: Tile) {
       navigator.vibrate(30);
     }
 
-    setTimeout(() => {
+    safeSetTimeout(() => {
       tile.isSuccess = false;
     }, 300);
 
@@ -167,7 +170,7 @@ function handleTileClick(tile: Tile) {
       }
 
       // 다음 라운드
-      setTimeout(() => {
+      safeSetTimeout(() => {
         startRound();
       }, 1000);
     }
@@ -180,12 +183,12 @@ function handleTileClick(tile: Tile) {
       navigator.vibrate([100, 50, 100]);
     }
 
-    setTimeout(() => {
+    safeSetTimeout(() => {
       tile.isError = false;
     }, 500);
 
     // 게임 실패
-    setTimeout(() => {
+    safeSetTimeout(() => {
       completeGame();
     }, 1000);
   }
@@ -223,7 +226,7 @@ function completeGame() {
     count: currentRound.value - 1
   };
 
-  setTimeout(() => {
+  safeSetTimeout(() => {
     emit('complete', result);
   }, 500);
 }
@@ -233,22 +236,21 @@ onMounted(() => {
   startTime = Date.now();
 
   // 첫 라운드 시작
-  setTimeout(() => {
+  safeSetTimeout(() => {
     startRound();
   }, 1000);
 
   // 제한시간 타이머
-  timeoutId = window.setTimeout(() => {
+  safeSetTimeout(() => {
     if (!gameCompleted) {
       completeGame();
     }
   }, props.timeLimit * 1000);
 });
 
+// useCleanupTimers가 자동으로 모든 타이머를 정리합니다
 onUnmounted(() => {
-  if (timeoutId) {
-    clearTimeout(timeoutId);
-  }
+  gameCompleted = true;
 });
 </script>
 

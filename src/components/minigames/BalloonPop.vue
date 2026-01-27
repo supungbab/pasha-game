@@ -8,6 +8,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
 import { useCanvas } from '@/composables/useCanvas';
+import { useCleanupTimers } from '@/composables/useCleanupTimers';
 import type { Particle } from '@/utils/canvas';
 
 const props = defineProps<MiniGameProps>();
@@ -23,14 +24,18 @@ const { ctx, helper, width, height, clear, getCanvasCoordinates } = useCanvas(ca
   backgroundColor: '#87CEEB'
 });
 
+// Timer utilities
+const { safeSetTimeout, safeSetInterval, clearInterval, cancelAnimationFrame } = useCleanupTimers();
+
 // Game state
 const score = ref(0);
-const timeRemaining = ref(props.timeLimit);
+const timeRemainingMs = ref(props.timeLimit * 1000); // 밀리초 단위로 관리
 const isGameOver = ref(false);
 const balloons = ref<Balloon[]>([]);
 const particles = ref<Particle[]>([]);
 
 // Difficulty settings
+const DEFAULT_SETTINGS = { speed: 50, size: 80, spawnRate: 1000 };
 const difficultySettings = computed(() => {
   const settings = [
     { speed: 50, size: 80, spawnRate: 1000 },   // Lv.1
@@ -40,7 +45,8 @@ const difficultySettings = computed(() => {
     { speed: 100, size: 60, spawnRate: 500 },   // Lv.5
     { speed: 120, size: 55, spawnRate: 400 },   // Lv.6
   ];
-  return settings[Math.min(props.difficulty - 1, 5)];
+  const index = Math.max(0, Math.min(props.difficulty - 1, 5));
+  return settings[index] ?? DEFAULT_SETTINGS;
 });
 
 // Balloon colors
@@ -57,9 +63,9 @@ interface Balloon {
   swingSpeed: number;
 }
 
-let animationId: number;
-let spawnInterval: number;
-let timerInterval: number;
+let animationId: number = 0;
+let spawnInterval: number = 0;
+let timerInterval: number = 0;
 let balloonIdCounter = 0;
 
 // Spawn a new balloon
@@ -70,12 +76,13 @@ function spawnBalloon() {
   const actualSize = props.isHardMode ? size * 0.9 : size;
   const actualSpeed = props.isHardMode ? speed * 1.2 : speed;
 
+  const colorIndex = Math.floor(Math.random() * BALLOON_COLORS.length);
   const balloon: Balloon = {
     id: balloonIdCounter++,
     x: Math.random() * (width - 100) + 50,
     y: height + 50,
     radius: actualSize / 2,
-    color: BALLOON_COLORS[Math.floor(Math.random() * BALLOON_COLORS.length)],
+    color: BALLOON_COLORS[colorIndex] || '#FF6B6B',
     speed: actualSpeed / 60, // Convert to per-frame speed
     swingOffset: Math.random() * Math.PI * 2,
     swingSpeed: 0.05 + Math.random() * 0.05
@@ -175,6 +182,7 @@ function handleTouch(event: TouchEvent) {
   event.preventDefault();
 
   const touch = event.touches[0];
+  if (!touch) return;
   const coords = getCanvasCoordinates(touch);
   checkBalloonHit(coords.x, coords.y);
 }
@@ -188,6 +196,7 @@ function checkBalloonHit(x: number, y: number) {
 
   if (hitIndex !== -1) {
     const balloon = balloons.value[hitIndex];
+    if (!balloon) return;
 
     // Create pop particles
     if (helper.value) {
@@ -211,7 +220,7 @@ function endGame() {
   const result: MiniGameResult = {
     success: score.value >= props.targetScore,
     score: score.value,
-    timeRemaining: timeRemaining.value,
+    timeRemaining: timeRemainingMs.value / 1000,
     count: Math.floor(score.value / 10)
   };
 
@@ -221,20 +230,21 @@ function endGame() {
 // Start game
 function startGame() {
   // Spawn balloons periodically
-  spawnInterval = window.setInterval(spawnBalloon, difficultySettings.value.spawnRate);
+  const spawnRate = difficultySettings.value?.spawnRate ?? 1000;
+  spawnInterval = safeSetInterval(spawnBalloon, spawnRate);
 
-  // Timer countdown
-  timerInterval = window.setInterval(() => {
-    timeRemaining.value -= 0.1;
-    if (timeRemaining.value <= 0) {
-      timeRemaining.value = 0;
+  // Timer countdown (정수 밀리초 사용으로 부동소수점 오차 방지)
+  timerInterval = safeSetInterval(() => {
+    timeRemainingMs.value -= 100;
+    if (timeRemainingMs.value <= 0) {
+      timeRemainingMs.value = 0;
       endGame();
     }
   }, 100);
 
-  // Initial balloons
+  // Initial balloons (자동 정리되는 setTimeout 사용)
   for (let i = 0; i < 3; i++) {
-    setTimeout(spawnBalloon, i * 300);
+    safeSetTimeout(spawnBalloon, i * 300);
   }
 
   // Start game loop
@@ -242,13 +252,14 @@ function startGame() {
 }
 
 onMounted(() => {
-  setTimeout(startGame, 100);
+  safeSetTimeout(() => {
+    startGame();
+  }, 100);
 });
 
+// useCleanupTimers가 자동으로 모든 타이머를 정리합니다
 onUnmounted(() => {
-  cancelAnimationFrame(animationId);
-  clearInterval(spawnInterval);
-  clearInterval(timerInterval);
+  isGameOver.value = true;
 });
 </script>
 

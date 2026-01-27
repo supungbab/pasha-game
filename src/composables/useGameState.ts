@@ -1,7 +1,7 @@
 // src/composables/useGameState.ts
 
-import { ref, computed, readonly } from 'vue';
-import type { GameState, GameSession, GameQueue, GamePhase, ContinueState } from '@/types/game';
+import { ref, computed, readonly, onUnmounted } from 'vue';
+import type { GameState, GameSession, GameQueue, ContinueState } from '@/types/game';
 import type { MiniGame, MiniGameResult } from '@/types/minigame';
 import { GAME_CONSTANTS, INITIAL_GAME_STATE } from '@/types/game';
 import { getDifficultyFromStage, shouldActivateHardMode } from '@/utils/difficulty';
@@ -210,28 +210,58 @@ export function useGameState() {
     }
   }
 
+  // 컨티뉴 카운트다운 인터벌 ID
+  let continueIntervalId: number | null = null;
+
   /**
    * 컨티뉴 카운트다운 시작
    */
   function startContinueCountdown() {
+    // 기존 인터벌이 있으면 정리
+    if (continueIntervalId !== null) {
+      clearInterval(continueIntervalId);
+      continueIntervalId = null;
+    }
+
     continueState.value.isActive = true;
     continueState.value.countdown = GAME_CONSTANTS.CONTINUE_COUNTDOWN;
 
-    const interval = setInterval(() => {
+    continueIntervalId = window.setInterval(() => {
       continueState.value.countdown--;
 
       if (continueState.value.countdown <= 0) {
-        clearInterval(interval);
+        if (continueIntervalId !== null) {
+          clearInterval(continueIntervalId);
+          continueIntervalId = null;
+        }
         continueState.value.isActive = false;
       }
     }, 1000);
   }
 
   /**
+   * 컨티뉴 카운트다운 정리
+   */
+  function cleanupContinueCountdown() {
+    if (continueIntervalId !== null) {
+      clearInterval(continueIntervalId);
+      continueIntervalId = null;
+    }
+  }
+
+  // 컴포넌트 언마운트 시 정리
+  onUnmounted(() => {
+    cleanupContinueCountdown();
+  });
+
+  /**
    * 컨티뉴 사용
    */
   function useContinue() {
     if (!canContinue.value) return false;
+
+    // 카운트다운 정리
+    cleanupContinueCountdown();
 
     // 컨티뉴 사용 표시
     state.value.continueUsed = true;
@@ -251,6 +281,7 @@ export function useGameState() {
    * 컨티뉴 거부
    */
   function declineContinue() {
+    cleanupContinueCountdown();
     continueState.value.isActive = false;
   }
 

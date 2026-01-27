@@ -16,6 +16,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
 import { useCanvas } from '@/composables/useCanvas';
+import { useCleanupTimers } from '@/composables/useCleanupTimers';
 import { distance } from '@/utils/canvas';
 
 const props = defineProps<MiniGameProps>();
@@ -31,9 +32,12 @@ const { ctx, helper, width, height, clear, getCanvasCoordinates } = useCanvas(ca
   backgroundColor: '#F5F5F5'
 });
 
+// Timer utilities
+const { safeSetTimeout, safeSetInterval, clearInterval, cancelAnimationFrame } = useCleanupTimers();
+
 // Game state
 const score = ref(0);
-const timeRemaining = ref(props.timeLimit);
+const timeRemainingMs = ref(props.timeLimit * 1000); // 밀리초 단위로 관리
 const isGameOver = ref(false);
 const targetPath = ref<Point[]>([]);
 const userPath = ref<Point[]>([]);
@@ -127,8 +131,8 @@ const SHAPES = {
   ]
 };
 
-let animationId: number;
-let timerInterval: number;
+let animationId: number = 0;
+let timerInterval: number = 0;
 
 // Generate target path
 function generateTargetPath() {
@@ -370,7 +374,7 @@ function evaluateDrawing() {
   }
 
   // Generate new round after delay
-  setTimeout(() => {
+  safeSetTimeout(() => {
     if (!isGameOver.value) {
       generateTargetPath();
     }
@@ -388,7 +392,7 @@ function endGame() {
   const result: MiniGameResult = {
     success: score.value >= props.targetScore,
     score: score.value,
-    timeRemaining: timeRemaining.value,
+    timeRemaining: timeRemainingMs.value / 1000,
     accuracy: avgAccuracy,
     count: roundCount.value
   };
@@ -400,11 +404,11 @@ function endGame() {
 function startGame() {
   generateTargetPath();
 
-  // Timer countdown
-  timerInterval = window.setInterval(() => {
-    timeRemaining.value -= 0.1;
-    if (timeRemaining.value <= 0) {
-      timeRemaining.value = 0;
+  // Timer countdown (정수 밀리초 사용으로 부동소수점 오차 방지)
+  timerInterval = safeSetInterval(() => {
+    timeRemainingMs.value -= 100;
+    if (timeRemainingMs.value <= 0) {
+      timeRemainingMs.value = 0;
       endGame();
     }
   }, 100);
@@ -414,12 +418,12 @@ function startGame() {
 }
 
 onMounted(() => {
-  setTimeout(startGame, 100);
+  safeSetTimeout(startGame, 100);
 });
 
+// useCleanupTimers가 자동으로 모든 타이머를 정리합니다
 onUnmounted(() => {
-  cancelAnimationFrame(animationId);
-  clearInterval(timerInterval);
+  isGameOver.value = true;
 });
 </script>
 

@@ -16,6 +16,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
 import { useCanvas } from '@/composables/useCanvas';
+import { useCleanupTimers } from '@/composables/useCleanupTimers';
 import { lineIntersectsCircle } from '@/utils/canvas';
 import type { Particle } from '@/utils/canvas';
 
@@ -32,9 +33,12 @@ const { ctx, helper, width, height, clear, getCanvasCoordinates } = useCanvas(ca
   backgroundColor: '#1a1a2e'
 });
 
+// Timer utilities
+const { safeSetTimeout, safeSetInterval, clearInterval, cancelAnimationFrame } = useCleanupTimers();
+
 // Game state
 const score = ref(0);
-const timeRemaining = ref(props.timeLimit);
+const timeRemainingMs = ref(props.timeLimit * 1000);
 const isGameOver = ref(false);
 const fruits = ref<FruitObject[]>([]);
 const particles = ref<Particle[]>([]);
@@ -101,9 +105,9 @@ interface SlicedFruit {
   life: number;
 }
 
-let animationId: number;
-let launchInterval: number;
-let timerInterval: number;
+let animationId: number = 0;
+let launchInterval: number = 0;
+let timerInterval: number = 0;
 let fruitIdCounter = 0;
 
 // Launch a fruit or bomb
@@ -388,7 +392,7 @@ function endGame(hitBomb = false) {
   const result: MiniGameResult = {
     success: !hitBomb && accuracy >= 70,
     score: score.value,
-    timeRemaining: timeRemaining.value,
+    timeRemaining: timeRemainingMs.value / 1000,
     accuracy,
     count: slicedCount.value,
     attempts: totalFruits.value
@@ -400,37 +404,36 @@ function endGame(hitBomb = false) {
 // Start game
 function startGame() {
   // Launch fruits periodically
-  launchInterval = window.setInterval(() => {
+  launchInterval = safeSetInterval(() => {
     const count = Math.random() < 0.3 ? 2 : 1;
     for (let i = 0; i < count; i++) {
-      setTimeout(launchFruit, i * 200);
+      safeSetTimeout(launchFruit, i * 200);
     }
   }, 800);
 
-  // Timer countdown
-  timerInterval = window.setInterval(() => {
-    timeRemaining.value -= 0.1;
-    if (timeRemaining.value <= 0) {
-      timeRemaining.value = 0;
+  // Timer countdown (정수 밀리초 사용)
+  timerInterval = safeSetInterval(() => {
+    timeRemainingMs.value -= 100;
+    if (timeRemainingMs.value <= 0) {
+      timeRemainingMs.value = 0;
       endGame();
     }
   }, 100);
 
   // Initial fruit
-  setTimeout(launchFruit, 300);
+  safeSetTimeout(launchFruit, 300);
 
   // Start game loop
   gameLoop();
 }
 
 onMounted(() => {
-  setTimeout(startGame, 100);
+  safeSetTimeout(startGame, 100);
 });
 
+// useCleanupTimers가 자동으로 모든 타이머를 정리합니다
 onUnmounted(() => {
-  cancelAnimationFrame(animationId);
-  clearInterval(launchInterval);
-  clearInterval(timerInterval);
+  isGameOver.value = true;
 });
 </script>
 

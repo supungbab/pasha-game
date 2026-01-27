@@ -14,12 +14,12 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  click: [];
+  click: [event: MouseEvent];
 }>();
 
-const handleClick = () => {
+const handleClick = (event: MouseEvent) => {
   if (!props.disabled) {
-    emit('click');
+    emit('click', event);
   }
 };
 </script>
@@ -33,7 +33,7 @@ const handleClick = () => {
       { 'btn-full': fullWidth, 'btn-disabled': disabled }
     ]"
     :disabled="disabled"
-    @click="handleClick"
+    @click="handleClick($event)"
   >
     <slot />
   </button>

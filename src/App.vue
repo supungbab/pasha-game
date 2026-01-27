@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { RouterView } from 'vue-router';
+import { RouterView, useRoute } from 'vue-router';
 import { MainMenu, GameView, GameOver, Ranking, Settings } from '@/components/ui';
 import type { GameResult } from '@/types/game';
 
 type AppState = 'menu' | 'playing' | 'gameover' | 'ranking' | 'settings';
 
+const route = useRoute();
 const appState = ref<AppState>('menu');
 const gameResult = ref<GameResult | null>(null);
+
+// Check if current route is a test route
+const isTestRoute = computed(() => route.path.startsWith('/test'));
 
 // Navigation handlers
 const startGame = () => {
@@ -46,55 +50,58 @@ const showSettingsScreen = computed(() => appState.value === 'settings');
 </script>
 
 <template>
-  <div id="app">
-    <!-- Hidden RouterView for compatibility -->
-    <RouterView v-show="false" />
+  <div id="app" :class="{ 'test-mode': isTestRoute }">
+    <!-- RouterView for test routes -->
+    <RouterView v-if="isTestRoute" />
 
-    <!-- Main Menu -->
-    <Transition name="fade">
-      <MainMenu
-        v-if="showMenu"
-        @start-game="startGame"
-        @show-ranking="showRanking"
-        @show-settings="showSettings"
-      />
-    </Transition>
+    <!-- Main App Content (hidden when on test routes) -->
+    <template v-else>
+      <!-- Main Menu -->
+      <Transition name="fade">
+        <MainMenu
+          v-if="showMenu"
+          @start-game="startGame"
+          @show-ranking="showRanking"
+          @show-settings="showSettings"
+        />
+      </Transition>
 
-    <!-- Game Play -->
-    <Transition name="fade">
-      <GameView
-        v-if="showPlaying"
-        @gameover="handleGameOver"
-        @complete="handleGameOver"
-      />
-    </Transition>
+      <!-- Game Play -->
+      <Transition name="fade">
+        <GameView
+          v-if="showPlaying"
+          @gameover="handleGameOver"
+          @complete="handleGameOver"
+        />
+      </Transition>
 
-    <!-- Game Over -->
-    <Transition name="fade">
-      <GameOver
-        v-if="showGameOver && gameResult"
-        :result="gameResult"
-        @restart="restartGame"
-        @main-menu="returnToMenu"
-        @show-ranking="showRanking"
-      />
-    </Transition>
+      <!-- Game Over -->
+      <Transition name="fade">
+        <GameOver
+          v-if="showGameOver && gameResult"
+          :result="gameResult"
+          @restart="restartGame"
+          @main-menu="returnToMenu"
+          @show-ranking="showRanking"
+        />
+      </Transition>
 
-    <!-- Ranking -->
-    <Transition name="fade">
-      <Ranking
-        v-if="showRankingScreen"
-        @close="returnToMenu"
-      />
-    </Transition>
+      <!-- Ranking -->
+      <Transition name="fade">
+        <Ranking
+          v-if="showRankingScreen"
+          @close="returnToMenu"
+        />
+      </Transition>
 
-    <!-- Settings -->
-    <Transition name="fade">
-      <Settings
-        v-if="showSettingsScreen"
-        @close="returnToMenu"
-      />
-    </Transition>
+      <!-- Settings -->
+      <Transition name="fade">
+        <Settings
+          v-if="showSettingsScreen"
+          @close="returnToMenu"
+        />
+      </Transition>
+    </template>
   </div>
 </template>
 
@@ -103,11 +110,23 @@ const showSettingsScreen = computed(() => appState.value === 'settings');
 
 #app {
   width: 100%;
-  height: 100vh;
-  height: 100dvh;
+  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
+}
+
+/* Hide overflow when not in test mode (game play requires fixed viewport) */
+#app:not(.test-mode) {
+  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
+}
+
+/* Allow scrolling in test mode */
+#app.test-mode {
+  height: auto;
+  overflow: visible;
 }
 
 /* Placeholder for game container */
