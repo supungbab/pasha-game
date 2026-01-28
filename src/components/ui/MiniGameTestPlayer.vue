@@ -362,6 +362,10 @@ function handleDiffTouchEnd(event: TouchEvent) {
   -webkit-touch-callout: none;
   touch-action: manipulation;
   user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
 }
 
 .diff-btn.active {
