@@ -8,7 +8,7 @@ interface Props {
   showValue?: boolean;
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   min: 0,
   max: 100,
   step: 1,
@@ -52,14 +52,13 @@ const handleInput = (event: Event) => {
 
 .slider {
   flex: 1;
-  height: var(--spacing-sm);
+  height: 8px;
   -webkit-appearance: none;
   appearance: none;
-  background: var(--light-gray);
+  background: var(--medium-gray);
   border-radius: var(--radius-full);
   outline: none;
   cursor: pointer;
-  border: 1px solid var(--border-color);
 }
 
 .slider:disabled {
@@ -71,8 +70,9 @@ const handleInput = (event: Event) => {
 .slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
+  margin-top: -7px; /* (22px - 8px) / 2 = 7px */
   background: var(--primary-yellow);
   border-radius: 50%;
   cursor: pointer;
@@ -91,8 +91,8 @@ const handleInput = (event: Event) => {
 
 /* Firefox */
 .slider::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   background: var(--primary-yellow);
   border: none;
   border-radius: 50%;
@@ -112,19 +112,19 @@ const handleInput = (event: Event) => {
 
 /* Track */
 .slider::-webkit-slider-runnable-track {
-  height: var(--spacing-sm);
-  background: var(--light-gray);
+  height: 8px;
+  background: var(--medium-gray);
   border-radius: var(--radius-full);
 }
 
 .slider::-moz-range-track {
-  height: var(--spacing-sm);
-  background: var(--light-gray);
+  height: 8px;
+  background: var(--medium-gray);
   border-radius: var(--radius-full);
 }
 
 .slider::-moz-range-progress {
-  height: var(--spacing-sm);
+  height: 8px;
   background: var(--primary-yellow);
   border-radius: var(--radius-full);
 }
