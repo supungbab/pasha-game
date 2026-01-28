@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, reactive } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { getMiniGameById } from '@/config/miniGames';
 import { IMPLEMENTED_MINIGAME_IDS } from '@/components/minigames';
@@ -87,73 +87,20 @@ onMounted(() => {
   }
 });
 
-// Touch handling for difficulty buttons
-interface TouchState {
-  touchId: number | null;
-  isInside: boolean;
-}
-
-const diffTouchStates = reactive<Map<number, TouchState>>(new Map());
-
-function getDiffTouchState(level: number): TouchState {
-  if (!diffTouchStates.has(level)) {
-    diffTouchStates.set(level, { touchId: null, isInside: false });
-  }
-  return diffTouchStates.get(level)!;
-}
-
-function isTouchInsideElement(touch: Touch, element: HTMLElement): boolean {
-  const rect = element.getBoundingClientRect();
-  return (
-    touch.clientX >= rect.left &&
-    touch.clientX <= rect.right &&
-    touch.clientY >= rect.top &&
-    touch.clientY <= rect.bottom
-  );
-}
-
-function handleDiffTouchStart(event: TouchEvent, level: number) {
-  const touch = event.touches[0];
-  if (!touch) return;
-
+// Simple touch handlers for difficulty buttons
+function handleDiffTouchStart(event: TouchEvent) {
   event.preventDefault();
-  const state = getDiffTouchState(level);
-  state.touchId = touch.identifier;
-  state.isInside = true;
-}
-
-function handleDiffTouchMove(event: TouchEvent, level: number) {
-  const state = getDiffTouchState(level);
-  if (state.touchId === null) return;
-
-  const touch = Array.from(event.touches).find(t => t.identifier === state.touchId);
-  if (!touch) return;
-
-  const element = event.currentTarget as HTMLElement;
-  state.isInside = isTouchInsideElement(touch, element);
+  (event.target as HTMLElement).classList.add('pressed');
 }
 
 function handleDiffTouchEnd(event: TouchEvent, level: number) {
-  const state = getDiffTouchState(level);
-  if (state.touchId === null) return;
-
   event.preventDefault();
-
-  const touch = Array.from(event.changedTouches).find(t => t.identifier === state.touchId);
-  const element = event.currentTarget as HTMLElement;
-
-  if (touch && isTouchInsideElement(touch, element) && state.isInside) {
-    testDifficulty.value = level;
-  }
-
-  state.touchId = null;
-  state.isInside = false;
+  (event.target as HTMLElement).classList.remove('pressed');
+  testDifficulty.value = level;
 }
 
-function handleDiffTouchCancel(level: number) {
-  const state = getDiffTouchState(level);
-  state.touchId = null;
-  state.isInside = false;
+function handleDiffTouchCancel(event: TouchEvent) {
+  (event.target as HTMLElement).classList.remove('pressed');
 }
 </script>
 
@@ -194,15 +141,11 @@ function handleDiffTouchCancel(level: number) {
             v-for="level in 6"
             :key="level"
             class="diff-btn"
-            :class="{
-              active: testDifficulty === level,
-              pressed: getDiffTouchState(level).touchId !== null,
-              'pressed-outside': getDiffTouchState(level).touchId !== null && !getDiffTouchState(level).isInside
-            }"
-            @touchstart="handleDiffTouchStart($event, level)"
-            @touchmove="handleDiffTouchMove($event, level)"
+            :class="{ active: testDifficulty === level }"
+            @click="testDifficulty = level"
+            @touchstart="handleDiffTouchStart"
             @touchend="handleDiffTouchEnd($event, level)"
-            @touchcancel="handleDiffTouchCancel(level)"
+            @touchcancel="handleDiffTouchCancel"
           >
             {{ level }}
           </button>
@@ -435,15 +378,15 @@ function handleDiffTouchCancel(level: number) {
   box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
 }
 
+.diff-btn:active,
 .diff-btn.pressed {
   transform: scale(0.95);
   background: #F5F5F5;
 }
 
-.diff-btn.pressed-outside {
-  opacity: 0.7;
-  transform: scale(0.97);
-  background: #FFFFFF;
+.diff-btn.active:active,
+.diff-btn.active.pressed {
+  background: linear-gradient(180deg, #FFC107 0%, #FFB300 100%);
 }
 
 /* Hard Mode Toggle */

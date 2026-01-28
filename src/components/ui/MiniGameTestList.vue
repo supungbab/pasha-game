@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, reactive } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { MINI_GAMES } from '@/config/miniGames';
 import { IMPLEMENTED_MINIGAME_IDS } from '@/components/minigames';
@@ -33,74 +33,23 @@ function goBack() {
   router.push('/');
 }
 
-// Touch handling for game cards
-interface TouchState {
-  touchId: number | null;
-  isInside: boolean;
-}
-
-const touchStates = reactive<Map<number, TouchState>>(new Map());
-
-function getCardTouchState(gameId: number): TouchState {
-  if (!touchStates.has(gameId)) {
-    touchStates.set(gameId, { touchId: null, isInside: false });
-  }
-  return touchStates.get(gameId)!;
-}
-
-function isTouchInsideElement(touch: Touch, element: HTMLElement): boolean {
-  const rect = element.getBoundingClientRect();
-  return (
-    touch.clientX >= rect.left &&
-    touch.clientX <= rect.right &&
-    touch.clientY >= rect.top &&
-    touch.clientY <= rect.bottom
-  );
-}
-
+// Simple touch handlers for game cards
 function handleCardTouchStart(event: TouchEvent, gameId: number) {
   if (!isImplemented(gameId)) return;
-  const touch = event.touches[0];
-  if (!touch) return;
-
   event.preventDefault();
-  const state = getCardTouchState(gameId);
-  state.touchId = touch.identifier;
-  state.isInside = true;
-}
-
-function handleCardTouchMove(event: TouchEvent, gameId: number) {
-  const state = getCardTouchState(gameId);
-  if (state.touchId === null) return;
-
-  const touch = Array.from(event.touches).find(t => t.identifier === state.touchId);
-  if (!touch) return;
-
-  const element = event.currentTarget as HTMLElement;
-  state.isInside = isTouchInsideElement(touch, element);
+  (event.currentTarget as HTMLElement).classList.add('pressed');
 }
 
 function handleCardTouchEnd(event: TouchEvent, gameId: number) {
-  const state = getCardTouchState(gameId);
-  if (state.touchId === null) return;
-
   event.preventDefault();
-
-  const touch = Array.from(event.changedTouches).find(t => t.identifier === state.touchId);
-  const element = event.currentTarget as HTMLElement;
-
-  if (touch && isTouchInsideElement(touch, element) && state.isInside) {
+  (event.currentTarget as HTMLElement).classList.remove('pressed');
+  if (isImplemented(gameId)) {
     playGame(gameId);
   }
-
-  state.touchId = null;
-  state.isInside = false;
 }
 
-function handleCardTouchCancel(gameId: number) {
-  const state = getCardTouchState(gameId);
-  state.touchId = null;
-  state.isInside = false;
+function handleCardTouchCancel(event: TouchEvent) {
+  (event.currentTarget as HTMLElement).classList.remove('pressed');
 }
 </script>
 
@@ -133,14 +82,12 @@ function handleCardTouchCancel(gameId: number) {
           class="game-card"
           :class="{
             implemented: isImplemented(game.id),
-            disabled: !isImplemented(game.id),
-            pressed: getCardTouchState(game.id).touchId !== null,
-            'pressed-outside': getCardTouchState(game.id).touchId !== null && !getCardTouchState(game.id).isInside
+            disabled: !isImplemented(game.id)
           }"
+          @click="isImplemented(game.id) && playGame(game.id)"
           @touchstart="handleCardTouchStart($event, game.id)"
-          @touchmove="handleCardTouchMove($event, game.id)"
           @touchend="handleCardTouchEnd($event, game.id)"
-          @touchcancel="handleCardTouchCancel(game.id)"
+          @touchcancel="handleCardTouchCancel"
         >
           <div class="card-header">
             <span class="game-emoji">{{ game.instructionEmoji }}</span>
@@ -297,12 +244,6 @@ function handleCardTouchCancel(gameId: number) {
 .game-card.implemented.pressed {
   transform: scale(0.97);
   background: #FFF8DC;
-}
-
-.game-card.implemented.pressed-outside {
-  opacity: 0.7;
-  transform: scale(0.98);
-  background: #FFFFFF;
 }
 
 .game-card.disabled {
