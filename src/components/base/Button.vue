@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import { useAudio } from '@/composables';
 
 interface Props {
@@ -22,6 +23,7 @@ const emit = defineEmits<{
 }>();
 
 const { playSoundEffect, vibrate } = useAudio();
+const isPressed = ref(false);
 
 function handleClick(event: MouseEvent) {
   if (props.disabled) return;
@@ -34,14 +36,14 @@ function handleClick(event: MouseEvent) {
   emit('click', event);
 }
 
-function handleTouchStart(event: TouchEvent) {
+function handleTouchStart() {
   if (props.disabled) return;
-  (event.currentTarget as HTMLElement).classList.add('btn-pressed');
+  isPressed.value = true;
   vibrate(10);
 }
 
-function handleTouchEnd(event: TouchEvent) {
-  (event.currentTarget as HTMLElement).classList.remove('btn-pressed');
+function handleTouchEnd() {
+  isPressed.value = false;
 }
 </script>
 
@@ -54,6 +56,7 @@ function handleTouchEnd(event: TouchEvent) {
       {
         'btn-full': fullWidth,
         'btn-disabled': disabled,
+        'btn-pressed': isPressed,
       }
     ]"
     :disabled="disabled"
@@ -111,6 +114,7 @@ function handleTouchEnd(event: TouchEvent) {
 
 .btn-primary:active:not(.btn-disabled),
 .btn-primary.btn-pressed:not(.btn-disabled) {
+  background: var(--gradient-primary);
   box-shadow: var(--shadow-primary), 0 1px 0 rgba(200, 160, 0, 0.5);
 }
 
@@ -126,6 +130,7 @@ function handleTouchEnd(event: TouchEvent) {
 
 .btn-secondary:active:not(.btn-disabled),
 .btn-secondary.btn-pressed:not(.btn-disabled) {
+  background: var(--gradient-cyan);
   box-shadow: var(--shadow-cyan), 0 1px 0 rgba(0, 120, 140, 0.5);
 }
 
@@ -141,6 +146,7 @@ function handleTouchEnd(event: TouchEvent) {
 
 .btn-success:active:not(.btn-disabled),
 .btn-success.btn-pressed:not(.btn-disabled) {
+  background: var(--gradient-success);
   box-shadow: var(--shadow-success), 0 1px 0 rgba(40, 110, 40, 0.5);
 }
 
@@ -156,6 +162,7 @@ function handleTouchEnd(event: TouchEvent) {
 
 .btn-danger:active:not(.btn-disabled),
 .btn-danger.btn-pressed:not(.btn-disabled) {
+  background: var(--gradient-danger);
   box-shadow: var(--shadow-danger), 0 1px 0 rgba(160, 30, 30, 0.5);
 }
 

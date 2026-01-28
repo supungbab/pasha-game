@@ -182,40 +182,7 @@ button:disabled {
   transform: none;
 }
 
-.btn-primary {
-  background: var(--gradient-primary);
-  color: var(--text-dark);
-  box-shadow: var(--shadow-primary);
-}
-
-.btn-primary:hover:not(:disabled) {
-  box-shadow: var(--shadow-primary-hover);
-  transform: translateY(-2px);
-}
-
-.btn-secondary {
-  background: var(--white);
-  color: var(--text-dark);
-  border: 2px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background: var(--light-gray);
-  box-shadow: var(--shadow-lg);
-}
-
-.btn-success {
-  background: var(--gradient-success);
-  color: white;
-  box-shadow: var(--shadow-success);
-}
-
-.btn-danger {
-  background: var(--error);
-  color: white;
-  box-shadow: var(--shadow-danger);
-}
+/* Button variant styles are defined in Button.vue component */
 
 /* Card Styles */
 .card {
