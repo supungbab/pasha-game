@@ -62,10 +62,10 @@ const handleDecline = () => {
           </p>
 
           <div class="continue-actions">
-            <button class="btn-continue" @touchend.prevent="handleContinue">
+            <button class="btn-continue" @click="handleContinue">
               🎬 광고 시청하고 계속
             </button>
-            <button class="btn-decline" @touchend.prevent="handleDecline">
+            <button class="btn-decline" @click="handleDecline">
               포기
             </button>
           </div>

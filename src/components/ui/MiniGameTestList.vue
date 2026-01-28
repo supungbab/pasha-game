@@ -108,7 +108,7 @@ function handleCardTouchCancel(gameId: number) {
   <div class="test-list">
     <!-- Header -->
     <header class="list-header">
-      <Button variant="secondary" size="small" @tap="goBack">← 메뉴</Button>
+      <Button variant="secondary" size="small" @click="goBack">← 메뉴</Button>
       <h1 class="list-title">🧪 미니게임 테스트</h1>
       <div class="stat-badge">
         <span class="stat-num">{{ implementedCount }}</span>

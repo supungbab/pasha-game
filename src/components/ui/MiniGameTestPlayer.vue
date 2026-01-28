@@ -163,7 +163,7 @@ function handleDiffTouchCancel(level: number) {
     <div v-if="gameState === 'setup'" class="setup-screen">
       <!-- Header -->
       <header class="setup-header">
-        <Button variant="secondary" size="small" @tap="goBack">← 목록</Button>
+        <Button variant="secondary" size="small" @click="goBack">← 목록</Button>
         <span class="game-num">#{{ gameData.id }}/30</span>
       </header>
 
@@ -217,15 +217,15 @@ function handleDiffTouchCancel(level: number) {
 
       <!-- Action Buttons -->
       <div class="action-buttons">
-        <Button variant="primary" size="large" full-width @tap="startGame">
+        <Button variant="primary" size="large" full-width @click="startGame">
           🎮 게임 시작
         </Button>
 
         <div class="nav-buttons">
-          <Button variant="secondary" size="small" :disabled="gameId === 1" @tap="prevGame">
+          <Button variant="secondary" size="small" :disabled="gameId === 1" @click="prevGame">
             ← 이전
           </Button>
-          <Button variant="secondary" size="small" :disabled="gameId === 30" @tap="nextGame">
+          <Button variant="secondary" size="small" :disabled="gameId === 30" @click="nextGame">
             다음 →
           </Button>
         </div>
@@ -283,12 +283,12 @@ function handleDiffTouchCancel(level: number) {
         </div>
 
         <div class="result-actions">
-          <Button variant="primary" size="large" full-width @tap="restartGame">
+          <Button variant="primary" size="large" full-width @click="restartGame">
             🔄 다시하기
           </Button>
           <div class="result-nav">
-            <Button variant="secondary" size="small" @tap="goBack">← 목록</Button>
-            <Button variant="secondary" size="small" :disabled="gameId === 30" @tap="nextGame">
+            <Button variant="secondary" size="small" @click="goBack">← 목록</Button>
+            <Button variant="secondary" size="small" :disabled="gameId === 30" @click="nextGame">
               다음 →
             </Button>
           </div>

@@ -64,7 +64,7 @@ onMounted(() => {
         size="large"
         full-width
         class="start-button"
-        @tap="emit('startGame')"
+        @click="emit('startGame')"
       >
         🎮 게임 시작
       </Button>
@@ -74,7 +74,7 @@ onMounted(() => {
           variant="secondary"
           size="medium"
           full-width
-          @tap="emit('showRanking')"
+          @click="emit('showRanking')"
         >
           🏆 랭킹
         </Button>
@@ -83,7 +83,7 @@ onMounted(() => {
           variant="secondary"
           size="medium"
           full-width
-          @tap="emit('showSettings')"
+          @click="emit('showSettings')"
         >
           ⚙️ 설정
         </Button>
@@ -96,7 +96,7 @@ onMounted(() => {
         size="medium"
         full-width
         class="dev-test-button"
-        @tap="goToTestMode"
+        @click="goToTestMode"
       >
         🧪 미니게임 테스트 (DEV)
       </Button>

@@ -96,7 +96,7 @@ const isNewRecord = computed(() => {
         variant="primary"
         size="large"
         full-width
-        @tap="emit('restart')"
+        @click="emit('restart')"
       >
         🔄 다시 시작
       </Button>
@@ -106,7 +106,7 @@ const isNewRecord = computed(() => {
           variant="secondary"
           size="medium"
           full-width
-          @tap="emit('showRanking')"
+          @click="emit('showRanking')"
         >
           🏆 랭킹 보기
         </Button>
@@ -115,7 +115,7 @@ const isNewRecord = computed(() => {
           variant="secondary"
           size="medium"
           full-width
-          @tap="emit('mainMenu')"
+          @click="emit('mainMenu')"
         >
           🏠 메인 메뉴
         </Button>

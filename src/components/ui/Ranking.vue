@@ -48,7 +48,7 @@ const formatDate = (date: Date): string => {
   <div class="ranking">
     <div class="ranking-header">
       <h1 class="ranking-title">🏆 랭킹</h1>
-      <Button variant="secondary" size="small" @tap="emit('close')">
+      <Button variant="secondary" size="small" @click="emit('close')">
         ✕
       </Button>
     </div>
@@ -102,7 +102,7 @@ const formatDate = (date: Date): string => {
     </div>
 
     <div class="ranking-footer">
-      <Button variant="primary" full-width @tap="emit('close')">
+      <Button variant="primary" full-width @click="emit('close')">
         닫기
       </Button>
     </div>

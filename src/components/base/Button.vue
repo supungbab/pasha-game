@@ -19,17 +19,16 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  tap: [event: MouseEvent | TouchEvent];
+  click: [event: MouseEvent | TouchEvent];
 }>();
 
 const { playSoundEffect, vibrate } = useAudio();
 const buttonRef = ref<HTMLButtonElement | null>(null);
 
-// Touch state tracking
+// Touch state tracking (visual feedback only)
 const isPressed = ref(false);
 const isTouchInside = ref(false);
 let touchId: number | null = null;
-let recentlyTouched = false;
 
 // Check if touch point is inside button
 function isTouchInsideButton(touch: Touch): boolean {
@@ -43,8 +42,8 @@ function isTouchInsideButton(touch: Touch): boolean {
   );
 }
 
-// Trigger button action
-function triggerAction(event: MouseEvent | TouchEvent) {
+// Main click handler - works for both mouse and touch
+function handleClick(event: MouseEvent) {
   if (props.disabled) return;
 
   // Juicy feedback
@@ -60,18 +59,11 @@ function triggerAction(event: MouseEvent | TouchEvent) {
     buttonRef.value.classList.add('juicy-press');
   }
 
-  emit('tap', event);
+  emit('click', event);
 }
 
-// Mouse click handler (for desktop)
-const handleClick = (event: MouseEvent) => {
-  // Ignore if this was a touch interaction (touchend already handled it)
-  if (recentlyTouched) return;
-  triggerAction(event);
-};
-
-// Touch start - begin press state
-const handleTouchStart = (event: TouchEvent) => {
+// Touch start - visual feedback only
+function handleTouchStart(event: TouchEvent) {
   if (props.disabled) return;
 
   const touch = event.touches[0];
@@ -81,57 +73,33 @@ const handleTouchStart = (event: TouchEvent) => {
   isPressed.value = true;
   isTouchInside.value = true;
 
-  // Small haptic feedback on touch
+  // Small haptic feedback on touch down
   vibrate(10);
-};
+}
 
-// Touch move - track if still inside button
-const handleTouchMove = (event: TouchEvent) => {
+// Touch move - track if still inside (visual feedback)
+function handleTouchMove(event: TouchEvent) {
   if (touchId === null) return;
 
-  // Find our touch
   const touch = Array.from(event.touches).find(t => t.identifier === touchId);
   if (!touch) return;
 
   isTouchInside.value = isTouchInsideButton(touch);
-};
+}
 
-// Touch end - trigger action only if inside
-const handleTouchEnd = (event: TouchEvent) => {
-  if (touchId === null) return;
-
-  // Find our touch in changedTouches
-  const touch = Array.from(event.changedTouches).find(t => t.identifier === touchId);
-
-  // Check if touch ended inside button
-  if (touch && isTouchInsideButton(touch) && isTouchInside.value) {
-    triggerAction(event);
-  }
-
-  // Reset state
+// Touch end - reset visual state (click event handles action)
+function handleTouchEnd() {
   isPressed.value = false;
   isTouchInside.value = false;
   touchId = null;
+}
 
-  // Prevent click event from firing after touch
-  recentlyTouched = true;
-  setTimeout(() => {
-    recentlyTouched = false;
-  }, 300);
-};
-
-// Touch cancel - reset state without action
-const handleTouchCancel = () => {
+// Touch cancel - reset visual state
+function handleTouchCancel() {
   isPressed.value = false;
   isTouchInside.value = false;
   touchId = null;
-
-  // Prevent click event from firing after touch
-  recentlyTouched = true;
-  setTimeout(() => {
-    recentlyTouched = false;
-  }, 300);
-};
+}
 </script>
 
 <template>
@@ -150,6 +118,7 @@ const handleTouchCancel = () => {
       }
     ]"
     :disabled="disabled"
+    @click="handleClick"
     @touchstart="handleTouchStart"
     @touchmove="handleTouchMove"
     @touchend="handleTouchEnd"

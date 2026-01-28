@@ -68,7 +68,7 @@ const isPerfect = computed(() => props.result.perfect || grade.value === 'S');
           </div>
 
           <!-- Continue Button -->
-          <button class="continue-button" @touchend.prevent="emit('continue')">
+          <button class="continue-button" @click="emit('continue')">
             계속하기
           </button>
         </div>

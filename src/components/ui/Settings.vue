@@ -49,7 +49,7 @@ const handleClearProgress = () => {
   <div class="settings">
     <div class="settings-header">
       <h1 class="settings-title">⚙️ 설정</h1>
-      <Button variant="secondary" size="small" @tap="emit('close')">
+      <Button variant="secondary" size="small" @click="emit('close')">
         ✕
       </Button>
     </div>
@@ -109,14 +109,14 @@ const handleClearProgress = () => {
             <Button
               :variant="settings.language === 'ko' ? 'primary' : 'secondary'"
               size="small"
-              @tap="settings.language = 'ko'"
+              @click="settings.language = 'ko'"
             >
               🇰🇷 한국어
             </Button>
             <Button
               :variant="settings.language === 'en' ? 'primary' : 'secondary'"
               size="small"
-              @tap="settings.language = 'en'"
+              @click="settings.language = 'en'"
             >
               🇺🇸 English
             </Button>
@@ -132,7 +132,7 @@ const handleClearProgress = () => {
           <Button
             variant="secondary"
             full-width
-            @tap="showClearModal = true"
+            @click="showClearModal = true"
           >
             🗑️ 진행상황 초기화
           </Button>
@@ -142,7 +142,7 @@ const handleClearProgress = () => {
           <Button
             variant="danger"
             full-width
-            @tap="showResetModal = true"
+            @click="showResetModal = true"
           >
             ⚠️ 모든 데이터 초기화
           </Button>
@@ -165,7 +165,7 @@ const handleClearProgress = () => {
     </div>
 
     <div class="settings-footer">
-      <Button variant="primary" full-width @tap="emit('close')">
+      <Button variant="primary" full-width @click="emit('close')">
         닫기
       </Button>
     </div>
@@ -181,10 +181,10 @@ const handleClearProgress = () => {
       <p><strong>계속하시겠습니까?</strong></p>
 
       <template #footer>
-        <Button variant="secondary" @tap="showClearModal = false">
+        <Button variant="secondary" @click="showClearModal = false">
           취소
         </Button>
-        <Button variant="danger" @tap="handleClearProgress">
+        <Button variant="danger" @click="handleClearProgress">
           초기화
         </Button>
       </template>
@@ -202,10 +202,10 @@ const handleClearProgress = () => {
       <p><strong>정말로 초기화하시겠습니까?</strong></p>
 
       <template #footer>
-        <Button variant="secondary" @tap="showResetModal = false">
+        <Button variant="secondary" @click="showResetModal = false">
           취소
         </Button>
-        <Button variant="danger" @tap="handleResetAll">
+        <Button variant="danger" @click="handleResetAll">
           모두 초기화
         </Button>
       </template>
