@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useTouchButton } from '@/composables';
-
 interface Props {
   modelValue: boolean;
   disabled?: boolean;
@@ -17,32 +14,24 @@ const emit = defineEmits<{
   'update:modelValue': [value: boolean];
 }>();
 
-const toggleRef = ref<HTMLElement | null>(null);
-const disabledRef = computed(() => props.disabled);
-
-const { handlers, isPressed, isTouchInside } = useTouchButton(toggleRef, {
-  disabled: disabledRef,
-  onTap: () => {
-    emit('update:modelValue', !props.modelValue);
-  }
-});
+function handleClick() {
+  if (props.disabled) return;
+  emit('update:modelValue', !props.modelValue);
+}
 </script>
 
 <template>
   <button
-    ref="toggleRef"
     :class="[
       'toggle',
       `toggle-${size}`,
       {
         'toggle-active': modelValue,
-        'toggle-disabled': disabled,
-        'toggle-pressed': isPressed,
-        'toggle-pressed-outside': isPressed && !isTouchInside
+        'toggle-disabled': disabled
       }
     ]"
     :disabled="disabled"
-    v-on="handlers"
+    @click="handleClick"
   >
     <span class="toggle-thumb" />
   </button>
@@ -132,12 +121,8 @@ const { handlers, isPressed, isTouchInside } = useTouchButton(toggleRef, {
   cursor: not-allowed;
 }
 
-/* Pressed states */
-.toggle-pressed {
+/* Active state feedback */
+.toggle:active:not(.toggle-disabled) {
   transform: scale(0.95);
-}
-
-.toggle-pressed-outside {
-  opacity: 0.7;
 }
 </style>
