@@ -89,18 +89,11 @@ onMounted(() => {
 
 // Simple touch handlers for difficulty buttons
 function handleDiffTouchStart(event: TouchEvent) {
-  event.preventDefault();
-  (event.target as HTMLElement).classList.add('pressed');
+  (event.currentTarget as HTMLElement).classList.add('pressed');
 }
 
-function handleDiffTouchEnd(event: TouchEvent, level: number) {
-  event.preventDefault();
-  (event.target as HTMLElement).classList.remove('pressed');
-  testDifficulty.value = level;
-}
-
-function handleDiffTouchCancel(event: TouchEvent) {
-  (event.target as HTMLElement).classList.remove('pressed');
+function handleDiffTouchEnd(event: TouchEvent) {
+  (event.currentTarget as HTMLElement).classList.remove('pressed');
 }
 </script>
 
@@ -144,8 +137,8 @@ function handleDiffTouchCancel(event: TouchEvent) {
             :class="{ active: testDifficulty === level }"
             @click="testDifficulty = level"
             @touchstart="handleDiffTouchStart"
-            @touchend="handleDiffTouchEnd($event, level)"
-            @touchcancel="handleDiffTouchCancel"
+            @touchend="handleDiffTouchEnd"
+            @touchcancel="handleDiffTouchEnd"
           >
             {{ level }}
           </button>

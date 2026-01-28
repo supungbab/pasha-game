@@ -36,19 +36,10 @@ function goBack() {
 // Simple touch handlers for game cards
 function handleCardTouchStart(event: TouchEvent, gameId: number) {
   if (!isImplemented(gameId)) return;
-  event.preventDefault();
   (event.currentTarget as HTMLElement).classList.add('pressed');
 }
 
-function handleCardTouchEnd(event: TouchEvent, gameId: number) {
-  event.preventDefault();
-  (event.currentTarget as HTMLElement).classList.remove('pressed');
-  if (isImplemented(gameId)) {
-    playGame(gameId);
-  }
-}
-
-function handleCardTouchCancel(event: TouchEvent) {
+function handleCardTouchEnd(event: TouchEvent) {
   (event.currentTarget as HTMLElement).classList.remove('pressed');
 }
 </script>
@@ -86,8 +77,8 @@ function handleCardTouchCancel(event: TouchEvent) {
           }"
           @click="isImplemented(game.id) && playGame(game.id)"
           @touchstart="handleCardTouchStart($event, game.id)"
-          @touchend="handleCardTouchEnd($event, game.id)"
-          @touchcancel="handleCardTouchCancel"
+          @touchend="handleCardTouchEnd"
+          @touchcancel="handleCardTouchEnd"
         >
           <div class="card-header">
             <span class="game-emoji">{{ game.instructionEmoji }}</span>

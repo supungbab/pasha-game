@@ -36,14 +36,12 @@ function handleClick(event: MouseEvent) {
 
 function handleTouchStart(event: TouchEvent) {
   if (props.disabled) return;
-  event.preventDefault();
-  (event.target as HTMLElement).classList.add('btn-pressed');
+  (event.currentTarget as HTMLElement).classList.add('btn-pressed');
   vibrate(10);
 }
 
 function handleTouchEnd(event: TouchEvent) {
-  event.preventDefault();
-  (event.target as HTMLElement).classList.remove('btn-pressed');
+  (event.currentTarget as HTMLElement).classList.remove('btn-pressed');
 }
 </script>
 
