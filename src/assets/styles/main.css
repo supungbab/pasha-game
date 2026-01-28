@@ -136,15 +136,7 @@ body {
   -ms-text-size-adjust: 100%;
 }
 
-#app {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
+/* #app 스타일은 App.vue에서 관리 */
 
 /* Typography */
 h1, h2, h3, h4, h5, h6 {
