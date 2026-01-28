@@ -60,14 +60,12 @@ const { handlers, isPressed, isTouchInside } = useTouchButton(cardRef, {
 </template>
 
 <style scoped>
-/* 캐주얼 미니게임 카드 */
 .card {
   background: var(--white);
   border-radius: var(--radius-xl);
   transition: all 0.3s ease;
   border: 2px solid var(--neutral-cream);
   position: relative;
-  overflow: hidden;
 }
 
 /* Padding */
@@ -80,11 +78,11 @@ const { handlers, isPressed, isTouchInside } = useTouchButton(cardRef, {
 }
 
 .card-padding-medium {
-  padding: var(--radius-xl);
+  padding: var(--spacing-md);
 }
 
 .card-padding-large {
-  padding: 32px;
+  padding: var(--spacing-xl);
 }
 
 /* Elevation */
@@ -117,21 +115,23 @@ const { handlers, isPressed, isTouchInside } = useTouchButton(cardRef, {
 
 /* Header */
 .card-header {
-  padding-bottom: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding-bottom: var(--spacing-sm);
   border-bottom: 2px solid var(--divider-color);
   margin-bottom: var(--spacing-md);
 }
 
 .card-title {
   margin: 0;
-  font-size: var(--radius-xl);
+  font-size: var(--font-lg);
   font-weight: 700;
   color: var(--text-dark);
 }
 
 /* Body */
 .card-body {
-  flex: 1;
   color: var(--text-medium);
 }
 

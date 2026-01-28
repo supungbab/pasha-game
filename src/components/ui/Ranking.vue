@@ -100,12 +100,6 @@ const formatDate = (date: Date): string => {
         </div>
       </Card>
     </div>
-
-    <div class="ranking-footer">
-      <Button variant="primary" full-width @click="emit('close')">
-        닫기
-      </Button>
-    </div>
   </div>
 </template>
 
@@ -285,11 +279,6 @@ const formatDate = (date: Date): string => {
   font-size: 0.7rem;
   color: var(--text-medium);
   font-weight: 400;
-}
-
-.ranking-footer {
-  flex-shrink: 0;
-  animation: slideUp 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 @media (max-width: 480px) {
