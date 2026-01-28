@@ -5,7 +5,7 @@
 import { ref, type Ref } from 'vue';
 
 export interface UseTouchButtonOptions {
-  onTap?: (event: TouchEvent) => void;
+  onTap?: (event: TouchEvent | MouseEvent) => void;
   disabled?: Ref<boolean> | boolean;
 }
 
@@ -88,6 +88,14 @@ export function useTouchButton(
     touchId = null;
   }
 
+  // Mouse click - for desktop support
+  function handleClick(event: MouseEvent) {
+    if (isDisabled()) return;
+    // Prevent double-firing on touch devices (touch events fire click too)
+    if (touchId !== null) return;
+    options.onTap?.(event);
+  }
+
   return {
     isPressed,
     isTouchInside,
@@ -96,11 +104,13 @@ export function useTouchButton(
       onTouchmove: handleTouchMove,
       onTouchend: handleTouchEnd,
       onTouchcancel: handleTouchCancel,
+      onClick: handleClick,
     },
     // For manual binding
     handleTouchStart,
     handleTouchMove,
     handleTouchEnd,
     handleTouchCancel,
+    handleClick,
   };
 }
