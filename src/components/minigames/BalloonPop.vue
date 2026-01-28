@@ -1,14 +1,17 @@
 <template>
-  <div class="minigame balloon-pop">
-    <canvas ref="canvasRef" @click="handleClick" @touchstart="handleTouch"></canvas>
+  <div ref="containerRef" class="minigame balloon-pop">
+    <canvas ref="canvasRef" @touchstart.prevent="handleTouch"></canvas>
+
+    <!-- Score Popups -->
+    <ScorePopup :popups="scorePopups" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
-import { useCanvas } from '@/composables/useCanvas';
-import { useCleanupTimers } from '@/composables/useCleanupTimers';
+import { useCanvas, useCleanupTimers, useJuicyFeedback } from '@/composables';
+import { ScorePopup } from '@/components/common';
 import type { Particle } from '@/utils/canvas';
 
 const props = defineProps<MiniGameProps>();
@@ -16,8 +19,11 @@ const emit = defineEmits<{
   complete: [result: MiniGameResult];
 }>();
 
-// Canvas setup
+// Refs
+const containerRef = ref<HTMLElement | null>(null);
 const canvasRef = ref<HTMLCanvasElement | null>(null);
+
+// Canvas setup
 const { ctx, helper, width, height, clear, getCanvasCoordinates } = useCanvas(canvasRef, {
   width: 400,
   height: 600,
@@ -27,9 +33,20 @@ const { ctx, helper, width, height, clear, getCanvasCoordinates } = useCanvas(ca
 // Timer utilities
 const { safeSetTimeout, safeSetInterval, clearInterval, cancelAnimationFrame } = useCleanupTimers();
 
+// Juicy feedback
+const {
+  scorePopups,
+  createScorePopup,
+  createParticles,
+  shake,
+  bounce,
+} = useJuicyFeedback();
+
 // Game state
 const score = ref(0);
-const timeRemainingMs = ref(props.timeLimit * 1000); // 밀리초 단위로 관리
+const combo = ref(0);
+const lastPopTime = ref(0);
+const timeRemainingMs = ref(props.timeLimit * 1000);
 const isGameOver = ref(false);
 const balloons = ref<Balloon[]>([]);
 const particles = ref<Particle[]>([]);
@@ -61,12 +78,16 @@ interface Balloon {
   speed: number;
   swingOffset: number;
   swingSpeed: number;
+  scale: number; // For squish animation
 }
 
 let animationId: number = 0;
 let spawnInterval: number = 0;
 let timerInterval: number = 0;
 let balloonIdCounter = 0;
+
+// Combo timeout (500ms 이내 연속 탭하면 콤보)
+const COMBO_TIMEOUT = 500;
 
 // Spawn a new balloon
 function spawnBalloon() {
@@ -83,9 +104,10 @@ function spawnBalloon() {
     y: height + 50,
     radius: actualSize / 2,
     color: BALLOON_COLORS[colorIndex] || '#FF6B6B',
-    speed: actualSpeed / 60, // Convert to per-frame speed
+    speed: actualSpeed / 60,
     swingOffset: Math.random() * Math.PI * 2,
-    swingSpeed: 0.05 + Math.random() * 0.05
+    swingSpeed: 0.05 + Math.random() * 0.05,
+    scale: 1,
   };
 
   balloons.value.push(balloon);
@@ -103,6 +125,12 @@ function update() {
     if (props.isHardMode) {
       balloon.swingOffset += balloon.swingSpeed;
       balloon.x += Math.sin(balloon.swingOffset) * 2;
+    }
+
+    // Animate scale back to 1 (squish recovery)
+    if (balloon.scale !== 1) {
+      balloon.scale += (1 - balloon.scale) * 0.2;
+      if (Math.abs(balloon.scale - 1) < 0.01) balloon.scale = 1;
     }
 
     // Remove if off screen
@@ -127,20 +155,30 @@ function render() {
   ctx.value.fillStyle = gradient;
   ctx.value.fillRect(0, 0, width, height);
 
-  // Draw balloons
+  // Draw balloons with squish effect
   balloons.value.forEach(balloon => {
+    ctx.value!.save();
+    ctx.value!.translate(balloon.x, balloon.y);
+
+    // Apply squish scale (1.2 horizontal, 0.8 vertical when pressed)
+    const scaleX = 1 + (balloon.scale - 1) * 0.3;
+    const scaleY = 1 - (balloon.scale - 1) * 0.2;
+    ctx.value!.scale(scaleX, scaleY);
+
     // Balloon body
-    helper.value!.drawCircle(balloon.x, balloon.y, balloon.radius, balloon.color);
+    helper.value!.drawCircle(0, 0, balloon.radius, balloon.color);
 
     // Highlight
     helper.value!.drawCircle(
-      balloon.x - balloon.radius * 0.3,
-      balloon.y - balloon.radius * 0.3,
+      -balloon.radius * 0.3,
+      -balloon.radius * 0.3,
       balloon.radius * 0.25,
       'rgba(255, 255, 255, 0.6)'
     );
 
-    // String
+    ctx.value!.restore();
+
+    // String (outside transform)
     ctx.value!.strokeStyle = '#666';
     ctx.value!.lineWidth = 2;
     ctx.value!.beginPath();
@@ -174,7 +212,7 @@ function handleClick(event: MouseEvent) {
   if (isGameOver.value) return;
 
   const coords = getCanvasCoordinates(event);
-  checkBalloonHit(coords.x, coords.y);
+  checkBalloonHit(coords.x, coords.y, event.clientX, event.clientY);
 }
 
 function handleTouch(event: TouchEvent) {
@@ -184,10 +222,10 @@ function handleTouch(event: TouchEvent) {
   const touch = event.touches[0];
   if (!touch) return;
   const coords = getCanvasCoordinates(touch);
-  checkBalloonHit(coords.x, coords.y);
+  checkBalloonHit(coords.x, coords.y, touch.clientX, touch.clientY);
 }
 
-function checkBalloonHit(x: number, y: number) {
+function checkBalloonHit(x: number, y: number, screenX: number, screenY: number) {
   const hitIndex = balloons.value.findIndex(balloon => {
     const dx = balloon.x - x;
     const dy = balloon.y - y;
@@ -198,15 +236,52 @@ function checkBalloonHit(x: number, y: number) {
     const balloon = balloons.value[hitIndex];
     if (!balloon) return;
 
+    const now = Date.now();
+
+    // Check combo
+    if (now - lastPopTime.value < COMBO_TIMEOUT) {
+      combo.value++;
+    } else {
+      combo.value = 1;
+    }
+    lastPopTime.value = now;
+
+    // Calculate points (base + combo bonus)
+    const basePoints = 10;
+    const comboBonus = combo.value > 1 ? (combo.value - 1) * 2 : 0;
+    const points = basePoints + comboBonus;
+
     // Create pop particles
     if (helper.value) {
       const newParticles = helper.value.createParticles(balloon.x, balloon.y, balloon.color, 12);
       particles.value.push(...newParticles);
     }
 
+    // Juicy feedback!
+    createParticles(containerRef.value, screenX, screenY, balloon.color, 8);
+
+    // Score popup based on combo
+    if (combo.value >= 5) {
+      createScorePopup(screenX, screenY - 20, `+${points} x${combo.value}!`, 'combo');
+      shake(containerRef.value, 'light');
+    } else if (combo.value >= 3) {
+      createScorePopup(screenX, screenY - 20, `+${points} COMBO!`, 'score');
+    } else {
+      createScorePopup(screenX, screenY - 20, `+${points}`, 'score');
+    }
+
+    // Vibrate based on combo
+    if (navigator.vibrate) {
+      if (combo.value >= 5) {
+        navigator.vibrate([30, 20, 30]);
+      } else {
+        navigator.vibrate(25);
+      }
+    }
+
     // Remove balloon and add score
     balloons.value.splice(hitIndex, 1);
-    score.value += 10;
+    score.value += points;
   }
 }
 
@@ -224,7 +299,16 @@ function endGame() {
     count: Math.floor(score.value / 10)
   };
 
-  emit('complete', result);
+  // Success/fail shake
+  if (result.success) {
+    shake(containerRef.value, 'light');
+  } else {
+    shake(containerRef.value, 'strong');
+  }
+
+  safeSetTimeout(() => {
+    emit('complete', result);
+  }, 300);
 }
 
 // Start game
@@ -233,7 +317,7 @@ function startGame() {
   const spawnRate = difficultySettings.value?.spawnRate ?? 1000;
   spawnInterval = safeSetInterval(spawnBalloon, spawnRate);
 
-  // Timer countdown (정수 밀리초 사용으로 부동소수점 오차 방지)
+  // Timer countdown
   timerInterval = safeSetInterval(() => {
     timeRemainingMs.value -= 100;
     if (timeRemainingMs.value <= 0) {
@@ -242,7 +326,7 @@ function startGame() {
     }
   }, 100);
 
-  // Initial balloons (자동 정리되는 setTimeout 사용)
+  // Initial balloons
   for (let i = 0; i < 3; i++) {
     safeSetTimeout(spawnBalloon, i * 300);
   }
@@ -252,12 +336,16 @@ function startGame() {
 }
 
 onMounted(() => {
+  // Pop-in animation for container
+  if (containerRef.value) {
+    containerRef.value.classList.add('juicy-pop');
+  }
+
   safeSetTimeout(() => {
     startGame();
   }, 100);
 });
 
-// useCleanupTimers가 자동으로 모든 타이머를 정리합니다
 onUnmounted(() => {
   isGameOver.value = true;
 });
@@ -274,6 +362,8 @@ onUnmounted(() => {
   border-radius: 0;
   padding: 0;
   box-shadow: none;
+  position: relative;
+  overflow: hidden;
 }
 
 canvas {

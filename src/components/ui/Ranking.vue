@@ -48,7 +48,7 @@ const formatDate = (date: Date): string => {
   <div class="ranking">
     <div class="ranking-header">
       <h1 class="ranking-title">🏆 랭킹</h1>
-      <Button variant="secondary" size="small" @click="emit('close')">
+      <Button variant="secondary" size="small" @tap="emit('close')">
         ✕
       </Button>
     </div>
@@ -102,7 +102,7 @@ const formatDate = (date: Date): string => {
     </div>
 
     <div class="ranking-footer">
-      <Button variant="primary" full-width @click="emit('close')">
+      <Button variant="primary" full-width @tap="emit('close')">
         닫기
       </Button>
     </div>
@@ -121,7 +121,7 @@ const formatDate = (date: Date): string => {
   flex-direction: column;
   gap: 1rem;
   overflow: hidden;
-  background: linear-gradient(135deg, #FFFFFF 0%, #FFF8DC 100%);
+  background: var(--bg-main);
 }
 
 .ranking-header {
@@ -135,7 +135,7 @@ const formatDate = (date: Date): string => {
 .ranking-title {
   font-size: 2.2rem;
   margin: 0;
-  color: #212121;
+  color: var(--text-dark);
   font-weight: 700;
 }
 
@@ -145,17 +145,17 @@ const formatDate = (date: Date): string => {
   justify-content: center;
   gap: 1rem;
   padding: 0.75rem 1rem;
-  background: #FFFFFF;
-  border-radius: 20px;
-  border: 2px solid #FFF8DC;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  border: 2px solid var(--neutral-cream);
+  box-shadow: var(--shadow-sm);
   flex-shrink: 0;
   animation: slideUp 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 .ranking-toggle span {
   font-weight: 700;
-  color: #424242;
+  color: var(--text-medium);
   transition: all 0.2s ease;
   text-transform: uppercase;
   font-size: 0.9rem;
@@ -163,14 +163,14 @@ const formatDate = (date: Date): string => {
 }
 
 .ranking-toggle span.active {
-  color: #FFD700;
+  color: var(--primary-yellow);
 }
 
 .coming-soon,
 .no-data {
   text-align: center;
   padding: 2rem 1rem;
-  color: #424242;
+  color: var(--text-medium);
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -202,12 +202,12 @@ const formatDate = (date: Date): string => {
 }
 
 .ranking-list::-webkit-scrollbar-track {
-  background: #F5F5F5;
+  background: var(--light-gray);
   border-radius: 4px;
 }
 
 .ranking-list::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #FFD700 0%, #FFC107 100%);
+  background: var(--gradient-primary);
   border-radius: 4px;
 }
 
@@ -221,9 +221,9 @@ const formatDate = (date: Date): string => {
 }
 
 .ranking-item.top-three {
-  border: 2px solid #FFD700 !important;
-  background: #FFFFFF !important;
-  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3) !important;
+  border: 2px solid var(--primary-yellow) !important;
+  background: var(--white) !important;
+  box-shadow: var(--shadow-primary) !important;
 }
 
 .rank-number {
@@ -234,8 +234,8 @@ const formatDate = (date: Date): string => {
   justify-content: center;
   font-weight: 700;
   flex-shrink: 0;
-  background: #F5F5F5;
-  border-radius: 12px;
+  background: var(--light-gray);
+  border-radius: var(--radius-md);
 }
 
 .rank-emoji {
@@ -244,7 +244,7 @@ const formatDate = (date: Date): string => {
 
 .rank-text {
   font-size: 1.3rem;
-  color: #424242;
+  color: var(--text-medium);
   font-weight: 700;
 }
 
@@ -256,7 +256,7 @@ const formatDate = (date: Date): string => {
 .player-name {
   font-size: 1rem;
   font-weight: 700;
-  color: #212121;
+  color: var(--text-dark);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -265,7 +265,7 @@ const formatDate = (date: Date): string => {
 
 .player-stats {
   font-size: 0.8rem;
-  color: #424242;
+  color: var(--text-medium);
   font-weight: 600;
 }
 
@@ -277,13 +277,13 @@ const formatDate = (date: Date): string => {
 .score {
   font-size: 1.2rem;
   font-weight: 700;
-  color: #FFD700;
+  color: var(--primary-yellow);
   margin-bottom: 0.15rem;
 }
 
 .date {
   font-size: 0.7rem;
-  color: #424242;
+  color: var(--text-medium);
   font-weight: 400;
 }
 

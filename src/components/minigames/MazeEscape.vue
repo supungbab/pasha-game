@@ -4,7 +4,7 @@
       ref="canvasRef"
       :width="canvasWidth"
       :height="canvasHeight"
-      @click="handleClick"
+      @touchstart.prevent="handleTouch"
     ></canvas>
 
     <div class="ui-overlay">
@@ -21,7 +21,14 @@
         v-for="dir in directions"
         :key="dir.key"
         class="direction-btn"
-        @click="move(dir.dx, dir.dy)"
+        :class="{
+          pressed: getDirTouchState(dir.key).touchId !== null,
+          'pressed-outside': getDirTouchState(dir.key).touchId !== null && !getDirTouchState(dir.key).isInside
+        }"
+        @touchstart="handleDirTouchStart($event, dir.key)"
+        @touchmove="handleDirTouchMove($event, dir.key)"
+        @touchend="handleDirTouchEnd($event, dir.key, dir.dx, dir.dy)"
+        @touchcancel="handleDirTouchCancel(dir.key)"
       >
         {{ dir.label }}
       </button>
@@ -30,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, reactive, onMounted, onUnmounted } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
 
 const props = defineProps<MiniGameProps>();
@@ -48,6 +55,14 @@ let ctx: CanvasRenderingContext2D;
 let animationId: number;
 let gameCompleted = false;
 let startTime = 0;
+
+// Touch state for direction buttons
+interface TouchState {
+  touchId: number | null;
+  isInside: boolean;
+}
+
+const dirTouchStates = reactive<Map<string, TouchState>>(new Map());
 
 // 미로 설정
 const cellSize = 40;
@@ -177,11 +192,28 @@ function handleClick(event: MouseEvent) {
   const clickX = event.clientX - rect.left;
   const clickY = event.clientY - rect.top;
 
+  processMove(clickX, clickY);
+}
+
+// 터치 이동
+function handleTouch(event: TouchEvent) {
+  if (gameCompleted || isComplete.value) return;
+
+  const rect = canvasRef.value!.getBoundingClientRect();
+  const touch = event.touches[0];
+  const touchX = touch.clientX - rect.left;
+  const touchY = touch.clientY - rect.top;
+
+  processMove(touchX, touchY);
+}
+
+// 공통 이동 처리
+function processMove(inputX: number, inputY: number) {
   const offsetX = (canvasWidth - mazeWidth * cellSize) / 2;
   const offsetY = (canvasHeight - mazeHeight * cellSize) / 2;
 
-  const cellX = Math.floor((clickX - offsetX) / cellSize);
-  const cellY = Math.floor((clickY - offsetY) / cellSize);
+  const cellX = Math.floor((inputX - offsetX) / cellSize);
+  const cellY = Math.floor((inputY - offsetY) / cellSize);
 
   // 인접한 셀인지 확인
   const dx = cellX - playerX;
@@ -204,6 +236,68 @@ function handleEscape() {
   setTimeout(() => {
     completeGame();
   }, 1500);
+}
+
+// Touch handling for direction buttons
+function getDirTouchState(key: string): TouchState {
+  if (!dirTouchStates.has(key)) {
+    dirTouchStates.set(key, { touchId: null, isInside: false });
+  }
+  return dirTouchStates.get(key)!;
+}
+
+function isTouchInsideElement(touch: Touch, element: HTMLElement): boolean {
+  const rect = element.getBoundingClientRect();
+  return (
+    touch.clientX >= rect.left &&
+    touch.clientX <= rect.right &&
+    touch.clientY >= rect.top &&
+    touch.clientY <= rect.bottom
+  );
+}
+
+function handleDirTouchStart(event: TouchEvent, key: string) {
+  const touch = event.touches[0];
+  if (!touch) return;
+
+  event.preventDefault();
+  const state = getDirTouchState(key);
+  state.touchId = touch.identifier;
+  state.isInside = true;
+}
+
+function handleDirTouchMove(event: TouchEvent, key: string) {
+  const state = getDirTouchState(key);
+  if (state.touchId === null) return;
+
+  const touch = Array.from(event.touches).find(t => t.identifier === state.touchId);
+  if (!touch) return;
+
+  const element = event.currentTarget as HTMLElement;
+  state.isInside = isTouchInsideElement(touch, element);
+}
+
+function handleDirTouchEnd(event: TouchEvent, key: string, dx: number, dy: number) {
+  const state = getDirTouchState(key);
+  if (state.touchId === null) return;
+
+  event.preventDefault();
+
+  const touch = Array.from(event.changedTouches).find(t => t.identifier === state.touchId);
+  const element = event.currentTarget as HTMLElement;
+
+  if (touch && isTouchInsideElement(touch, element) && state.isInside) {
+    move(dx, dy);
+  }
+
+  state.touchId = null;
+  state.isInside = false;
+}
+
+function handleDirTouchCancel(key: string) {
+  const state = getDirTouchState(key);
+  state.touchId = null;
+  state.isInside = false;
 }
 
 // 렌더링
@@ -395,11 +489,11 @@ canvas {
 }
 
 .success-message {
-  font-size: 36px;
+  font-size: clamp(24px, 6vw, 36px);
   font-weight: 800;
   color: white;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  padding: 20px 40px;
+  padding: clamp(12px, 3vw, 20px) clamp(20px, 5vw, 40px);
   background: linear-gradient(135deg, #4CAF50, #45a049);
   border-radius: 24px;
   border: 3px solid #2e7d32;
@@ -420,18 +514,18 @@ canvas {
 
 .controls {
   position: absolute;
-  bottom: 30px;
+  bottom: clamp(15px, 4vw, 30px);
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(2, 1fr);
-  gap: 10px;
+  gap: clamp(5px, 2vw, 10px);
   z-index: 10;
 }
 
 .direction-btn {
-  width: 70px;
-  height: 70px;
-  font-size: 32px;
+  width: clamp(50px, 15vw, 70px);
+  height: clamp(50px, 15vw, 70px);
+  font-size: clamp(22px, 6vw, 32px);
   background: linear-gradient(135deg, #FFD700, #FFC107);
   border: 3px solid #F9A825;
   border-radius: 12px;
@@ -466,9 +560,17 @@ canvas {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
-.direction-btn:active {
+.direction-btn:active,
+.direction-btn.pressed {
   transform: scale(0.95);
   background: linear-gradient(135deg, #4CAF50, #45a049);
   border-color: #2e7d32;
+}
+
+.direction-btn.pressed-outside {
+  opacity: 0.7;
+  transform: scale(0.97);
+  background: linear-gradient(135deg, #FFD700, #FFC107);
+  border-color: #F9A825;
 }
 </style>

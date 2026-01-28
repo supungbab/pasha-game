@@ -15,7 +15,7 @@
     </div>
 
     <div class="instruction">
-      마우스를 움직여 시소의 균형을 유지하세요!
+      터치하여 시소의 균형을 유지하세요!
     </div>
   </div>
 </template>

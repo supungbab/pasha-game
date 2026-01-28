@@ -96,7 +96,7 @@ const isNewRecord = computed(() => {
         variant="primary"
         size="large"
         full-width
-        @click="emit('restart')"
+        @tap="emit('restart')"
       >
         🔄 다시 시작
       </Button>
@@ -106,7 +106,7 @@ const isNewRecord = computed(() => {
           variant="secondary"
           size="medium"
           full-width
-          @click="emit('showRanking')"
+          @tap="emit('showRanking')"
         >
           🏆 랭킹 보기
         </Button>
@@ -115,7 +115,7 @@ const isNewRecord = computed(() => {
           variant="secondary"
           size="medium"
           full-width
-          @click="emit('mainMenu')"
+          @tap="emit('mainMenu')"
         >
           🏠 메인 메뉴
         </Button>
@@ -137,7 +137,7 @@ const isNewRecord = computed(() => {
   gap: 1.25rem;
   justify-content: center;
   overflow: hidden;
-  background: linear-gradient(135deg, #FFFFFF 0%, #FFF8DC 100%);
+  background: var(--bg-main);
 }
 
 .game-over-header {
@@ -152,7 +152,7 @@ const isNewRecord = computed(() => {
 .game-over-title {
   font-size: 2.8rem;
   margin: 0;
-  color: #FFD700;
+  color: var(--primary-yellow);
   font-weight: 700;
   letter-spacing: 0.1em;
   animation: shake 0.5s ease-out;
@@ -166,9 +166,9 @@ const isNewRecord = computed(() => {
 .grade-display {
   text-align: center;
   padding: 1.5rem 0;
-  border-bottom: 2px solid #FFF8DC;
+  border-bottom: 2px solid var(--neutral-cream);
   margin-bottom: 1rem;
-  background: #FFFFFF;
+  background: var(--white);
   margin: -1rem -1rem 1rem -1rem;
   padding: 1.5rem 1rem;
 }
@@ -183,7 +183,7 @@ const isNewRecord = computed(() => {
 .grade-label {
   font-size: 1rem;
   margin-top: 0.5rem;
-  color: #424242;
+  color: var(--text-medium);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -201,45 +201,45 @@ const isNewRecord = computed(() => {
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem 0.75rem;
-  border-radius: 12px;
-  background: #FFFFFF;
-  border-left: 4px solid #FFC107;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-md);
+  background: var(--white);
+  border-left: 4px solid var(--secondary-yellow);
+  box-shadow: var(--shadow-sm);
 }
 
 .stat-row:nth-child(odd) {
-  border-left-color: #FFD700;
+  border-left-color: var(--primary-yellow);
 }
 
 .stat-label {
   font-size: 0.9rem;
-  color: #424242;
+  color: var(--text-medium);
   font-weight: 600;
 }
 
 .stat-value {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #212121;
+  color: var(--text-dark);
 }
 
 .stat-value.primary {
   font-size: 1.6rem;
-  color: #FFD700;
+  color: var(--primary-yellow);
 }
 
 .bonus-section {
-  background: #FFFFFF;
+  background: var(--white);
   padding: 0.75rem;
-  border-radius: 16px;
-  border: 2px solid #FFF8DC;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--neutral-cream);
+  box-shadow: var(--shadow-sm);
 }
 
 .bonus-section h3 {
   margin: 0 0 0.5rem 0;
   font-size: 0.95rem;
-  color: #212121;
+  color: var(--text-dark);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 600;
@@ -250,12 +250,12 @@ const isNewRecord = computed(() => {
   justify-content: space-between;
   padding: 0.25rem 0;
   font-size: 0.9rem;
-  color: #424242;
+  color: var(--text-medium);
 }
 
 .bonus-row span:last-child {
   font-weight: 700;
-  color: #FF9800;
+  color: var(--warning);
 }
 
 .action-buttons {

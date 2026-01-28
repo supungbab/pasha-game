@@ -1,6 +1,6 @@
 <template>
   <div class="reaction-test">
-    <div class="game-area" :class="gameState" @click="handleClick">
+    <div class="game-area" :class="gameState" @touchstart.prevent="handleClick">
       <div class="signal-box">
         <div v-if="gameState === 'waiting'" class="message">
           <div class="emoji">⏱️</div>

@@ -1,7 +1,7 @@
 <template>
   <div class="speed-click">
     <div class="game-area">
-      <div class="click-target" @click="handleClick">
+      <div class="click-target" @touchstart.prevent="handleTouchClick">
         <div class="emoji">👆</div>
         <div class="click-count">{{ clicks }}</div>
       </div>
@@ -71,13 +71,30 @@ const instructionText = computed(() => {
 function handleClick(event: MouseEvent) {
   if (gameCompleted) return;
 
-  clicks.value++;
-
-  // 클릭 이펙트 생성
   const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
   const x = event.clientX - rect.left;
   const y = event.clientY - rect.top;
 
+  processClick(x, y);
+}
+
+// 터치 핸들러
+function handleTouchClick(event: TouchEvent) {
+  if (gameCompleted) return;
+
+  const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+  const touch = event.touches[0];
+  const x = touch.clientX - rect.left;
+  const y = touch.clientY - rect.top;
+
+  processClick(x, y);
+}
+
+// 공통 클릭 처리
+function processClick(x: number, y: number) {
+  clicks.value++;
+
+  // 클릭 이펙트 생성
   const effect = {
     id: effectIdCounter++,
     x,
@@ -174,8 +191,8 @@ onUnmounted(() => {
 }
 
 .click-target {
-  width: 280px;
-  height: 280px;
+  width: min(280px, 70vw);
+  height: min(280px, 70vw);
   background: white;
   border-radius: 50%;
   display: flex;
@@ -194,7 +211,7 @@ onUnmounted(() => {
 }
 
 .emoji {
-  font-size: 80px;
+  font-size: clamp(40px, 15vw, 80px);
   margin-bottom: 10px;
   animation: pulse 1s ease-in-out infinite;
 }
@@ -209,7 +226,7 @@ onUnmounted(() => {
 }
 
 .click-count {
-  font-size: 64px;
+  font-size: clamp(36px, 12vw, 64px);
   font-weight: 800;
   color: #667eea;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);

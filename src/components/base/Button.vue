@@ -1,55 +1,179 @@
 <script setup lang="ts">
+import { ref } from 'vue';
+import { useAudio } from '@/composables';
+
 interface Props {
   variant?: 'primary' | 'secondary' | 'success' | 'danger';
   size?: 'small' | 'medium' | 'large';
   disabled?: boolean;
   fullWidth?: boolean;
+  noSound?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   variant: 'primary',
   size: 'medium',
   disabled: false,
-  fullWidth: false
+  fullWidth: false,
+  noSound: false,
 });
 
 const emit = defineEmits<{
-  click: [event: MouseEvent];
+  tap: [event: MouseEvent | TouchEvent];
 }>();
 
-const handleClick = (event: MouseEvent) => {
-  if (!props.disabled) {
-    emit('click', event);
+const { playSoundEffect, vibrate } = useAudio();
+const buttonRef = ref<HTMLButtonElement | null>(null);
+
+// Touch state tracking
+const isPressed = ref(false);
+const isTouchInside = ref(false);
+let touchId: number | null = null;
+let recentlyTouched = false;
+
+// Check if touch point is inside button
+function isTouchInsideButton(touch: Touch): boolean {
+  if (!buttonRef.value) return false;
+  const rect = buttonRef.value.getBoundingClientRect();
+  return (
+    touch.clientX >= rect.left &&
+    touch.clientX <= rect.right &&
+    touch.clientY >= rect.top &&
+    touch.clientY <= rect.bottom
+  );
+}
+
+// Trigger button action
+function triggerAction(event: MouseEvent | TouchEvent) {
+  if (props.disabled) return;
+
+  // Juicy feedback
+  if (!props.noSound) {
+    playSoundEffect('tap');
+    vibrate(20);
   }
+
+  // Add press animation class
+  if (buttonRef.value) {
+    buttonRef.value.classList.remove('juicy-press');
+    void buttonRef.value.offsetWidth; // Force reflow
+    buttonRef.value.classList.add('juicy-press');
+  }
+
+  emit('tap', event);
+}
+
+// Mouse click handler (for desktop)
+const handleClick = (event: MouseEvent) => {
+  // Ignore if this was a touch interaction (touchend already handled it)
+  if (recentlyTouched) return;
+  triggerAction(event);
+};
+
+// Touch start - begin press state
+const handleTouchStart = (event: TouchEvent) => {
+  if (props.disabled) return;
+
+  const touch = event.touches[0];
+  if (!touch) return;
+
+  touchId = touch.identifier;
+  isPressed.value = true;
+  isTouchInside.value = true;
+
+  // Small haptic feedback on touch
+  vibrate(10);
+};
+
+// Touch move - track if still inside button
+const handleTouchMove = (event: TouchEvent) => {
+  if (touchId === null) return;
+
+  // Find our touch
+  const touch = Array.from(event.touches).find(t => t.identifier === touchId);
+  if (!touch) return;
+
+  isTouchInside.value = isTouchInsideButton(touch);
+};
+
+// Touch end - trigger action only if inside
+const handleTouchEnd = (event: TouchEvent) => {
+  if (touchId === null) return;
+
+  // Find our touch in changedTouches
+  const touch = Array.from(event.changedTouches).find(t => t.identifier === touchId);
+
+  // Check if touch ended inside button
+  if (touch && isTouchInsideButton(touch) && isTouchInside.value) {
+    triggerAction(event);
+  }
+
+  // Reset state
+  isPressed.value = false;
+  isTouchInside.value = false;
+  touchId = null;
+
+  // Prevent click event from firing after touch
+  recentlyTouched = true;
+  setTimeout(() => {
+    recentlyTouched = false;
+  }, 300);
+};
+
+// Touch cancel - reset state without action
+const handleTouchCancel = () => {
+  isPressed.value = false;
+  isTouchInside.value = false;
+  touchId = null;
+
+  // Prevent click event from firing after touch
+  recentlyTouched = true;
+  setTimeout(() => {
+    recentlyTouched = false;
+  }, 300);
 };
 </script>
 
 <template>
   <button
+    ref="buttonRef"
     :class="[
       'btn',
+      'juicy-button',
       `btn-${variant}`,
       `btn-${size}`,
-      { 'btn-full': fullWidth, 'btn-disabled': disabled }
+      {
+        'btn-full': fullWidth,
+        'btn-disabled': disabled,
+        'btn-pressed': isPressed,
+        'btn-pressed-outside': isPressed && !isTouchInside
+      }
     ]"
     :disabled="disabled"
-    @click="handleClick($event)"
+    @touchstart="handleTouchStart"
+    @touchmove="handleTouchMove"
+    @touchend="handleTouchEnd"
+    @touchcancel="handleTouchCancel"
   >
     <slot />
   </button>
 </template>
 
 <style scoped>
-/* 캐주얼 미니게임 버튼 */
+/* 캐주얼 미니게임 버튼 - Juicy Edition */
 .btn {
   font-family: inherit;
   font-weight: 700;
   border: none;
   border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform 0.15s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+              box-shadow 0.2s ease;
   touch-action: manipulation;
   user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -59,52 +183,69 @@ const handleClick = (event: MouseEvent) => {
 }
 
 .btn:hover:not(.btn-disabled) {
-  transform: translateY(-2px);
+  transform: translateY(-3px) scale(1.02);
 }
 
 .btn:active:not(.btn-disabled) {
-  transform: translateY(0);
+  transform: translateY(1px) scale(0.98);
+  transition: transform 0.1s ease;
 }
 
 /* Variants */
 .btn-primary {
   background: var(--gradient-primary);
   color: var(--text-dark);
-  box-shadow: var(--shadow-primary);
+  box-shadow: var(--shadow-primary), 0 4px 0 rgba(200, 160, 0, 0.5);
 }
 
 .btn-primary:hover:not(.btn-disabled) {
-  box-shadow: var(--shadow-primary-hover);
+  box-shadow: var(--shadow-primary-hover), 0 6px 0 rgba(200, 160, 0, 0.5);
+}
+
+.btn-primary:active:not(.btn-disabled) {
+  box-shadow: var(--shadow-primary), 0 2px 0 rgba(200, 160, 0, 0.5);
 }
 
 .btn-secondary {
   background: var(--gradient-cyan);
   color: var(--white);
-  box-shadow: var(--shadow-cyan);
+  box-shadow: var(--shadow-cyan), 0 4px 0 rgba(0, 120, 140, 0.5);
 }
 
 .btn-secondary:hover:not(.btn-disabled) {
-  box-shadow: var(--shadow-cyan-hover);
+  box-shadow: var(--shadow-cyan-hover), 0 6px 0 rgba(0, 120, 140, 0.5);
+}
+
+.btn-secondary:active:not(.btn-disabled) {
+  box-shadow: var(--shadow-cyan), 0 2px 0 rgba(0, 120, 140, 0.5);
 }
 
 .btn-success {
   background: var(--gradient-success);
   color: var(--white);
-  box-shadow: var(--shadow-success);
+  box-shadow: var(--shadow-success), 0 4px 0 rgba(40, 110, 40, 0.5);
 }
 
 .btn-success:hover:not(.btn-disabled) {
-  box-shadow: var(--shadow-success-hover);
+  box-shadow: var(--shadow-success-hover), 0 6px 0 rgba(40, 110, 40, 0.5);
+}
+
+.btn-success:active:not(.btn-disabled) {
+  box-shadow: var(--shadow-success), 0 2px 0 rgba(40, 110, 40, 0.5);
 }
 
 .btn-danger {
   background: var(--gradient-danger);
   color: var(--white);
-  box-shadow: var(--shadow-danger);
+  box-shadow: var(--shadow-danger), 0 4px 0 rgba(160, 30, 30, 0.5);
 }
 
 .btn-danger:hover:not(.btn-disabled) {
-  box-shadow: var(--shadow-danger-hover);
+  box-shadow: var(--shadow-danger-hover), 0 6px 0 rgba(160, 30, 30, 0.5);
+}
+
+.btn-danger:active:not(.btn-disabled) {
+  box-shadow: var(--shadow-danger), 0 2px 0 rgba(160, 30, 30, 0.5);
 }
 
 /* Sizes */
@@ -137,5 +278,34 @@ const handleClick = (event: MouseEvent) => {
   cursor: not-allowed;
   transform: none !important;
   filter: grayscale(50%);
+  box-shadow: none !important;
+}
+
+/* Touch pressed state */
+.btn-pressed:not(.btn-disabled) {
+  transform: translateY(2px) scale(0.95);
+  transition: transform 0.1s ease;
+}
+
+.btn-pressed.btn-primary:not(.btn-disabled) {
+  box-shadow: var(--shadow-primary), 0 1px 0 rgba(200, 160, 0, 0.5);
+}
+
+.btn-pressed.btn-secondary:not(.btn-disabled) {
+  box-shadow: var(--shadow-cyan), 0 1px 0 rgba(0, 120, 140, 0.5);
+}
+
+.btn-pressed.btn-success:not(.btn-disabled) {
+  box-shadow: var(--shadow-success), 0 1px 0 rgba(40, 110, 40, 0.5);
+}
+
+.btn-pressed.btn-danger:not(.btn-disabled) {
+  box-shadow: var(--shadow-danger), 0 1px 0 rgba(160, 30, 30, 0.5);
+}
+
+/* Touch moved outside - visual hint that action won't trigger */
+.btn-pressed-outside:not(.btn-disabled) {
+  opacity: 0.7;
+  transform: translateY(1px) scale(0.97);
 }
 </style>

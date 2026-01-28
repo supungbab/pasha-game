@@ -1,6 +1,6 @@
 <template>
   <div class="minigame color-match">
-    <canvas ref="canvasRef" @click="handleClick" @touchstart="handleTouch"></canvas>
+    <canvas ref="canvasRef" @touchstart.prevent="handleTouch"></canvas>
   </div>
 </template>
 
@@ -20,7 +20,7 @@ const canvasRef = ref<HTMLCanvasElement | null>(null);
 const { ctx, helper, width, height, clear, getCanvasCoordinates } = useCanvas(canvasRef, {
   width: 400,
   height: 600,
-  backgroundColor: '#F7FFF7'
+  backgroundColor: '#FFF8DC' // 노랑 테마와 어울리는 크림색
 });
 
 // Game state
@@ -349,6 +349,8 @@ onUnmounted(() => {
   border-radius: 0;
   padding: 0;
   box-shadow: none;
+  position: relative;
+  overflow: hidden;
 }
 
 canvas {

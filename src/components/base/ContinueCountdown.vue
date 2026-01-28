@@ -62,10 +62,10 @@ const handleDecline = () => {
           </p>
 
           <div class="continue-actions">
-            <button class="btn-continue" @click="handleContinue">
+            <button class="btn-continue" @touchend.prevent="handleContinue">
               🎬 광고 시청하고 계속
             </button>
-            <button class="btn-decline" @click="handleDecline">
+            <button class="btn-decline" @touchend.prevent="handleDecline">
               포기
             </button>
           </div>
@@ -176,6 +176,10 @@ const handleDecline = () => {
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+  user-select: none;
 }
 
 .btn-continue:hover {
@@ -199,6 +203,10 @@ const handleDecline = () => {
   border-radius: 16px;
   cursor: pointer;
   transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+  user-select: none;
 }
 
 .btn-decline:hover {

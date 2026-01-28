@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
+import { useTouchButton } from '@/composables';
 
 interface Props {
   show: boolean;
@@ -15,11 +16,21 @@ const emit = defineEmits<{
   close: [];
 }>();
 
-const handleOverlayClick = () => {
-  if (props.closeOnOverlay) {
-    emit('close');
+// Touch button for overlay
+const overlayRef = ref<HTMLElement | null>(null);
+const { handlers: overlayHandlers } = useTouchButton(overlayRef, {
+  onTap: () => {
+    if (props.closeOnOverlay) {
+      emit('close');
+    }
   }
-};
+});
+
+// Touch button for close button
+const closeRef = ref<HTMLElement | null>(null);
+const { handlers: closeHandlers } = useTouchButton(closeRef, {
+  onTap: () => emit('close')
+});
 
 const handleKeydown = (e: KeyboardEvent) => {
   if (e.key === 'Escape' && props.show) {
@@ -39,11 +50,11 @@ onUnmounted(() => {
 <template>
   <Teleport to="body">
     <Transition name="modal">
-      <div v-if="show" class="modal-overlay" @click="handleOverlayClick">
-        <div class="modal-container" @click.stop>
+      <div v-if="show" ref="overlayRef" class="modal-overlay" v-on="overlayHandlers">
+        <div class="modal-container" @touchend.stop @touchstart.stop>
           <div v-if="title" class="modal-header">
             <h2 class="modal-title">{{ title }}</h2>
-            <button class="modal-close" @click="emit('close')">✕</button>
+            <button ref="closeRef" class="modal-close" v-on="closeHandlers">✕</button>
           </div>
 
           <div class="modal-body">
@@ -120,6 +131,10 @@ onUnmounted(() => {
   transition: all 0.2s ease;
   color: white;
   box-shadow: var(--shadow-danger);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+  user-select: none;
 }
 
 .modal-close:hover {

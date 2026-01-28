@@ -4,7 +4,7 @@
       ref="canvasRef"
       :width="canvasWidth"
       :height="canvasHeight"
-      @click="handleShoot"
+      @touchstart.prevent="handleTouchShoot"
     ></canvas>
 
     <div class="ui-overlay">
@@ -18,7 +18,7 @@
       </div>
     </div>
 
-    <div class="crosshair" :style="{ left: crosshairX + 'px', top: crosshairY + 'px' }">
+    <div class="crosshair desktop-only" :style="{ left: crosshairX + 'px', top: crosshairY + 'px' }">
       ✛
     </div>
   </div>
@@ -133,6 +133,25 @@ function handleShoot(event: MouseEvent) {
   const x = event.clientX - rect.left;
   const y = event.clientY - rect.top;
 
+  processShoot(x, y);
+}
+
+// 터치 사격 핸들러
+function handleTouchShoot(event: TouchEvent) {
+  if (gameCompleted) return;
+
+  const rect = canvasRef.value?.getBoundingClientRect();
+  if (!rect) return;
+
+  const touch = event.touches[0];
+  const x = touch.clientX - rect.left;
+  const y = touch.clientY - rect.top;
+
+  processShoot(x, y);
+}
+
+// 공통 사격 처리
+function processShoot(x: number, y: number) {
   // 타겟 히트 체크
   for (let i = targets.value.length - 1; i >= 0; i--) {
     const target = targets.value[i];
@@ -355,7 +374,6 @@ onUnmounted(() => {
   background: linear-gradient(135deg, #232526 0%, #414345 100%);
   position: relative;
   overflow: hidden;
-  cursor: none;
 }
 
 canvas {
@@ -363,7 +381,17 @@ canvas {
   max-height: 100%;
   border-radius: 12px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-  cursor: none;
+  touch-action: none;
+}
+
+/* Desktop only - cursor hidden */
+@media (hover: hover) and (pointer: fine) {
+  .quick-shoot {
+    cursor: none;
+  }
+  canvas {
+    cursor: none;
+  }
 }
 
 .ui-overlay {
@@ -427,6 +455,14 @@ canvas {
                0 0 20px rgba(255, 255, 255, 0.3);
   animation: crosshairPulse 1s ease-in-out infinite;
   z-index: 1000;
+  display: none;
+}
+
+/* Show crosshair only on desktop */
+@media (hover: hover) and (pointer: fine) {
+  .crosshair.desktop-only {
+    display: block;
+  }
 }
 
 @keyframes crosshairPulse {

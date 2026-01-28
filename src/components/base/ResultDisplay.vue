@@ -68,7 +68,7 @@ const isPerfect = computed(() => props.result.perfect || grade.value === 'S');
           </div>
 
           <!-- Continue Button -->
-          <button class="continue-button" @click="emit('continue')">
+          <button class="continue-button" @touchend.prevent="emit('continue')">
             계속하기
           </button>
         </div>
@@ -201,6 +201,10 @@ const isPerfect = computed(() => props.result.perfect || grade.value === 'S');
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+  user-select: none;
 }
 
 .continue-button:hover {

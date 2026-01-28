@@ -1,5 +1,5 @@
 <template>
-  <div class="minigame draw-line">
+  <div ref="containerRef" class="minigame draw-line">
     <canvas
       ref="canvasRef"
       @mousedown="handlePointerDown"
@@ -9,14 +9,17 @@
       @touchmove="handleTouchMove"
       @touchend="handleTouchEnd"
     ></canvas>
+
+    <!-- Score Popups -->
+    <ScorePopup :popups="scorePopups" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
-import { useCanvas } from '@/composables/useCanvas';
-import { useCleanupTimers } from '@/composables/useCleanupTimers';
+import { useCanvas, useCleanupTimers, useJuicyFeedback } from '@/composables';
+import { ScorePopup } from '@/components/common';
 import { distance } from '@/utils/canvas';
 
 const props = defineProps<MiniGameProps>();
@@ -24,8 +27,11 @@ const emit = defineEmits<{
   complete: [result: MiniGameResult];
 }>();
 
-// Canvas setup
+// Refs
+const containerRef = ref<HTMLElement | null>(null);
 const canvasRef = ref<HTMLCanvasElement | null>(null);
+
+// Canvas setup
 const { ctx, helper, width, height, clear, getCanvasCoordinates } = useCanvas(canvasRef, {
   width: 400,
   height: 600,
@@ -34,6 +40,14 @@ const { ctx, helper, width, height, clear, getCanvasCoordinates } = useCanvas(ca
 
 // Timer utilities
 const { safeSetTimeout, safeSetInterval, clearInterval, cancelAnimationFrame } = useCleanupTimers();
+
+// Juicy feedback
+const {
+  scorePopups,
+  createScorePopup,
+  createParticles,
+  shake,
+} = useJuicyFeedback();
 
 // Game state
 const score = ref(0);
@@ -369,8 +383,36 @@ function evaluateDrawing() {
   totalAccuracy.value += accuracy.value;
   roundCount.value++;
 
+  // Get popup position from center of canvas
+  const canvasRect = canvasRef.value?.getBoundingClientRect();
+  const screenX = canvasRect ? canvasRect.left + canvasRect.width / 2 : window.innerWidth / 2;
+  const screenY = canvasRect ? canvasRect.top + 100 : 100;
+
   if (accuracy.value >= 70) {
-    score.value += Math.round(accuracy.value * 0.8);
+    const points = Math.round(accuracy.value * 0.8);
+    score.value += points;
+
+    // Juicy success feedback
+    if (accuracy.value >= 90) {
+      createScorePopup(screenX, screenY, `+${points} 완벽해요! ⭐`, 'bonus');
+      shake(containerRef.value, 'light');
+    } else {
+      createScorePopup(screenX, screenY, `+${points} 정확해요!`, 'score');
+    }
+    createParticles(containerRef.value, screenX, screenY, '#2ECC71', 8);
+
+    if (navigator.vibrate) {
+      navigator.vibrate([30, 20, 30]);
+    }
+  } else {
+    // Juicy fail feedback
+    createScorePopup(screenX, screenY, `${accuracy.value}% 다시 시도!`, 'miss');
+    createParticles(containerRef.value, screenX, screenY, '#E74C3C', 6);
+    shake(containerRef.value, 'light');
+
+    if (navigator.vibrate) {
+      navigator.vibrate([50, 30, 50]);
+    }
   }
 
   // Generate new round after delay
@@ -397,7 +439,16 @@ function endGame() {
     count: roundCount.value
   };
 
-  emit('complete', result);
+  // Success/fail shake
+  if (result.success) {
+    shake(containerRef.value, 'light');
+  } else {
+    shake(containerRef.value, 'strong');
+  }
+
+  safeSetTimeout(() => {
+    emit('complete', result);
+  }, 300);
 }
 
 // Start game
@@ -418,6 +469,11 @@ function startGame() {
 }
 
 onMounted(() => {
+  // Pop-in animation for container
+  if (containerRef.value) {
+    containerRef.value.classList.add('juicy-pop');
+  }
+
   safeSetTimeout(startGame, 100);
 });
 
@@ -438,6 +494,8 @@ onUnmounted(() => {
   border-radius: 0;
   padding: 0;
   box-shadow: none;
+  position: relative;
+  overflow: hidden;
 }
 
 canvas {

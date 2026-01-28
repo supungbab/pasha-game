@@ -12,7 +12,7 @@
         :key="index"
         class="emoji-item"
         :class="{ found: foundIndices.includes(index) }"
-        @click="handleClick(index, emoji)"
+        @touchstart.prevent="handleClick(index, emoji)"
       >
         {{ emoji }}
       </div>

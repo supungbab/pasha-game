@@ -12,12 +12,12 @@ const router = createRouter({
     {
       path: '/test',
       name: 'minigame-test-list',
-      component: () => import('../views/MiniGameTestList.vue')
+      component: () => import('../components/ui/MiniGameTestList.vue')
     },
     {
       path: '/test/:id',
       name: 'minigame-test-player',
-      component: () => import('../views/MiniGameTestPlayer.vue')
+      component: () => import('../components/ui/MiniGameTestPlayer.vue')
     }
   ]
 })

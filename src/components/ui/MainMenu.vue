@@ -64,7 +64,7 @@ onMounted(() => {
         size="large"
         full-width
         class="start-button"
-        @click="emit('startGame')"
+        @tap="emit('startGame')"
       >
         🎮 게임 시작
       </Button>
@@ -74,7 +74,7 @@ onMounted(() => {
           variant="secondary"
           size="medium"
           full-width
-          @click="emit('showRanking')"
+          @tap="emit('showRanking')"
         >
           🏆 랭킹
         </Button>
@@ -83,7 +83,7 @@ onMounted(() => {
           variant="secondary"
           size="medium"
           full-width
-          @click="emit('showSettings')"
+          @tap="emit('showSettings')"
         >
           ⚙️ 설정
         </Button>
@@ -96,7 +96,7 @@ onMounted(() => {
         size="medium"
         full-width
         class="dev-test-button"
-        @click="goToTestMode"
+        @tap="goToTestMode"
       >
         🧪 미니게임 테스트 (DEV)
       </Button>
@@ -123,19 +123,20 @@ onMounted(() => {
   gap: 24px;
   justify-content: center;
   overflow: hidden;
-  background: linear-gradient(135deg, #FFFFFF 0%, #FFF8DC 100%);
+  background: var(--bg-main);
 }
 
 .menu-header {
   text-align: center;
+  animation: slideUp 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 .game-title {
   font-size: 56px;
   margin: 0 0 8px 0;
-  color: #FFD700;
+  color: var(--primary-yellow);
   font-weight: 700;
-  text-shadow: 2px 2px 0 #F9A825;
+  text-shadow: 2px 2px 0 var(--dark-yellow);
   letter-spacing: 0.05em;
 }
 
@@ -145,9 +146,13 @@ onMounted(() => {
 
 .game-subtitle {
   font-size: 20px;
-  color: #424242;
+  color: var(--text-medium);
   margin: 0;
   font-weight: 600;
+}
+
+.stats-card {
+  animation: slideUp 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 .stats-grid {
@@ -162,27 +167,28 @@ onMounted(() => {
   align-items: center;
   gap: 4px;
   padding: 12px;
-  background: #FFF8DC;
-  border-radius: 12px;
-  border: 2px solid #FFD700;
+  background: var(--neutral-cream);
+  border-radius: var(--radius-md);
+  border: 2px solid var(--primary-yellow);
 }
 
 .stat-label {
   font-size: 12px;
-  color: #757575;
+  color: var(--text-light);
   font-weight: 600;
 }
 
 .stat-value {
   font-size: 24px;
   font-weight: 700;
-  color: #FFD700;
+  color: var(--primary-yellow);
 }
 
 .menu-buttons {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  animation: slideUp 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 .start-button {
@@ -204,9 +210,10 @@ onMounted(() => {
 
 .menu-footer {
   text-align: center;
-  color: #757575;
+  color: var(--text-light);
   font-size: 14px;
   flex-shrink: 0;
+  animation: slideUp 0.7s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 .version {

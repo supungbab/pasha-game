@@ -19,7 +19,7 @@
             wrong: feedback && option.value === selectedColor && option.value !== currentWord.color
           }"
           :style="{ backgroundColor: option.value }"
-          @click="handleColorSelect(option)"
+          @touchstart.prevent="handleColorSelect(option)"
           :disabled="!!feedback"
         >
           <span class="color-label">{{ option.name }}</span>
@@ -200,9 +200,11 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 40px;
+  gap: clamp(20px, 5vw, 40px);
   width: 90%;
   max-width: 700px;
+  padding: 0 10px;
+  box-sizing: border-box;
 }
 
 .instruction {
@@ -218,14 +220,16 @@ onUnmounted(() => {
 }
 
 .word-display {
-  font-size: 96px;
+  font-size: clamp(48px, 12vw, 96px);
   font-weight: 900;
   text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3);
   background: white;
-  padding: 40px 80px;
+  padding: clamp(20px, 5vw, 40px) clamp(30px, 8vw, 80px);
   border-radius: 24px;
   box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
   animation: wordPop 0.5s ease-out;
+  max-width: 90%;
+  text-align: center;
 }
 
 @keyframes wordPop {
@@ -250,8 +254,8 @@ onUnmounted(() => {
 }
 
 .color-btn {
-  padding: 40px;
-  font-size: 28px;
+  padding: clamp(20px, 5vw, 40px);
+  font-size: clamp(18px, 4vw, 28px);
   font-weight: 700;
   color: white;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);

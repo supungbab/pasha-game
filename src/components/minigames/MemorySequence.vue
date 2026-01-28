@@ -1,5 +1,5 @@
 <template>
-  <div class="memory-sequence">
+  <div ref="containerRef" class="memory-sequence">
     <div class="game-area">
       <div class="tiles-grid">
         <div
@@ -12,14 +12,14 @@
             error: tile.isError
           }"
           :style="{ backgroundColor: tile.color }"
-          @click="handleTileClick(tile)"
+          @touchstart.prevent="handleTileClick(tile, $event)"
         >
           {{ tile.id + 1 }}
         </div>
       </div>
 
       <div class="status">
-        <div v-if="gameState === 'watching'" class="message">
+        <div v-if="gameState === 'watching'" class="message juicy-pulse">
           👀 순서를 기억하세요!
         </div>
         <div v-else-if="gameState === 'playing'" class="message">
@@ -30,6 +30,9 @@
         </div>
       </div>
     </div>
+
+    <!-- Score Popups -->
+    <ScorePopup :popups="scorePopups" />
 
     <div class="ui-overlay">
       <div class="score-display">
@@ -44,15 +47,28 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
-import { useCleanupTimers } from '@/composables/useCleanupTimers';
+import { useCleanupTimers, useJuicyFeedback } from '@/composables';
+import { ScorePopup } from '@/components/common';
 
 const props = defineProps<MiniGameProps>();
 const emit = defineEmits<{
   complete: [result: MiniGameResult];
 }>();
 
+// Refs
+const containerRef = ref<HTMLElement | null>(null);
+
 // 타이머 유틸리티
 const { safeSetTimeout } = useCleanupTimers();
+
+// Juicy feedback
+const {
+  scorePopups,
+  createScorePopup,
+  createParticles,
+  shake,
+  bounce,
+} = useJuicyFeedback();
 
 type GameState = 'waiting' | 'watching' | 'playing';
 
@@ -136,7 +152,7 @@ async function showSequence() {
 }
 
 // 타일 클릭 핸들러
-function handleTileClick(tile: Tile) {
+function handleTileClick(tile: Tile, event?: MouseEvent) {
   if (gameCompleted || gameState.value !== 'playing') return;
 
   const currentIndex = playerSequence.value.length;
@@ -144,9 +160,17 @@ function handleTileClick(tile: Tile) {
 
   playerSequence.value.push(tile.id);
 
+  // Get screen coordinates for popup
+  const screenX = event?.clientX ?? window.innerWidth / 2;
+  const screenY = event?.clientY ?? window.innerHeight / 2;
+
   if (tile.id === expectedId) {
     // 정답!
     tile.isSuccess = true;
+
+    // Juicy feedback
+    createParticles(containerRef.value, screenX, screenY, tile.color, 5);
+    bounce(event?.target as HTMLElement);
 
     // 진동 피드백
     if (navigator.vibrate) {
@@ -163,6 +187,10 @@ function handleTileClick(tile: Tile) {
       score.value += 20;
       currentRound.value++;
 
+      // Show score popup
+      createScorePopup(screenX, screenY - 30, `+20 라운드 클리어!`, 'bonus');
+      shake(containerRef.value, 'light');
+
       // 목표 점수 달성 확인
       if (score.value >= props.targetScore) {
         completeGame();
@@ -173,10 +201,18 @@ function handleTileClick(tile: Tile) {
       safeSetTimeout(() => {
         startRound();
       }, 1000);
+    } else {
+      // Show progress popup
+      createScorePopup(screenX, screenY - 20, `${playerSequence.value.length}/${sequence.value.length}`, 'score');
     }
   } else {
     // 오답!
     tile.isError = true;
+
+    // Juicy feedback for failure
+    createScorePopup(screenX, screenY - 20, '틀렸어요!', 'miss');
+    createParticles(containerRef.value, screenX, screenY, '#FF4444', 8);
+    shake(containerRef.value, 'strong');
 
     // 진동 피드백
     if (navigator.vibrate) {
@@ -232,6 +268,11 @@ function completeGame() {
 }
 
 onMounted(() => {
+  // Pop-in animation for container
+  if (containerRef.value) {
+    containerRef.value.classList.add('juicy-pop');
+  }
+
   initTiles();
   startTime = Date.now();
 
@@ -277,21 +318,22 @@ onUnmounted(() => {
 .tiles-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
-  padding: 20px;
+  gap: clamp(8px, 2vw, 15px);
+  padding: clamp(10px, 3vw, 20px);
   background: rgba(255, 255, 255, 0.1);
   border-radius: 24px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  max-width: 90vw;
 }
 
 .tile {
-  width: 100px;
-  height: 100px;
+  width: clamp(60px, 20vw, 100px);
+  height: clamp(60px, 20vw, 100px);
   border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;
+  font-size: clamp(20px, 6vw, 32px);
   font-weight: 800;
   color: white;
   cursor: pointer;

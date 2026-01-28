@@ -99,6 +99,8 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 }
 
 html,
@@ -106,6 +108,12 @@ body {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  /* 스와이프 백/앞으로 제스처 비활성화 */
+  overscroll-behavior: none;
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: none;
+  /* 수평 스와이프 완전 차단 */
+  touch-action: pan-y;
 }
 
 body {
@@ -115,10 +123,17 @@ body {
   background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* 웹뷰 기본 동작 비활성화 */
   touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
   -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none; /* 길게 누르기 메뉴 비활성화 */
+  -webkit-text-size-adjust: 100%; /* iOS 텍스트 크기 자동조절 비활성화 */
+  -ms-text-size-adjust: 100%;
 }
 
 #app {

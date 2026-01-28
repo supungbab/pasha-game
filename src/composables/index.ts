@@ -4,3 +4,7 @@ export { useGameState } from './useGameState';
 export { useAudio } from './useAudio';
 export { useCanvas } from './useCanvas';
 export { useCleanupTimers } from './useCleanupTimers';
+export { useJuicyFeedback } from './useJuicyFeedback';
+export type { ScorePopupType, ShakeIntensity } from './useJuicyFeedback';
+export { useTouchButton } from './useTouchButton';
+export type { UseTouchButtonOptions } from './useTouchButton';

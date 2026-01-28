@@ -1,14 +1,17 @@
 <template>
-  <div class="minigame coin-collector">
-    <canvas ref="canvasRef" @click="handleClick" @touchstart="handleTouch"></canvas>
+  <div ref="containerRef" class="minigame coin-collector">
+    <canvas ref="canvasRef" @touchstart.prevent="handleTouch"></canvas>
+
+    <!-- Score Popups -->
+    <ScorePopup :popups="scorePopups" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
-import { useCanvas } from '@/composables/useCanvas';
-import { useCleanupTimers } from '@/composables/useCleanupTimers';
+import { useCanvas, useCleanupTimers, useJuicyFeedback } from '@/composables';
+import { ScorePopup } from '@/components/common';
 import { pointInCircle } from '@/utils/canvas';
 import type { Particle } from '@/utils/canvas';
 
@@ -17,8 +20,11 @@ const emit = defineEmits<{
   complete: [result: MiniGameResult];
 }>();
 
-// Canvas setup
+// Refs
+const containerRef = ref<HTMLElement | null>(null);
 const canvasRef = ref<HTMLCanvasElement | null>(null);
+
+// Canvas setup
 const { ctx, helper, width, height, clear, getCanvasCoordinates } = useCanvas(canvasRef, {
   width: 400,
   height: 600,
@@ -28,8 +34,18 @@ const { ctx, helper, width, height, clear, getCanvasCoordinates } = useCanvas(ca
 // Timer utilities
 const { safeSetTimeout, safeSetInterval, clearInterval, cancelAnimationFrame } = useCleanupTimers();
 
+// Juicy feedback
+const {
+  scorePopups,
+  createScorePopup,
+  createParticles,
+  shake,
+} = useJuicyFeedback();
+
 // Game state
 const score = ref(0);
+const combo = ref(0);
+const lastCollectTime = ref(0);
 const timeRemainingMs = ref(props.timeLimit * 1000);
 const isGameOver = ref(false);
 const coins = ref<FallingItem[]>([]);
@@ -37,6 +53,9 @@ const bombs = ref<FallingItem[]>([]);
 const particles = ref<Particle[]>([]);
 const coinCount = ref(0);
 const bombHits = ref(0);
+
+// Combo timeout (500ms for coins)
+const COMBO_TIMEOUT = 500;
 
 // Difficulty settings
 const difficultySettings = computed(() => {
@@ -235,7 +254,7 @@ function gameLoop() {
 function handleClick(event: MouseEvent) {
   if (isGameOver.value) return;
   const coords = getCanvasCoordinates(event);
-  checkItemHit(coords.x, coords.y);
+  checkItemHit(coords.x, coords.y, event.clientX, event.clientY);
 }
 
 function handleTouch(event: TouchEvent) {
@@ -245,12 +264,13 @@ function handleTouch(event: TouchEvent) {
   // Handle multiple touches
   for (let i = 0; i < event.touches.length; i++) {
     const touch = event.touches[i];
+    if (!touch) continue;
     const coords = getCanvasCoordinates(touch);
-    checkItemHit(coords.x, coords.y);
+    checkItemHit(coords.x, coords.y, touch.clientX, touch.clientY);
   }
 }
 
-function checkItemHit(x: number, y: number) {
+function checkItemHit(x: number, y: number, screenX: number, screenY: number) {
   // Check coins first
   const coinIndex = coins.value.findIndex(coin => {
     if (coin.collected) return false;
@@ -259,8 +279,24 @@ function checkItemHit(x: number, y: number) {
 
   if (coinIndex !== -1) {
     const coin = coins.value[coinIndex];
+    if (!coin) return;
+
+    const now = Date.now();
+
+    // Check combo
+    if (now - lastCollectTime.value < COMBO_TIMEOUT) {
+      combo.value++;
+    } else {
+      combo.value = 1;
+    }
+    lastCollectTime.value = now;
+
+    // Calculate points with combo bonus
+    const comboBonus = combo.value > 1 ? (combo.value - 1) * 2 : 0;
+    const points = coin.points + comboBonus;
+
     coin.collected = true;
-    score.value += coin.points;
+    score.value += points;
     coinCount.value++;
 
     // Create particles
@@ -268,6 +304,29 @@ function checkItemHit(x: number, y: number) {
       const color = ITEM_TYPES[coin.type].color;
       const newParticles = helper.value.createParticles(coin.x, coin.y, color, 10);
       particles.value.push(...newParticles);
+    }
+
+    // Juicy feedback
+    createParticles(containerRef.value, screenX, screenY, ITEM_TYPES[coin.type].color, 6);
+
+    if (coin.type === 'gem') {
+      createScorePopup(screenX, screenY - 20, `+${points} 💎`, 'bonus');
+      shake(containerRef.value, 'light');
+    } else if (combo.value >= 5) {
+      createScorePopup(screenX, screenY - 20, `+${points} x${combo.value}!`, 'combo');
+    } else if (combo.value >= 3) {
+      createScorePopup(screenX, screenY - 20, `+${points} COMBO!`, 'score');
+    } else {
+      createScorePopup(screenX, screenY - 20, `+${points}`, 'score');
+    }
+
+    // Vibrate
+    if (navigator.vibrate) {
+      if (coin.type === 'gem') {
+        navigator.vibrate([30, 20, 30]);
+      } else {
+        navigator.vibrate(20);
+      }
     }
 
     return;
@@ -281,14 +340,26 @@ function checkItemHit(x: number, y: number) {
 
   if (bombIndex !== -1) {
     const bomb = bombs.value[bombIndex];
+    if (!bomb) return;
+
     bomb.collected = true;
     score.value = Math.max(0, score.value + bomb.points);
     bombHits.value++;
+    combo.value = 0; // Reset combo on bomb
 
     // Create explosion particles
     if (helper.value) {
       const explodeParticles = helper.value.createParticles(bomb.x, bomb.y, '#FF4444', 15);
       particles.value.push(...explodeParticles);
+    }
+
+    // Juicy feedback for bomb
+    createScorePopup(screenX, screenY - 20, `${bomb.points}`, 'miss');
+    createParticles(containerRef.value, screenX, screenY, '#FF4444', 12);
+    shake(containerRef.value, 'strong');
+
+    if (navigator.vibrate) {
+      navigator.vibrate([100, 50, 100]);
     }
   }
 }
@@ -307,7 +378,16 @@ function endGame() {
     count: coinCount.value
   };
 
-  emit('complete', result);
+  // Success/fail shake
+  if (result.success) {
+    shake(containerRef.value, 'light');
+  } else {
+    shake(containerRef.value, 'strong');
+  }
+
+  safeSetTimeout(() => {
+    emit('complete', result);
+  }, 300);
 }
 
 // Start game
@@ -334,6 +414,11 @@ function startGame() {
 }
 
 onMounted(() => {
+  // Pop-in animation for container
+  if (containerRef.value) {
+    containerRef.value.classList.add('juicy-pop');
+  }
+
   safeSetTimeout(startGame, 100);
 });
 
@@ -354,6 +439,8 @@ onUnmounted(() => {
   border-radius: 0;
   padding: 0;
   box-shadow: none;
+  position: relative;
+  overflow: hidden;
 }
 
 canvas {

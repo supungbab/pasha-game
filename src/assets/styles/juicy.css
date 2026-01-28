@@ -1,0 +1,427 @@
+/* src/assets/styles/juicy.css */
+/* "통통 튀는" 게임 피드백을 위한 Juicy 애니메이션 시스템 */
+
+/* ========================================
+   1. SQUASH & STRETCH - 탄성 애니메이션
+   ======================================== */
+
+/* 기본 바운스 - 통통 튀는 느낌 */
+@keyframes juicy-bounce {
+  0%   { transform: scale(1, 1); }
+  25%  { transform: scale(1.15, 0.85); }
+  50%  { transform: scale(0.9, 1.1); }
+  75%  { transform: scale(1.05, 0.95); }
+  100% { transform: scale(1, 1); }
+}
+
+/* 강한 바운스 - 점수 획득, 콤보 */
+@keyframes juicy-bounce-strong {
+  0%   { transform: scale(1, 1); }
+  20%  { transform: scale(1.25, 0.75); }
+  40%  { transform: scale(0.85, 1.15); }
+  60%  { transform: scale(1.1, 0.9); }
+  80%  { transform: scale(0.95, 1.05); }
+  100% { transform: scale(1, 1); }
+}
+
+/* 탭/클릭 피드백 - 누를 때 찌그러짐 */
+@keyframes juicy-press {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(0.9, 0.95); }
+  100% { transform: scale(1); }
+}
+
+/* 버튼 눌림 효과 */
+@keyframes juicy-button-press {
+  0%   { transform: scale(1) translateY(0); }
+  50%  { transform: scale(0.95) translateY(2px); }
+  100% { transform: scale(1) translateY(0); }
+}
+
+/* ========================================
+   2. POP 애니메이션 - 등장/강조 효과
+   ======================================== */
+
+/* 기본 팝 - 등장 효과 */
+@keyframes juicy-pop {
+  0%   { transform: scale(0); opacity: 0; }
+  50%  { transform: scale(1.2); opacity: 1; }
+  70%  { transform: scale(0.9); }
+  85%  { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* 성공 팝 - 더 강조된 등장 */
+@keyframes juicy-success-pop {
+  0%   { transform: scale(0) rotate(-10deg); opacity: 0; }
+  40%  { transform: scale(1.3) rotate(5deg); opacity: 1; }
+  60%  { transform: scale(0.85) rotate(-3deg); }
+  80%  { transform: scale(1.1) rotate(1deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* 실패 팝 */
+@keyframes juicy-fail-pop {
+  0%   { transform: scale(0); opacity: 0; }
+  30%  { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ========================================
+   3. 점수 팝업 애니메이션
+   ======================================== */
+
+/* 점수 떠오름 */
+@keyframes juicy-score-float {
+  0%   {
+    transform: translateY(0) scale(0.5);
+    opacity: 0;
+  }
+  15%  {
+    transform: translateY(-10px) scale(1.3);
+    opacity: 1;
+  }
+  30%  {
+    transform: translateY(-20px) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-80px) scale(0.7);
+    opacity: 0;
+  }
+}
+
+/* 콤보 점수 (더 크고 화려하게) */
+@keyframes juicy-combo-float {
+  0%   {
+    transform: translateY(0) scale(0.3) rotate(-5deg);
+    opacity: 0;
+  }
+  20%  {
+    transform: translateY(-15px) scale(1.5) rotate(3deg);
+    opacity: 1;
+  }
+  40%  {
+    transform: translateY(-30px) scale(1.2) rotate(-2deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100px) scale(0.6) rotate(0deg);
+    opacity: 0;
+  }
+}
+
+/* 보너스 점수 */
+@keyframes juicy-bonus-float {
+  0%   {
+    transform: translateY(0) scale(0.5);
+    opacity: 0;
+    filter: brightness(1);
+  }
+  20%  {
+    transform: translateY(-20px) scale(1.4);
+    opacity: 1;
+    filter: brightness(1.5);
+  }
+  50%  {
+    transform: translateY(-50px) scale(1.1);
+    opacity: 1;
+    filter: brightness(1.2);
+  }
+  100% {
+    transform: translateY(-120px) scale(0.8);
+    opacity: 0;
+    filter: brightness(1);
+  }
+}
+
+/* ========================================
+   4. 화면 흔들림 (SHAKE)
+   ======================================== */
+
+/* 가벼운 흔들림 - 성공 */
+@keyframes juicy-shake-light {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  20%      { transform: translateX(-4px) rotate(-0.5deg); }
+  40%      { transform: translateX(4px) rotate(0.5deg); }
+  60%      { transform: translateX(-3px) rotate(-0.3deg); }
+  80%      { transform: translateX(3px) rotate(0.3deg); }
+}
+
+/* 강한 흔들림 - 실패, 충돌 */
+@keyframes juicy-shake-strong {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  10%      { transform: translateX(-10px) rotate(-2deg); }
+  20%      { transform: translateX(10px) rotate(2deg); }
+  30%      { transform: translateX(-8px) rotate(-1.5deg); }
+  40%      { transform: translateX(8px) rotate(1.5deg); }
+  50%      { transform: translateX(-6px) rotate(-1deg); }
+  60%      { transform: translateX(6px) rotate(1deg); }
+  70%      { transform: translateX(-4px) rotate(-0.5deg); }
+  80%      { transform: translateX(4px) rotate(0.5deg); }
+  90%      { transform: translateX(-2px) rotate(-0.2deg); }
+}
+
+/* 수직 흔들림 */
+@keyframes juicy-shake-vertical {
+  0%, 100% { transform: translateY(0); }
+  20%      { transform: translateY(-6px); }
+  40%      { transform: translateY(6px); }
+  60%      { transform: translateY(-4px); }
+  80%      { transform: translateY(4px); }
+}
+
+/* ========================================
+   5. 발광/글로우 효과
+   ======================================== */
+
+@keyframes juicy-glow {
+  0%, 100% {
+    filter: brightness(1) drop-shadow(0 0 0 transparent);
+  }
+  50% {
+    filter: brightness(1.3) drop-shadow(0 0 20px rgba(255, 215, 0, 0.8));
+  }
+}
+
+@keyframes juicy-glow-success {
+  0%, 100% {
+    filter: brightness(1) drop-shadow(0 0 0 transparent);
+  }
+  50% {
+    filter: brightness(1.4) drop-shadow(0 0 25px rgba(76, 175, 80, 0.9));
+  }
+}
+
+@keyframes juicy-glow-error {
+  0%, 100% {
+    filter: brightness(1) drop-shadow(0 0 0 transparent);
+  }
+  50% {
+    filter: brightness(1.2) drop-shadow(0 0 20px rgba(255, 82, 82, 0.8));
+  }
+}
+
+/* ========================================
+   6. 펄스/하트비트 효과
+   ======================================== */
+
+@keyframes juicy-pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.08); }
+}
+
+@keyframes juicy-heartbeat {
+  0%, 100% { transform: scale(1); }
+  15%      { transform: scale(1.15); }
+  30%      { transform: scale(1); }
+  45%      { transform: scale(1.1); }
+}
+
+/* ========================================
+   7. 회전/스핀 효과
+   ======================================== */
+
+@keyframes juicy-spin-bounce {
+  0%   { transform: rotate(0deg) scale(1); }
+  25%  { transform: rotate(90deg) scale(1.1); }
+  50%  { transform: rotate(180deg) scale(1); }
+  75%  { transform: rotate(270deg) scale(1.1); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes juicy-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25%      { transform: rotate(-5deg); }
+  75%      { transform: rotate(5deg); }
+}
+
+/* ========================================
+   8. 축하 효과 (Celebration)
+   ======================================== */
+
+@keyframes juicy-celebrate {
+  0%   { transform: scale(1) rotate(0deg); }
+  10%  { transform: scale(1.2) rotate(-5deg); }
+  20%  { transform: scale(1.3) rotate(5deg); }
+  30%  { transform: scale(1.2) rotate(-3deg); }
+  40%  { transform: scale(1.25) rotate(3deg); }
+  50%  { transform: scale(1.15) rotate(0deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+/* 기본 애니메이션 클래스 */
+.juicy-bounce {
+  animation: juicy-bounce 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.juicy-bounce-strong {
+  animation: juicy-bounce-strong 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.juicy-press {
+  animation: juicy-press 0.15s ease-out;
+}
+
+.juicy-pop {
+  animation: juicy-pop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.juicy-success-pop {
+  animation: juicy-success-pop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.juicy-fail-pop {
+  animation: juicy-fail-pop 0.3s ease-out;
+}
+
+.juicy-shake-light {
+  animation: juicy-shake-light 0.4s ease-out;
+}
+
+.juicy-shake-strong {
+  animation: juicy-shake-strong 0.5s ease-out;
+}
+
+.juicy-glow {
+  animation: juicy-glow 0.6s ease-in-out;
+}
+
+.juicy-glow-success {
+  animation: juicy-glow-success 0.6s ease-in-out;
+}
+
+.juicy-glow-error {
+  animation: juicy-glow-error 0.4s ease-in-out;
+}
+
+.juicy-pulse {
+  animation: juicy-pulse 0.5s ease-in-out;
+}
+
+.juicy-pulse-infinite {
+  animation: juicy-pulse 1s ease-in-out infinite;
+}
+
+.juicy-heartbeat {
+  animation: juicy-heartbeat 0.8s ease-in-out;
+}
+
+.juicy-wiggle {
+  animation: juicy-wiggle 0.3s ease-in-out;
+}
+
+.juicy-wiggle-infinite {
+  animation: juicy-wiggle 0.5s ease-in-out infinite;
+}
+
+.juicy-celebrate {
+  animation: juicy-celebrate 0.8s ease-out;
+}
+
+/* 버튼 Juicy 효과 */
+.juicy-button {
+  transition: transform 0.1s ease;
+}
+
+.juicy-button:active {
+  animation: juicy-button-press 0.15s ease-out;
+}
+
+/* 점수 팝업 기본 스타일 */
+.juicy-score-popup {
+  position: absolute;
+  pointer-events: none;
+  font-weight: 800;
+  text-shadow:
+    2px 2px 0 rgba(0, 0, 0, 0.2),
+    -1px -1px 0 rgba(255, 255, 255, 0.5);
+  z-index: 1000;
+}
+
+.juicy-score-popup.score {
+  font-size: 1.5rem;
+  color: #FFD700;
+  animation: juicy-score-float 0.8s ease-out forwards;
+}
+
+.juicy-score-popup.combo {
+  font-size: 2rem;
+  color: #FF6B6B;
+  animation: juicy-combo-float 1s ease-out forwards;
+}
+
+.juicy-score-popup.bonus {
+  font-size: 1.8rem;
+  color: #4CAF50;
+  animation: juicy-bonus-float 1.2s ease-out forwards;
+}
+
+.juicy-score-popup.miss {
+  font-size: 1.5rem;
+  color: #FF5252;
+  animation: juicy-score-float 0.8s ease-out forwards;
+}
+
+/* 화면 전체 흔들림용 래퍼 */
+.juicy-shake-container {
+  width: 100%;
+  height: 100%;
+}
+
+.juicy-shake-container.shaking-light {
+  animation: juicy-shake-light 0.4s ease-out;
+}
+
+.juicy-shake-container.shaking-strong {
+  animation: juicy-shake-strong 0.5s ease-out;
+}
+
+/* 터치 피드백 ripple */
+.juicy-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 215, 0, 0.4);
+  transform: scale(0);
+  animation: juicy-ripple 0.6s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes juicy-ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+/* 파티클 컨테이너 */
+.juicy-particles {
+  position: absolute;
+  pointer-events: none;
+  z-index: 999;
+}
+
+.juicy-particle {
+  position: absolute;
+  border-radius: 50%;
+  animation: juicy-particle-fly 0.8s ease-out forwards;
+}
+
+@keyframes juicy-particle-fly {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--tx, 50px), var(--ty, -50px)) scale(0);
+    opacity: 0;
+  }
+}

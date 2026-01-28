@@ -282,16 +282,16 @@ canvas {
 
 .controls {
   position: absolute;
-  bottom: 30px;
+  bottom: clamp(15px, 4vw, 30px);
   display: flex;
-  gap: 40px;
+  gap: clamp(20px, 8vw, 40px);
   z-index: 10;
 }
 
 .climb-btn {
-  width: 120px;
-  height: 120px;
-  font-size: 48px;
+  width: clamp(80px, 25vw, 120px);
+  height: clamp(80px, 25vw, 120px);
+  font-size: clamp(32px, 10vw, 48px);
   background: linear-gradient(135deg, #FFD700, #FFC107);
   border: 4px solid #F9A825;
   border-radius: 50%;
@@ -327,15 +327,15 @@ canvas {
 }
 
 .score-display {
-  font-size: 32px;
+  font-size: clamp(20px, 5vw, 32px);
   font-weight: 800;
   color: white;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  padding: 15px 30px;
+  padding: clamp(10px, 3vw, 15px) clamp(15px, 5vw, 30px);
   background: rgba(0, 0, 0, 0.4);
   border-radius: 24px;
   border: 3px solid rgba(255, 255, 255, 0.4);
-  min-width: 200px;
+  min-width: min(200px, 60vw);
   text-align: center;
 }
 

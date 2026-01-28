@@ -49,7 +49,7 @@ const handleClearProgress = () => {
   <div class="settings">
     <div class="settings-header">
       <h1 class="settings-title">⚙️ 설정</h1>
-      <Button variant="secondary" size="small" @click="emit('close')">
+      <Button variant="secondary" size="small" @tap="emit('close')">
         ✕
       </Button>
     </div>
@@ -109,14 +109,14 @@ const handleClearProgress = () => {
             <Button
               :variant="settings.language === 'ko' ? 'primary' : 'secondary'"
               size="small"
-              @click="settings.language = 'ko'"
+              @tap="settings.language = 'ko'"
             >
               🇰🇷 한국어
             </Button>
             <Button
               :variant="settings.language === 'en' ? 'primary' : 'secondary'"
               size="small"
-              @click="settings.language = 'en'"
+              @tap="settings.language = 'en'"
             >
               🇺🇸 English
             </Button>
@@ -132,7 +132,7 @@ const handleClearProgress = () => {
           <Button
             variant="secondary"
             full-width
-            @click="showClearModal = true"
+            @tap="showClearModal = true"
           >
             🗑️ 진행상황 초기화
           </Button>
@@ -142,7 +142,7 @@ const handleClearProgress = () => {
           <Button
             variant="danger"
             full-width
-            @click="showResetModal = true"
+            @tap="showResetModal = true"
           >
             ⚠️ 모든 데이터 초기화
           </Button>
@@ -165,7 +165,7 @@ const handleClearProgress = () => {
     </div>
 
     <div class="settings-footer">
-      <Button variant="primary" full-width @click="emit('close')">
+      <Button variant="primary" full-width @tap="emit('close')">
         닫기
       </Button>
     </div>
@@ -181,10 +181,10 @@ const handleClearProgress = () => {
       <p><strong>계속하시겠습니까?</strong></p>
 
       <template #footer>
-        <Button variant="secondary" @click="showClearModal = false">
+        <Button variant="secondary" @tap="showClearModal = false">
           취소
         </Button>
-        <Button variant="danger" @click="handleClearProgress">
+        <Button variant="danger" @tap="handleClearProgress">
           초기화
         </Button>
       </template>
@@ -202,10 +202,10 @@ const handleClearProgress = () => {
       <p><strong>정말로 초기화하시겠습니까?</strong></p>
 
       <template #footer>
-        <Button variant="secondary" @click="showResetModal = false">
+        <Button variant="secondary" @tap="showResetModal = false">
           취소
         </Button>
-        <Button variant="danger" @click="handleResetAll">
+        <Button variant="danger" @tap="handleResetAll">
           모두 초기화
         </Button>
       </template>
@@ -225,7 +225,7 @@ const handleClearProgress = () => {
   flex-direction: column;
   gap: 1rem;
   overflow: hidden;
-  background: linear-gradient(135deg, #FFFFFF 0%, #FFF8DC 100%);
+  background: var(--bg-main);
 }
 
 .settings-header {
@@ -243,13 +243,13 @@ const handleClearProgress = () => {
   padding: 0 !important;
   width: auto !important;
   font-size: 1.5rem;
-  color: #424242;
+  color: var(--text-medium);
 }
 
 .settings-title {
   font-size: 2.2rem;
   margin: 0;
-  color: #212121;
+  color: var(--text-dark);
   font-weight: 700;
 }
 
@@ -269,12 +269,12 @@ const handleClearProgress = () => {
 }
 
 .settings-content::-webkit-scrollbar-track {
-  background: #F5F5F5;
+  background: var(--light-gray);
   border-radius: 4px;
 }
 
 .settings-content::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #FFD700 0%, #FFC107 100%);
+  background: var(--gradient-primary);
   border-radius: 4px;
 }
 
@@ -288,9 +288,9 @@ const handleClearProgress = () => {
 .section-title {
   font-size: 1.15rem;
   margin: 0 0 0.25rem 0;
-  color: #212121;
+  color: var(--text-dark);
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid #FFF8DC;
+  border-bottom: 2px solid var(--neutral-cream);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 600;
@@ -302,14 +302,14 @@ const handleClearProgress = () => {
   align-items: center;
   gap: 1rem;
   padding: 0.6rem 0.75rem;
-  background: #FFFFFF;
-  border-radius: 12px;
-  border-left: 4px solid #FFC107;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: var(--white);
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--secondary-yellow);
+  box-shadow: var(--shadow-sm);
 }
 
 .setting-item:nth-child(odd) {
-  border-left-color: #FFD700;
+  border-left-color: var(--primary-yellow);
 }
 
 .setting-label {
@@ -321,13 +321,13 @@ const handleClearProgress = () => {
 
 .setting-label > span:first-child {
   font-weight: 700;
-  color: #212121;
+  color: var(--text-dark);
   font-size: 0.95rem;
 }
 
 .setting-desc {
   font-size: 0.8rem;
-  color: #424242;
+  color: var(--text-medium);
   font-weight: 400;
 }
 
@@ -337,12 +337,12 @@ const handleClearProgress = () => {
 }
 
 .about-section {
-  background: #FFFFFF !important;
+  background: var(--white) !important;
 }
 
 .about-info {
   font-size: 0.9rem;
-  color: #424242;
+  color: var(--text-medium);
 }
 
 .about-info p {
@@ -350,14 +350,14 @@ const handleClearProgress = () => {
 }
 
 .about-info strong {
-  color: #FFD700;
+  color: var(--primary-yellow);
   font-weight: 700;
 }
 
 .description {
   margin-top: 0.75rem;
   padding-top: 0.75rem;
-  border-top: 2px solid #FFF8DC;
+  border-top: 2px solid var(--neutral-cream);
   font-size: 0.85rem;
   line-height: 1.6;
 }

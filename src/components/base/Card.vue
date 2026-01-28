@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { ref, computed } from 'vue';
+import { useTouchButton } from '@/composables';
+
 interface Props {
   title?: string;
   padding?: 'none' | 'small' | 'medium' | 'large';
@@ -15,17 +18,30 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   click: [];
 }>();
+
+const cardRef = ref<HTMLElement | null>(null);
+const notClickable = computed(() => !props.clickable);
+
+const { handlers, isPressed, isTouchInside } = useTouchButton(cardRef, {
+  disabled: notClickable,
+  onTap: () => emit('click')
+});
 </script>
 
 <template>
   <div
+    ref="cardRef"
     :class="[
       'card',
       `card-padding-${padding}`,
       `card-elevation-${elevation}`,
-      { 'card-clickable': clickable }
+      {
+        'card-clickable': clickable,
+        'card-pressed': isPressed && clickable,
+        'card-pressed-outside': isPressed && clickable && !isTouchInside
+      }
     ]"
-    @click="clickable && emit('click')"
+    v-on="clickable ? handlers : {}"
   >
     <div v-if="title || $slots.header" class="card-header">
       <slot name="header">
@@ -124,5 +140,16 @@ const emit = defineEmits<{
   padding-top: var(--spacing-md);
   border-top: 2px solid var(--divider-color);
   margin-top: var(--spacing-md);
+}
+
+/* Pressed states */
+.card-pressed {
+  transform: scale(0.98);
+  transition: transform 0.1s ease;
+}
+
+.card-pressed-outside {
+  opacity: 0.7;
+  transform: scale(0.99);
 }
 </style>

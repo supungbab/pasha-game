@@ -1,5 +1,6 @@
 import './assets/styles/variables.css'
 import './assets/styles/main.css'
+import './assets/styles/juicy.css'
 
 import { createApp } from 'vue'
 import App from './App.vue'

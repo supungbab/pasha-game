@@ -4,7 +4,7 @@
       ref="canvasRef"
       :width="canvasWidth"
       :height="canvasHeight"
-      @click="handleStop"
+      @touchstart.prevent="handleStop"
     ></canvas>
 
     <div class="ui-overlay">

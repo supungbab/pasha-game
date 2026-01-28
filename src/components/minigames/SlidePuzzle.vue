@@ -6,8 +6,16 @@
           v-for="(tile, index) in tiles"
           :key="index"
           class="puzzle-tile"
-          :class="{ empty: tile === 0, correct: isCorrectPosition(index, tile) }"
-          @click="moveTile(index)"
+          :class="{
+            empty: tile === 0,
+            correct: isCorrectPosition(index, tile),
+            pressed: getTileTouchState(index).touchId !== null && tile !== 0,
+            'pressed-outside': getTileTouchState(index).touchId !== null && !getTileTouchState(index).isInside && tile !== 0
+          }"
+          @touchstart="handleTileTouchStart($event, index)"
+          @touchmove="handleTileTouchMove($event, index)"
+          @touchend="handleTileTouchEnd($event, index)"
+          @touchcancel="handleTileTouchCancel(index)"
         >
           <span v-if="tile !== 0">{{ tile }}</span>
         </div>
@@ -15,7 +23,17 @@
 
       <div class="stats">
         <div class="stat">이동: {{ moves }}</div>
-        <button class="shuffle-btn" @click="shufflePuzzle">
+        <button
+          class="shuffle-btn"
+          :class="{
+            pressed: getTileTouchState(-1).touchId !== null,
+            'pressed-outside': getTileTouchState(-1).touchId !== null && !getTileTouchState(-1).isInside
+          }"
+          @touchstart="handleShuffleTouchStart"
+          @touchmove="handleShuffleTouchMove"
+          @touchend="handleShuffleTouchEnd"
+          @touchcancel="handleShuffleTouchCancel"
+        >
           🔄 섞기
         </button>
       </div>
@@ -30,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, reactive, onMounted, onUnmounted } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
 
 const props = defineProps<MiniGameProps>();
@@ -47,6 +65,14 @@ let isSolved = false;
 let gameCompleted = false;
 let startTime = 0;
 let timeoutId: number | null = null;
+
+// Touch state for tiles
+interface TouchState {
+  touchId: number | null;
+  isInside: boolean;
+}
+
+const tileTouchStates = reactive<Map<number, TouchState>>(new Map());
 
 // 난이도별 그리드 크기 (3x3 또는 4x4)
 const gridSize = computed(() => {
@@ -174,6 +200,98 @@ function shufflePuzzle() {
   isSolved = false;
 }
 
+// Touch handling for tiles and shuffle button
+function getTileTouchState(index: number): TouchState {
+  if (!tileTouchStates.has(index)) {
+    tileTouchStates.set(index, { touchId: null, isInside: false });
+  }
+  return tileTouchStates.get(index)!;
+}
+
+function isTouchInsideElement(touch: Touch, element: HTMLElement): boolean {
+  const rect = element.getBoundingClientRect();
+  return (
+    touch.clientX >= rect.left &&
+    touch.clientX <= rect.right &&
+    touch.clientY >= rect.top &&
+    touch.clientY <= rect.bottom
+  );
+}
+
+function handleTileTouchStart(event: TouchEvent, index: number) {
+  const touch = event.touches[0];
+  if (!touch) return;
+
+  event.preventDefault();
+  const state = getTileTouchState(index);
+  state.touchId = touch.identifier;
+  state.isInside = true;
+}
+
+function handleTileTouchMove(event: TouchEvent, index: number) {
+  const state = getTileTouchState(index);
+  if (state.touchId === null) return;
+
+  const touch = Array.from(event.touches).find(t => t.identifier === state.touchId);
+  if (!touch) return;
+
+  const element = event.currentTarget as HTMLElement;
+  state.isInside = isTouchInsideElement(touch, element);
+}
+
+function handleTileTouchEnd(event: TouchEvent, index: number) {
+  const state = getTileTouchState(index);
+  if (state.touchId === null) return;
+
+  event.preventDefault();
+
+  const touch = Array.from(event.changedTouches).find(t => t.identifier === state.touchId);
+  const element = event.currentTarget as HTMLElement;
+
+  if (touch && isTouchInsideElement(touch, element) && state.isInside) {
+    moveTile(index);
+  }
+
+  state.touchId = null;
+  state.isInside = false;
+}
+
+function handleTileTouchCancel(index: number) {
+  const state = getTileTouchState(index);
+  state.touchId = null;
+  state.isInside = false;
+}
+
+// Special case for shuffle button (index = -1)
+function handleShuffleTouchStart(event: TouchEvent) {
+  handleTileTouchStart(event, -1);
+}
+
+function handleShuffleTouchMove(event: TouchEvent) {
+  handleTileTouchMove(event, -1);
+}
+
+function handleShuffleTouchEnd(event: TouchEvent) {
+  const state = getTileTouchState(-1);
+  if (state.touchId === null) return;
+
+  event.preventDefault();
+
+  const touch = Array.from(event.changedTouches).find(t => t.identifier === state.touchId);
+  const element = event.currentTarget as HTMLElement;
+
+  if (touch && isTouchInsideElement(touch, element) && state.isInside) {
+    shufflePuzzle();
+  }
+
+  state.touchId = null;
+  state.isInside = false;
+}
+
+function handleShuffleTouchCancel() {
+  handleTileTouchCancel(-1);
+}
+
 // 게임 완료
 function completeGame() {
   if (gameCompleted) return;
@@ -237,12 +355,13 @@ onUnmounted(() => {
 .puzzle-grid {
   display: grid;
   gap: 8px;
-  padding: 20px;
+  padding: clamp(10px, 3vw, 20px);
   background: rgba(255, 255, 255, 0.1);
   border-radius: 20px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-  width: 400px;
-  height: 400px;
+  width: min(400px, 90vw);
+  height: min(400px, 90vw);
+  aspect-ratio: 1;
 }
 
 .puzzle-tile {
@@ -265,8 +384,14 @@ onUnmounted(() => {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
-.puzzle-tile:not(.empty):active {
+.puzzle-tile:not(.empty):active,
+.puzzle-tile:not(.empty).pressed {
   transform: scale(0.95);
+}
+
+.puzzle-tile:not(.empty).pressed-outside {
+  opacity: 0.7;
+  transform: scale(0.97);
 }
 
 .puzzle-tile.empty {
@@ -315,8 +440,16 @@ onUnmounted(() => {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
-.shuffle-btn:active {
+.shuffle-btn:active,
+.shuffle-btn.pressed {
   transform: translateY(0);
+  background: linear-gradient(135deg, #EE5A6F, #DD4960);
+}
+
+.shuffle-btn.pressed-outside {
+  opacity: 0.7;
+  transform: translateY(-1px);
+  background: linear-gradient(135deg, #FF6B6B, #EE5A6F);
 }
 
 .ui-overlay {

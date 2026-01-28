@@ -1,5 +1,5 @@
 <template>
-  <div class="minigame fruit-slice">
+  <div ref="containerRef" class="minigame fruit-slice">
     <canvas
       ref="canvasRef"
       @mousedown="handlePointerDown"
@@ -9,14 +9,17 @@
       @touchmove="handleTouchMove"
       @touchend="handleTouchEnd"
     ></canvas>
+
+    <!-- Score Popups -->
+    <ScorePopup :popups="scorePopups" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
-import { useCanvas } from '@/composables/useCanvas';
-import { useCleanupTimers } from '@/composables/useCleanupTimers';
+import { useCanvas, useCleanupTimers, useJuicyFeedback } from '@/composables';
+import { ScorePopup } from '@/components/common';
 import { lineIntersectsCircle } from '@/utils/canvas';
 import type { Particle } from '@/utils/canvas';
 
@@ -25,19 +28,32 @@ const emit = defineEmits<{
   complete: [result: MiniGameResult];
 }>();
 
-// Canvas setup
+// Refs
+const containerRef = ref<HTMLElement | null>(null);
 const canvasRef = ref<HTMLCanvasElement | null>(null);
+
+// Canvas setup
 const { ctx, helper, width, height, clear, getCanvasCoordinates } = useCanvas(canvasRef, {
   width: 400,
   height: 600,
-  backgroundColor: '#1a1a2e'
+  backgroundColor: '#FFF8DC'
 });
 
 // Timer utilities
 const { safeSetTimeout, safeSetInterval, clearInterval, cancelAnimationFrame } = useCleanupTimers();
 
+// Juicy feedback
+const {
+  scorePopups,
+  createScorePopup,
+  createParticles,
+  shake,
+} = useJuicyFeedback();
+
 // Game state
 const score = ref(0);
+const combo = ref(0);
+const lastSliceTime = ref(0);
 const timeRemainingMs = ref(props.timeLimit * 1000);
 const isGameOver = ref(false);
 const fruits = ref<FruitObject[]>([]);
@@ -50,6 +66,7 @@ const slicedCount = ref(0);
 const isSlicing = ref(false);
 const sliceTrail = ref<{ x: number; y: number }[]>([]);
 const lastSlicePoint = ref<{ x: number; y: number } | null>(null);
+const lastScreenPoint = ref<{ x: number; y: number } | null>(null);
 
 // Fruit emojis and colors
 const FRUITS = [
@@ -76,6 +93,9 @@ const difficultySettings = computed(() => {
   ];
   return settings[Math.min(props.difficulty - 1, 5)];
 });
+
+// Combo timeout
+const COMBO_TIMEOUT = 400;
 
 interface FruitObject {
   id: number;
@@ -182,17 +202,22 @@ function render() {
   // Clear
   clear();
 
-  // Draw background gradient
+  // Draw background gradient (bright cream/yellow theme)
   const gradient = ctx.value.createLinearGradient(0, 0, 0, height);
-  gradient.addColorStop(0, '#1a1a2e');
-  gradient.addColorStop(1, '#16213e');
+  gradient.addColorStop(0, '#FFFEF5');
+  gradient.addColorStop(1, '#FFF8DC');
   ctx.value.fillStyle = gradient;
   ctx.value.fillRect(0, 0, width, height);
 
-  // Draw slice trail
+  // Draw slice trail with glow effect
   if (sliceTrail.value.length > 1) {
-    ctx.value.strokeStyle = '#FFD700';
-    ctx.value.lineWidth = 4;
+    ctx.value.save();
+
+    // Glow layer (orange/red for visibility on light background)
+    ctx.value.shadowBlur = 12;
+    ctx.value.shadowColor = '#FF6B6B';
+    ctx.value.strokeStyle = '#FF6B6B';
+    ctx.value.lineWidth = 6;
     ctx.value.lineCap = 'round';
     ctx.value.lineJoin = 'round';
     ctx.value.beginPath();
@@ -201,6 +226,14 @@ function render() {
       ctx.value.lineTo(sliceTrail.value[i].x, sliceTrail.value[i].y);
     }
     ctx.value.stroke();
+
+    // Core line
+    ctx.value.shadowBlur = 0;
+    ctx.value.strokeStyle = '#FFFFFF';
+    ctx.value.lineWidth = 3;
+    ctx.value.stroke();
+
+    ctx.value.restore();
   }
 
   // Draw fruits
@@ -210,6 +243,11 @@ function render() {
     ctx.value!.save();
     ctx.value!.translate(fruit.x, fruit.y);
     ctx.value!.rotate(fruit.rotation);
+
+    // Reset shadow and styles for emoji
+    ctx.value!.shadowBlur = 0;
+    ctx.value!.shadowColor = 'transparent';
+    ctx.value!.fillStyle = '#000000';
 
     // Draw emoji
     ctx.value!.font = `${fruit.size}px Arial`;
@@ -226,6 +264,11 @@ function render() {
     ctx.value!.globalAlpha = piece.life;
     ctx.value!.translate(piece.x, piece.y);
     ctx.value!.rotate(piece.rotation);
+
+    // Reset shadow and styles for emoji
+    ctx.value!.shadowBlur = 0;
+    ctx.value!.shadowColor = 'transparent';
+    ctx.value!.fillStyle = '#000000';
 
     ctx.value!.font = `${piece.size}px Arial`;
     ctx.value!.textAlign = 'center';
@@ -268,24 +311,50 @@ function checkSlice(x: number, y: number) {
 
   const startX = lastSlicePoint.value.x;
   const startY = lastSlicePoint.value.y;
+  const screenX = lastScreenPoint.value?.x ?? 0;
+  const screenY = lastScreenPoint.value?.y ?? 0;
+
+  let slicedInThisFrame = 0;
 
   fruits.value.forEach(fruit => {
     if (fruit.sliced) return;
 
     if (lineIntersectsCircle(startX, startY, x, y, fruit.x, fruit.y, fruit.size / 2)) {
       if (fruit.type === 'bomb') {
-        // Hit bomb - game over
-        endGame(true);
+        // Hit bomb - game over with strong shake!
+        shake(containerRef.value, 'strong');
+        if (navigator.vibrate) navigator.vibrate([100, 50, 200]);
+
+        // Red flash particles
+        createParticles(containerRef.value, screenX, screenY, '#FF0000', 15);
+        createScorePopup(screenX, screenY - 30, '💥 BOOM!', 'combo');
+
+        safeSetTimeout(() => endGame(true), 300);
         return;
       }
 
       // Slice fruit
       fruit.sliced = true;
       slicedCount.value++;
-      score.value += 10;
+      slicedInThisFrame++;
+
+      const now = Date.now();
+
+      // Check combo
+      if (now - lastSliceTime.value < COMBO_TIMEOUT) {
+        combo.value++;
+      } else {
+        combo.value = 1;
+      }
+      lastSliceTime.value = now;
+
+      // Calculate points with combo bonus
+      const basePoints = 10;
+      const comboBonus = combo.value > 1 ? (combo.value - 1) * 5 : 0;
+      const points = basePoints + comboBonus;
+      score.value += points;
 
       // Create sliced pieces
-      const angle = Math.atan2(y - startY, x - startX);
       slicedFruits.value.push(
         {
           x: fruit.x - 10,
@@ -318,6 +387,28 @@ function checkSlice(x: number, y: number) {
         const juiceParticles = helper.value.createParticles(fruit.x, fruit.y, fruit.color, 8);
         particles.value.push(...juiceParticles);
       }
+
+      // Juicy feedback!
+      createParticles(containerRef.value, screenX, screenY, fruit.color, 6);
+
+      // Score popup based on combo
+      if (combo.value >= 5) {
+        createScorePopup(screenX, screenY - 30, `+${points} x${combo.value}!`, 'combo');
+        shake(containerRef.value, 'light');
+      } else if (combo.value >= 3) {
+        createScorePopup(screenX, screenY - 30, `+${points} COMBO!`, 'score');
+      } else {
+        createScorePopup(screenX, screenY - 30, `+${points}`, 'score');
+      }
+
+      // Haptic feedback
+      if (navigator.vibrate) {
+        if (combo.value >= 3) {
+          navigator.vibrate([20, 10, 20]);
+        } else {
+          navigator.vibrate(15);
+        }
+      }
     }
   });
 
@@ -328,12 +419,14 @@ function checkSlice(x: number, y: number) {
 function handlePointerDown(event: MouseEvent) {
   if (isGameOver.value) return;
   const coords = getCanvasCoordinates(event);
+  lastScreenPoint.value = { x: event.clientX, y: event.clientY };
   startSlice(coords.x, coords.y);
 }
 
 function handlePointerMove(event: MouseEvent) {
   if (!isSlicing.value || isGameOver.value) return;
   const coords = getCanvasCoordinates(event);
+  lastScreenPoint.value = { x: event.clientX, y: event.clientY };
   continueSlice(coords.x, coords.y);
 }
 
@@ -346,6 +439,7 @@ function handleTouchStart(event: TouchEvent) {
   event.preventDefault();
   const touch = event.touches[0];
   const coords = getCanvasCoordinates(touch);
+  lastScreenPoint.value = { x: touch.clientX, y: touch.clientY };
   startSlice(coords.x, coords.y);
 }
 
@@ -354,6 +448,7 @@ function handleTouchMove(event: TouchEvent) {
   event.preventDefault();
   const touch = event.touches[0];
   const coords = getCanvasCoordinates(touch);
+  lastScreenPoint.value = { x: touch.clientX, y: touch.clientY };
   continueSlice(coords.x, coords.y);
 }
 
@@ -398,7 +493,18 @@ function endGame(hitBomb = false) {
     attempts: totalFruits.value
   };
 
-  emit('complete', result);
+  // Final feedback
+  if (!hitBomb) {
+    if (result.success) {
+      shake(containerRef.value, 'light');
+    } else {
+      shake(containerRef.value, 'strong');
+    }
+  }
+
+  safeSetTimeout(() => {
+    emit('complete', result);
+  }, hitBomb ? 500 : 300);
 }
 
 // Start game
@@ -411,7 +517,7 @@ function startGame() {
     }
   }, 800);
 
-  // Timer countdown (정수 밀리초 사용)
+  // Timer countdown
   timerInterval = safeSetInterval(() => {
     timeRemainingMs.value -= 100;
     if (timeRemainingMs.value <= 0) {
@@ -428,10 +534,14 @@ function startGame() {
 }
 
 onMounted(() => {
+  // Pop-in animation
+  if (containerRef.value) {
+    containerRef.value.classList.add('juicy-pop');
+  }
+
   safeSetTimeout(startGame, 100);
 });
 
-// useCleanupTimers가 자동으로 모든 타이머를 정리합니다
 onUnmounted(() => {
   isGameOver.value = true;
 });
@@ -448,6 +558,8 @@ onUnmounted(() => {
   border-radius: 0;
   padding: 0;
   box-shadow: none;
+  position: relative;
+  overflow: hidden;
 }
 
 canvas {
@@ -456,6 +568,6 @@ canvas {
   touch-action: none;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  background: #FFFFFF;
+  background: #FFF8DC;
 }
 </style>

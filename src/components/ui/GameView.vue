@@ -36,20 +36,30 @@
 
     <!-- Playing Phase -->
     <main v-else-if="gameState.state.value.phase === 'playing'" class="game-area">
-      <component
-        v-if="currentGameData"
-        :is="currentGameData.component"
-        :difficulty="gameState.state.value.currentDifficulty"
-        :time-limit="adjustedTimeLimit"
-        :target-score="adjustedTargetScore"
-        :is-hard-mode="gameState.state.value.isHardMode"
-        @complete="handleGameComplete"
-      />
+      <div class="game-box">
+        <TimerBorder
+          :time-limit="adjustedTimeLimit"
+          :warning-threshold="3"
+          :border-width="6"
+          @time-up="handleTimeUp"
+          @warning="handleWarning"
+        >
+          <component
+            v-if="currentGameData"
+            :is="currentGameData.component"
+            :difficulty="gameState.state.value.currentDifficulty"
+            :time-limit="adjustedTimeLimit"
+            :target-score="adjustedTargetScore"
+            :is-hard-mode="gameState.state.value.isHardMode"
+            @complete="handleGameComplete"
+          />
+        </TimerBorder>
+      </div>
     </main>
 
     <!-- Result Phase -->
     <div v-else-if="gameState.state.value.phase === 'result'" class="result-screen">
-      <div class="result-content">
+      <div class="result-content" :class="lastResult?.success ? 'juicy-success-pop' : 'juicy-fail-pop'">
         <div class="result-icon" :class="{ success: lastResult?.success }">
           {{ lastResult?.success ? '✅' : '❌' }}
         </div>
@@ -57,7 +67,7 @@
           {{ lastResult?.success ? '성공!' : '실패!' }}
         </h2>
         <div class="result-stats">
-          <p class="result-score">+{{ lastResult?.score }} 점</p>
+          <p class="result-score juicy-bounce">+{{ lastResult?.score }} 점</p>
           <p v-if="lastResult?.accuracy !== undefined" class="result-accuracy">정확도: {{ lastResult?.accuracy }}%</p>
         </div>
       </div>
@@ -67,12 +77,13 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
-import { useGameState } from '@/composables/useGameState';
+import { useGameState, useCleanupTimers, useAudio } from '@/composables';
 import { MINI_GAMES } from '@/config/miniGames';
 import { IMPLEMENTED_MINIGAME_IDS } from '@/components/minigames';
 import { DIFFICULTY_TIERS, GAME_CONSTANTS, DIFFICULTY_MULTIPLIERS } from '@/types/game';
+import { TimerBorder } from '@/components/common';
 import type { MiniGameResult } from '@/types/minigame';
-import type { GameResult } from '@/types/game';
+import type { GameResult, DifficultyLevel } from '@/types/game';
 
 // Emits
 const emit = defineEmits<{
@@ -83,12 +94,12 @@ const emit = defineEmits<{
 // Game state management
 const gameState = useGameState();
 
+// Timer utilities (auto-cleanup on unmount)
+const { safeSetInterval, safeSetTimeout, clearInterval } = useCleanupTimers();
+
 // Instruction countdown
 const instructionCountdown = ref(3);
-let instructionTimer: number | null = null;
-
-// Result auto-proceed
-let resultTimer: number | null = null;
+let instructionTimerId: number | null = null;
 
 // Last result
 const lastResult = ref<MiniGameResult | null>(null);
@@ -140,7 +151,7 @@ watch(() => gameState.state.value.phase, (newPhase) => {
     const result: GameResult = {
       finalScore: gameState.state.value.score,
       clearedStages: gameState.state.value.currentStage - 1,
-      maxDifficulty: gameState.state.value.maxDifficultyReached as any,
+      maxDifficulty: gameState.state.value.maxDifficultyReached as DifficultyLevel,
       hardModeCount: gameState.state.value.hardModeCleared,
       playTime: gameState.state.value.playTime,
       continueUsed: gameState.state.value.continueUsed,
@@ -156,7 +167,7 @@ watch(() => gameState.state.value.phase, (newPhase) => {
     const result: GameResult = {
       finalScore: gameState.state.value.score,
       clearedStages: GAME_CONSTANTS.TOTAL_STAGES,
-      maxDifficulty: gameState.state.value.maxDifficultyReached as any,
+      maxDifficulty: gameState.state.value.maxDifficultyReached as DifficultyLevel,
       hardModeCount: gameState.state.value.hardModeCleared,
       playTime: gameState.state.value.playTime,
       continueUsed: gameState.state.value.continueUsed,
@@ -174,13 +185,13 @@ watch(() => gameState.state.value.phase, (newPhase) => {
 function startInstructionCountdown() {
   instructionCountdown.value = 3;
 
-  if (instructionTimer) clearInterval(instructionTimer);
+  if (instructionTimerId) clearInterval(instructionTimerId);
 
-  instructionTimer = window.setInterval(() => {
+  instructionTimerId = safeSetInterval(() => {
     instructionCountdown.value--;
 
     if (instructionCountdown.value <= 0) {
-      if (instructionTimer) clearInterval(instructionTimer);
+      if (instructionTimerId) clearInterval(instructionTimerId);
       gameState.startMiniGame();
     }
   }, 1000);
@@ -188,11 +199,30 @@ function startInstructionCountdown() {
 
 // Start result auto-proceed timer
 function startResultTimer() {
-  if (resultTimer) clearTimeout(resultTimer);
-
-  resultTimer = window.setTimeout(() => {
+  safeSetTimeout(() => {
     gameState.proceedToNext();
   }, GAME_CONSTANTS.RESULT_DISPLAY_DURATION * 1000);
+}
+
+// Audio for feedback
+const { playSoundEffect, vibrate } = useAudio();
+
+// Handle timer warning
+function handleWarning() {
+  vibrate(100);
+  playSoundEffect('warning');
+}
+
+// Handle time up (game failed due to timeout)
+function handleTimeUp() {
+  vibrate([100, 50, 100]);
+  const result: MiniGameResult = {
+    success: false,
+    score: 0,
+    timeRemaining: 0
+  };
+  lastResult.value = result;
+  gameState.completeMiniGame(result);
 }
 
 // Handle game completion
@@ -209,8 +239,8 @@ function handleGameComplete(result: MiniGameResult) {
   height: 100dvh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #FFFFFF 0%, #FFF8DC 100%);
-  font-family: 'Pretendard', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg-main);
+  font-family: inherit;
   overflow: hidden;
 }
 
@@ -221,9 +251,9 @@ function handleGameComplete(result: MiniGameResult) {
   align-items: center;
   padding: 0.75rem 1rem;
   background: rgba(255, 255, 255, 0.95);
-  border-bottom: 2px solid #FFD700;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  z-index: 10;
+  border-bottom: 2px solid var(--primary-yellow);
+  box-shadow: var(--shadow-sm);
+  z-index: var(--z-header);
 }
 
 .hud-left,
@@ -252,7 +282,7 @@ function handleGameComplete(result: MiniGameResult) {
 .stage-number {
   font-size: 0.95rem;
   font-weight: 700;
-  color: #212121;
+  color: var(--text-dark);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -260,23 +290,23 @@ function handleGameComplete(result: MiniGameResult) {
 .difficulty-badge {
   display: inline-block;
   padding: 0.25rem 0.6rem;
-  background: linear-gradient(180deg, #FFD700 0%, #FFC107 100%);
-  border-radius: 12px;
+  background: var(--gradient-primary);
+  border-radius: var(--radius-md);
   font-size: 0.8rem;
   font-weight: 700;
-  color: #212121;
-  box-shadow: 0 2px 6px rgba(255, 215, 0, 0.3);
+  color: var(--text-dark);
+  box-shadow: var(--shadow-primary);
 }
 
 .hard-mode-badge {
   display: inline-block;
   padding: 0.25rem 0.6rem;
-  background: linear-gradient(180deg, #FF6B6B 0%, #EE5A52 100%);
-  border-radius: 12px;
+  background: var(--gradient-danger);
+  border-radius: var(--radius-md);
   font-size: 0.75rem;
   font-weight: 700;
-  color: #FFFFFF;
-  box-shadow: 0 2px 6px rgba(255, 107, 107, 0.4);
+  color: var(--white);
+  box-shadow: var(--shadow-danger);
   animation: pulse 1s ease-in-out infinite;
 }
 
@@ -297,7 +327,7 @@ function handleGameComplete(result: MiniGameResult) {
 
 .score-label {
   font-size: 0.7rem;
-  color: #757575;
+  color: var(--text-light);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -306,7 +336,7 @@ function handleGameComplete(result: MiniGameResult) {
 .score-value {
   font-size: 1.6rem;
   font-weight: 700;
-  color: #FFD700;
+  color: var(--primary-yellow);
   text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
 }
 
@@ -358,14 +388,14 @@ function handleGameComplete(result: MiniGameResult) {
 .instruction-title {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #212121;
+  color: var(--text-dark);
   margin: 0 0 1rem 0;
   letter-spacing: 0.05em;
 }
 
 .instruction-text {
   font-size: 1.3rem;
-  color: #424242;
+  color: var(--text-medium);
   margin: 0 0 1.5rem 0;
   font-weight: 500;
 }
@@ -373,7 +403,7 @@ function handleGameComplete(result: MiniGameResult) {
 .countdown {
   font-size: 4rem;
   font-weight: 700;
-  color: #FFD700;
+  color: var(--primary-yellow);
   text-shadow: 3px 3px 0 rgba(0, 0, 0, 0.1);
   animation: scaleIn 0.3s ease;
 }
@@ -397,6 +427,19 @@ function handleGameComplete(result: MiniGameResult) {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  padding: 12px;
+}
+
+/* Game Box - contains the minigame with timer border */
+.game-box {
+  width: 100%;
+  max-width: 400px;
+  height: 100%;
+  max-height: 600px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--white);
+  box-shadow: var(--shadow-lg);
 }
 
 /* Result Screen */
@@ -421,7 +464,19 @@ function handleGameComplete(result: MiniGameResult) {
 }
 
 .result-icon.success {
-  animation: successPop 0.5s ease;
+  animation: successPop 0.5s ease, juicyCelebrate 2s ease-in-out infinite 0.5s;
+}
+
+@keyframes juicyCelebrate {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.1) rotate(-5deg);
+  }
+  75% {
+    transform: scale(1.1) rotate(5deg);
+  }
 }
 
 @keyframes successPop {
@@ -444,13 +499,13 @@ function handleGameComplete(result: MiniGameResult) {
 }
 
 .result-title.success {
-  color: #4CAF50;
+  color: var(--success);
   text-shadow: 3px 3px 0 rgba(76, 175, 80, 0.2);
 }
 
 .result-title.fail {
-  color: #FF6B6B;
-  text-shadow: 3px 3px 0 rgba(255, 107, 107, 0.2);
+  color: var(--error);
+  text-shadow: 3px 3px 0 rgba(244, 67, 54, 0.2);
 }
 
 .result-stats {
@@ -460,14 +515,14 @@ function handleGameComplete(result: MiniGameResult) {
 .result-score {
   font-size: 2rem;
   font-weight: 700;
-  color: #FFD700;
+  color: var(--primary-yellow);
   margin: 0.5rem 0;
   text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
 }
 
 .result-accuracy {
   font-size: 1.2rem;
-  color: #424242;
+  color: var(--text-medium);
   margin: 0.3rem 0;
 }
 
@@ -542,6 +597,14 @@ function handleGameComplete(result: MiniGameResult) {
 
   .result-score {
     font-size: 1.6rem;
+  }
+
+  .game-area {
+    padding: 8px;
+  }
+
+  .game-box {
+    border-radius: var(--radius-md);
   }
 }
 </style>

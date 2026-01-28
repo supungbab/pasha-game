@@ -16,7 +16,7 @@
             correct: feedback && answer === currentQuestion.correct,
             wrong: feedback && answer === selectedAnswer && answer !== currentQuestion.correct
           }"
-          @click="handleAnswer(answer)"
+          @touchstart.prevent="handleAnswer(answer)"
           :disabled="!!feedback"
         >
           {{ answer }}
@@ -246,14 +246,16 @@ onUnmounted(() => {
 
 .question-box {
   background: white;
-  padding: 40px 60px;
+  padding: clamp(20px, 5vw, 40px) clamp(30px, 6vw, 60px);
   border-radius: 24px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-  min-width: 400px;
+  width: 100%;
+  max-width: 400px;
+  box-sizing: border-box;
 }
 
 .question {
-  font-size: 48px;
+  font-size: clamp(28px, 8vw, 48px);
   font-weight: 800;
   color: #2c3e50;
   text-align: center;
@@ -268,8 +270,8 @@ onUnmounted(() => {
 }
 
 .answer-btn {
-  padding: 30px;
-  font-size: 32px;
+  padding: clamp(15px, 4vw, 30px);
+  font-size: clamp(20px, 5vw, 32px);
   font-weight: 700;
   color: #2c3e50;
   background: white;

@@ -1,6 +1,6 @@
 <template>
   <div class="minigame number-match">
-    <canvas ref="canvasRef" @click="handleClick" @touchstart="handleTouch"></canvas>
+    <canvas ref="canvasRef" @touchstart.prevent="handleTouch"></canvas>
   </div>
 </template>
 
@@ -350,6 +350,8 @@ onUnmounted(() => {
   border-radius: 0;
   padding: 0;
   box-shadow: none;
+  position: relative;
+  overflow: hidden;
 }
 
 canvas {

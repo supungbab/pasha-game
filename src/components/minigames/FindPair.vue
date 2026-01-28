@@ -6,7 +6,7 @@
         :key="card.id"
         class="card"
         :class="{ flipped: card.isFlipped, matched: card.isMatched }"
-        @click="handleCardClick(card)"
+        @touchstart.prevent="handleCardClick(card)"
       >
         <div class="card-inner">
           <div class="card-front">

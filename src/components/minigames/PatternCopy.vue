@@ -38,12 +38,12 @@
               wrong: userPattern[index] && !pattern[index].isActive
             }"
             :style="{ backgroundColor: tile.color }"
-            @click="handleTileClick(index)"
+            @touchstart.prevent="handleTileClick(index)"
           >
             {{ userPattern[index] ? tile.emoji : '' }}
           </div>
         </div>
-        <button class="submit-btn" @click="submitPattern" :disabled="!canSubmit">
+        <button class="submit-btn" @touchstart.prevent="submitPattern" :disabled="!canSubmit">
           확인
         </button>
       </div>
@@ -257,8 +257,9 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: center;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 20px;
+  padding: clamp(10px, 3vw, 20px);
   position: relative;
+  overflow: hidden;
 }
 
 .game-header {
@@ -287,31 +288,32 @@ onUnmounted(() => {
 }
 
 .title {
-  font-size: 24px;
+  font-size: clamp(18px, 5vw, 24px);
   font-weight: 700;
   color: white;
-  margin-bottom: 20px;
+  margin-bottom: clamp(12px, 3vw, 20px);
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .pattern-grid {
   display: grid;
   grid-template-columns: repeat(var(--grid-size, 3), 1fr);
-  gap: 10px;
-  padding: 20px;
+  gap: clamp(6px, 2vw, 10px);
+  padding: clamp(12px, 3vw, 20px);
   background: rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  max-width: 90vw;
 }
 
 .pattern-tile {
-  width: 70px;
-  height: 70px;
+  width: clamp(50px, 18vw, 70px);
+  height: clamp(50px, 18vw, 70px);
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;
+  font-size: clamp(22px, 7vw, 32px);
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
@@ -362,9 +364,9 @@ onUnmounted(() => {
 }
 
 .submit-btn {
-  margin-top: 30px;
-  padding: 15px 40px;
-  font-size: 20px;
+  margin-top: clamp(15px, 4vw, 30px);
+  padding: clamp(12px, 3vw, 15px) clamp(25px, 8vw, 40px);
+  font-size: clamp(16px, 4vw, 20px);
   font-weight: 700;
   color: white;
   background: linear-gradient(135deg, #FFD700 0%, #FFC107 100%);
@@ -397,7 +399,7 @@ onUnmounted(() => {
 }
 
 .result-emoji {
-  font-size: 100px;
+  font-size: clamp(60px, 20vw, 100px);
   animation: result-pop 0.5s ease;
 }
 
@@ -414,7 +416,7 @@ onUnmounted(() => {
 }
 
 .result-text {
-  font-size: 32px;
+  font-size: clamp(24px, 8vw, 32px);
   font-weight: 700;
   color: white;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);

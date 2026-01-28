@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { ref, computed } from 'vue';
+import { useTouchButton } from '@/composables';
+
 interface Props {
   modelValue: boolean;
   disabled?: boolean;
@@ -14,22 +17,32 @@ const emit = defineEmits<{
   'update:modelValue': [value: boolean];
 }>();
 
-const handleToggle = () => {
-  if (!props.disabled) {
+const toggleRef = ref<HTMLElement | null>(null);
+const disabledRef = computed(() => props.disabled);
+
+const { handlers, isPressed, isTouchInside } = useTouchButton(toggleRef, {
+  disabled: disabledRef,
+  onTap: () => {
     emit('update:modelValue', !props.modelValue);
   }
-};
+});
 </script>
 
 <template>
   <button
+    ref="toggleRef"
     :class="[
       'toggle',
       `toggle-${size}`,
-      { 'toggle-active': modelValue, 'toggle-disabled': disabled }
+      {
+        'toggle-active': modelValue,
+        'toggle-disabled': disabled,
+        'toggle-pressed': isPressed,
+        'toggle-pressed-outside': isPressed && !isTouchInside
+      }
     ]"
     :disabled="disabled"
-    @click="handleToggle"
+    v-on="handlers"
   >
     <span class="toggle-thumb" />
   </button>
@@ -45,6 +58,10 @@ const handleToggle = () => {
   cursor: pointer;
   transition: all 0.2s ease;
   padding: 2px;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+  user-select: none;
 }
 
 .toggle:focus {
@@ -113,5 +130,14 @@ const handleToggle = () => {
 .toggle-disabled {
   opacity: var(--opacity-disabled);
   cursor: not-allowed;
+}
+
+/* Pressed states */
+.toggle-pressed {
+  transform: scale(0.95);
+}
+
+.toggle-pressed-outside {
+  opacity: 0.7;
 }
 </style>

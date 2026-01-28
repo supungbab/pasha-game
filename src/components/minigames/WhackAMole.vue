@@ -1,14 +1,17 @@
 <template>
-  <div class="minigame whack-a-mole">
-    <canvas ref="canvasRef" @click="handleClick" @touchstart="handleTouch"></canvas>
+  <div ref="containerRef" class="minigame whack-a-mole">
+    <canvas ref="canvasRef" @touchstart.prevent="handleTouch"></canvas>
+
+    <!-- Score Popups -->
+    <ScorePopup :popups="scorePopups" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
-import { useCanvas } from '@/composables/useCanvas';
-import { useCleanupTimers } from '@/composables/useCleanupTimers';
+import { useCanvas, useCleanupTimers, useJuicyFeedback } from '@/composables';
+import { ScorePopup } from '@/components/common';
 import { pointInCircle } from '@/utils/canvas';
 
 const props = defineProps<MiniGameProps>();
@@ -16,8 +19,11 @@ const emit = defineEmits<{
   complete: [result: MiniGameResult];
 }>();
 
-// Canvas setup
+// Refs
+const containerRef = ref<HTMLElement | null>(null);
 const canvasRef = ref<HTMLCanvasElement | null>(null);
+
+// Canvas setup
 const { ctx, helper, width, height, clear, getCanvasCoordinates } = useCanvas(canvasRef, {
   width: 400,
   height: 600,
@@ -27,12 +33,25 @@ const { ctx, helper, width, height, clear, getCanvasCoordinates } = useCanvas(ca
 // Timer utilities
 const { safeSetTimeout, safeSetInterval, clearInterval, cancelAnimationFrame } = useCleanupTimers();
 
+// Juicy feedback
+const {
+  scorePopups,
+  createScorePopup,
+  createParticles,
+  shake,
+} = useJuicyFeedback();
+
 // Game state
 const score = ref(0);
+const combo = ref(0);
+const lastHitTime = ref(0);
 const timeRemainingMs = ref(props.timeLimit * 1000);
 const isGameOver = ref(false);
 const holes = ref<Hole[]>([]);
 const hitEffects = ref<HitEffect[]>([]);
+
+// Combo timeout (600ms for moles)
+const COMBO_TIMEOUT = 600;
 
 // Difficulty settings
 const difficultySettings = computed(() => {
@@ -251,18 +270,19 @@ function gameLoop() {
 function handleClick(event: MouseEvent) {
   if (isGameOver.value) return;
   const coords = getCanvasCoordinates(event);
-  checkMoleHit(coords.x, coords.y);
+  checkMoleHit(coords.x, coords.y, event.clientX, event.clientY);
 }
 
 function handleTouch(event: TouchEvent) {
   if (isGameOver.value) return;
   event.preventDefault();
   const touch = event.touches[0];
+  if (!touch) return;
   const coords = getCanvasCoordinates(touch);
-  checkMoleHit(coords.x, coords.y);
+  checkMoleHit(coords.x, coords.y, touch.clientX, touch.clientY);
 }
 
-function checkMoleHit(x: number, y: number) {
+function checkMoleHit(x: number, y: number, screenX: number, screenY: number) {
   holes.value.forEach(hole => {
     if (!hole.mole) return;
     if (hole.mole.state === 'hidden' || hole.mole.state === 'hiding') return;
@@ -270,17 +290,55 @@ function checkMoleHit(x: number, y: number) {
     // Check if click is within mole area
     const moleY = hole.y - 10 - (hole.mole.progress * 40);
     if (pointInCircle(x, y, hole.x, moleY, MOLE_SIZE / 2)) {
+      const now = Date.now();
+
       if (hole.mole.type === 'normal') {
-        score.value += 5;
+        // Check combo
+        if (now - lastHitTime.value < COMBO_TIMEOUT) {
+          combo.value++;
+        } else {
+          combo.value = 1;
+        }
+        lastHitTime.value = now;
+
+        // Calculate points with combo
+        const basePoints = 5;
+        const comboBonus = combo.value > 1 ? (combo.value - 1) * 2 : 0;
+        const points = basePoints + comboBonus;
+
+        score.value += points;
         hitEffects.value.push({
           x: hole.x,
           y: moleY - 30,
-          text: '+5',
+          text: `+${points}`,
           life: 1,
           color: '#FFD700'
         });
+
+        // Juicy feedback
+        createParticles(containerRef.value, screenX, screenY, '#FFD700', 6);
+
+        if (combo.value >= 5) {
+          createScorePopup(screenX, screenY - 20, `+${points} x${combo.value}!`, 'combo');
+          shake(containerRef.value, 'light');
+        } else if (combo.value >= 3) {
+          createScorePopup(screenX, screenY - 20, `+${points} COMBO!`, 'score');
+        } else {
+          createScorePopup(screenX, screenY - 20, `+${points}`, 'score');
+        }
+
+        // Vibrate
+        if (navigator.vibrate) {
+          if (combo.value >= 5) {
+            navigator.vibrate([30, 20, 30]);
+          } else {
+            navigator.vibrate(25);
+          }
+        }
       } else {
+        // Fake mole - penalty
         score.value = Math.max(0, score.value - 10);
+        combo.value = 0;
         hitEffects.value.push({
           x: hole.x,
           y: moleY - 30,
@@ -288,6 +346,15 @@ function checkMoleHit(x: number, y: number) {
           life: 1,
           color: '#FF4444'
         });
+
+        // Juicy feedback for mistake
+        createScorePopup(screenX, screenY - 20, '-10', 'miss');
+        createParticles(containerRef.value, screenX, screenY, '#FF4444', 8);
+        shake(containerRef.value, 'strong');
+
+        if (navigator.vibrate) {
+          navigator.vibrate([100, 50, 100]);
+        }
       }
 
       // Hide mole
@@ -311,7 +378,16 @@ function endGame() {
     count: Math.floor(score.value / 5)
   };
 
-  emit('complete', result);
+  // Success/fail shake
+  if (result.success) {
+    shake(containerRef.value, 'light');
+  } else {
+    shake(containerRef.value, 'strong');
+  }
+
+  safeSetTimeout(() => {
+    emit('complete', result);
+  }, 300);
 }
 
 // Start game
@@ -339,6 +415,11 @@ function startGame() {
 }
 
 onMounted(() => {
+  // Pop-in animation for container
+  if (containerRef.value) {
+    containerRef.value.classList.add('juicy-pop');
+  }
+
   safeSetTimeout(startGame, 100);
 });
 
@@ -359,6 +440,8 @@ onUnmounted(() => {
   border-radius: 0;
   padding: 0;
   box-shadow: none;
+  position: relative;
+  overflow: hidden;
 }
 
 canvas {
