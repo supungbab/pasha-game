@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue';
+import Button from './Button.vue';
 
 interface Props {
   show: boolean;
@@ -47,7 +48,12 @@ onUnmounted(() => {
         <div class="modal-container">
           <div v-if="title" class="modal-header">
             <h2 class="modal-title">{{ title }}</h2>
-            <button class="modal-close" @click="handleClose">✕</button>
+            <Button
+              variant="danger"
+              size="small"
+              class="modal-close"
+              @click="handleClose"
+            >✕</Button>
           </div>
 
           <div class="modal-body">
@@ -110,33 +116,12 @@ onUnmounted(() => {
 }
 
 .modal-close {
-  background: var(--error);
-  border: none;
-  font-size: var(--radius-xl);
-  cursor: pointer;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
   padding: 0;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-md);
-  transition: all 0.2s ease;
-  color: white;
-  box-shadow: var(--shadow-danger);
-  -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
-  touch-action: manipulation;
-  user-select: none;
-}
-
-.modal-close:hover {
-  box-shadow: var(--shadow-danger-hover);
-  transform: translateY(-1px);
-}
-
-.modal-close:active {
-  transform: translateY(0);
+  font-size: var(--font-lg);
+  flex-shrink: 0;
 }
 
 .modal-body {
