@@ -43,9 +43,9 @@
             {{ userPattern[index] ? tile.emoji : '' }}
           </div>
         </div>
-        <button class="submit-btn" @touchstart.prevent="submitPattern" :disabled="!canSubmit">
+        <Button variant="primary" size="medium" :disabled="!canSubmit" @click="submitPattern">
           확인
-        </button>
+        </Button>
       </div>
 
       <!-- 결과 표시 -->
@@ -64,6 +64,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
+import Button from '@/components/base/Button.vue';
 
 const props = defineProps<MiniGameProps>();
 const emit = defineEmits<{
@@ -361,34 +362,6 @@ onUnmounted(() => {
 
 .pattern-tile.wrong {
   border-color: #f44336;
-}
-
-.submit-btn {
-  margin-top: clamp(15px, 4vw, 30px);
-  padding: clamp(12px, 3vw, 15px) clamp(25px, 8vw, 40px);
-  font-size: clamp(16px, 4vw, 20px);
-  font-weight: 700;
-  color: white;
-  background: linear-gradient(135deg, #FFD700 0%, #FFC107 100%);
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  transition: all 0.2s ease;
-}
-
-.submit-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-}
-
-.submit-btn:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.submit-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 .result-display {

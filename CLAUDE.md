@@ -489,10 +489,10 @@ export class CanvasHelper {
 - **Dark Yellow**: `#F9A825` (강조용 진한 노랑)
 
 #### 보조 컬러
-- **Accent Orange**: `#FF9800` (강조 및 호버 효과)
+- **Secondary Orange**: `#FF9800` (Secondary 버튼, 강조)
+- **Dark Orange**: `#F57C00` (Secondary 버튼 그라데이션)
 - **Neutral Cream**: `#FFF8DC` (배경 보조)
 - **Contrast Purple**: `#5E35B1` (중요 요소 대비색)
-- **Contrast Teal**: `#00BCD4` (대안 대비색)
 
 #### 중립 컬러
 - **White**: `#FFFFFF` (주 배경)

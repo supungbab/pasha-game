@@ -87,14 +87,6 @@ onMounted(() => {
   }
 });
 
-// Simple touch handlers for difficulty buttons
-function handleDiffTouchStart(event: TouchEvent) {
-  (event.currentTarget as HTMLElement).classList.add('pressed');
-}
-
-function handleDiffTouchEnd(event: TouchEvent) {
-  (event.currentTarget as HTMLElement).classList.remove('pressed');
-}
 </script>
 
 <template>
@@ -130,18 +122,15 @@ function handleDiffTouchEnd(event: TouchEvent) {
       <Card class="difficulty-card">
         <label class="section-label">난이도 선택</label>
         <div class="difficulty-row">
-          <button
+          <Button
             v-for="level in 6"
             :key="level"
-            class="diff-btn"
-            :class="{ active: testDifficulty === level }"
+            :variant="testDifficulty === level ? 'primary' : 'secondary'"
+            size="small"
             @click="testDifficulty = level"
-            @touchstart="handleDiffTouchStart"
-            @touchend="handleDiffTouchEnd"
-            @touchcancel="handleDiffTouchEnd"
           >
             {{ level }}
-          </button>
+          </Button>
         </div>
       </Card>
 
@@ -345,45 +334,6 @@ function handleDiffTouchEnd(event: TouchEvent) {
   display: flex;
   gap: 8px;
   justify-content: center;
-}
-
-.diff-btn {
-  width: 44px;
-  height: 44px;
-  border: 2px solid #E0E0E0;
-  border-radius: 12px;
-  background: #FFFFFF;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #424242;
-  cursor: pointer;
-  transition: all 0.2s;
-  -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
-  touch-action: manipulation;
-  user-select: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-}
-
-.diff-btn.active {
-  background: linear-gradient(180deg, #FFD700 0%, #FFC107 100%);
-  border-color: #F9A825;
-  color: #212121;
-  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
-}
-
-.diff-btn:active,
-.diff-btn.pressed {
-  transform: scale(0.95);
-  background: #F5F5F5;
-}
-
-.diff-btn.active:active,
-.diff-btn.active.pressed {
-  background: linear-gradient(180deg, #FFC107 0%, #FFB300 100%);
 }
 
 /* Hard Mode Toggle */
@@ -605,12 +555,6 @@ function handleDiffTouchEnd(event: TouchEvent) {
     font-size: 1.3rem;
   }
 
-  .diff-btn {
-    width: 38px;
-    height: 38px;
-    font-size: 1rem;
-  }
-
   .result-icon {
     font-size: 3.5rem;
   }
@@ -643,12 +587,6 @@ function handleDiffTouchEnd(event: TouchEvent) {
   .stats-row {
     padding-top: 8px;
     gap: 16px;
-  }
-
-  .diff-btn {
-    width: 36px;
-    height: 36px;
-    font-size: 0.95rem;
   }
 
   .hard-mode-toggle {

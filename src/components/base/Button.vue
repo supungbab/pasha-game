@@ -39,7 +39,6 @@ function handleClick(event: MouseEvent) {
 function handleTouchStart() {
   if (props.disabled) return;
   isPressed.value = true;
-  vibrate(10);
 }
 
 function handleTouchEnd() {
@@ -119,19 +118,19 @@ function handleTouchEnd() {
 }
 
 .btn-secondary {
-  background: var(--gradient-cyan);
+  background: var(--gradient-secondary);
   color: var(--white);
-  box-shadow: var(--shadow-cyan), 0 4px 0 rgba(0, 120, 140, 0.5);
+  box-shadow: var(--shadow-secondary), 0 4px 0 rgba(200, 100, 0, 0.5);
 }
 
 .btn-secondary:hover:not(.btn-disabled) {
-  box-shadow: var(--shadow-cyan-hover), 0 6px 0 rgba(0, 120, 140, 0.5);
+  box-shadow: var(--shadow-secondary-hover), 0 6px 0 rgba(200, 100, 0, 0.5);
 }
 
 .btn-secondary:active:not(.btn-disabled),
 .btn-secondary.btn-pressed:not(.btn-disabled) {
-  background: var(--gradient-cyan);
-  box-shadow: var(--shadow-cyan), 0 1px 0 rgba(0, 120, 140, 0.5);
+  background: var(--gradient-secondary);
+  box-shadow: var(--shadow-secondary), 0 1px 0 rgba(200, 100, 0, 0.5);
 }
 
 .btn-success {

@@ -74,21 +74,21 @@
   /* Button Shadows with Colors */
   --shadow-primary: 0 4px 12px rgba(255, 215, 0, 0.3);
   --shadow-primary-hover: 0 6px 16px rgba(255, 215, 0, 0.4);
+  --shadow-secondary: 0 4px 12px rgba(255, 152, 0, 0.3);
+  --shadow-secondary-hover: 0 6px 16px rgba(255, 152, 0, 0.4);
   --shadow-success: 0 4px 12px rgba(76, 175, 80, 0.3);
   --shadow-success-hover: 0 6px 16px rgba(76, 175, 80, 0.4);
   --shadow-danger: 0 4px 12px rgba(244, 67, 54, 0.3);
   --shadow-danger-hover: 0 6px 16px rgba(244, 67, 54, 0.4);
-  --shadow-cyan: 0 4px 12px rgba(0, 188, 212, 0.3);
-  --shadow-cyan-hover: 0 6px 16px rgba(0, 188, 212, 0.4);
 
   /* Button Gradients */
   --gradient-primary: linear-gradient(180deg, #FFD700 0%, #FFC107 100%);
+  --gradient-secondary: linear-gradient(180deg, #FF9800 0%, #F57C00 100%);
   --gradient-success: linear-gradient(180deg, #4CAF50 0%, #388E3C 100%);
   --gradient-danger: linear-gradient(180deg, #F44336 0%, #D32F2F 100%);
-  --gradient-cyan: linear-gradient(180deg, #00BCD4 0%, #0097A7 100%);
 
   /* Additional Colors */
-  --cyan: #00BCD4;
+  --secondary-orange: #FF9800;
 
   /* Disabled State */
   --opacity-disabled: 0.5;

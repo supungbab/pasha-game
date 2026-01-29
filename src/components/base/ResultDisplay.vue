@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import type { MiniGameResult } from '@/types/minigame';
 import { calculateGrade, getGradeColor } from '@/utils/difficulty';
+import Button from './Button.vue';
 
 interface Props {
   result: MiniGameResult;
@@ -68,9 +69,9 @@ const isPerfect = computed(() => props.result.perfect || grade.value === 'S');
           </div>
 
           <!-- Continue Button -->
-          <button class="continue-button" @click="emit('continue')">
+          <Button variant="primary" size="large" full-width @click="emit('continue')">
             계속하기
-          </button>
+          </Button>
         </div>
       </div>
     </Transition>
@@ -187,33 +188,6 @@ const isPerfect = computed(() => props.result.perfect || grade.value === 'S');
 .detail-value.score {
   font-size: 24px;
   color: #FFD700;
-}
-
-.continue-button {
-  width: 100%;
-  padding: 16px;
-  font-size: 18px;
-  font-weight: 700;
-  background: linear-gradient(180deg, #FFD700 0%, #FFC107 100%);
-  color: #212121;
-  border: none;
-  border-radius: 16px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
-  -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
-  touch-action: manipulation;
-  user-select: none;
-}
-
-.continue-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(255, 215, 0, 0.4);
-}
-
-.continue-button:active {
-  transform: translateY(0);
 }
 
 /* Transitions */

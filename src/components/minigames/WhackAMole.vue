@@ -63,8 +63,9 @@ const difficultySettings = computed(() => {
     { showTime: 600, spawnRate: 600, maxMoles: 4 },     // Lv.5
     { showTime: 500, spawnRate: 500, maxMoles: 4 },     // Lv.6
   ];
-  return settings[Math.min(props.difficulty - 1, 5)];
-});
+  const index = Math.min(Math.max(props.difficulty - 1, 0), 5);
+  return settings[index]!;
+});;
 
 interface Hole {
   id: number;
@@ -79,6 +80,7 @@ interface Mole {
   progress: number; // 0-1, pop up progress
   state: 'appearing' | 'visible' | 'hiding' | 'hidden';
   startTime: number;
+  isHit: boolean; // 중복 히트 방지 플래그
 }
 
 interface HitEffect {
@@ -129,6 +131,8 @@ function spawnMole() {
   if (activeMoles >= settings.maxMoles) return;
 
   const hole = emptyHoles[Math.floor(Math.random() * emptyHoles.length)];
+  if (!hole) return;
+
   const isFake = props.isHardMode && Math.random() < 0.2;
 
   hole.mole = {
@@ -136,7 +140,8 @@ function spawnMole() {
     showTime: settings.showTime,
     progress: 0,
     state: 'appearing',
-    startTime: Date.now()
+    startTime: Date.now(),
+    isHit: false
   };
 }
 
@@ -229,8 +234,9 @@ function render() {
       ctx.value!.rect(hole.x - HOLE_RADIUS, hole.y - 80, HOLE_RADIUS * 2, 80);
       ctx.value!.clip();
 
-      // Draw mole emoji
+      // Draw mole emoji - fillStyle 리셋하여 이모지가 원래 색상으로 표시되도록 함
       const emoji = mole.type === 'normal' ? '🐹' : '😈';
+      ctx.value!.fillStyle = '#000000';
       ctx.value!.font = `${MOLE_SIZE}px Arial`;
       ctx.value!.textAlign = 'center';
       ctx.value!.textBaseline = 'middle';
@@ -285,11 +291,16 @@ function handleTouch(event: TouchEvent) {
 function checkMoleHit(x: number, y: number, screenX: number, screenY: number) {
   holes.value.forEach(hole => {
     if (!hole.mole) return;
+    // 이미 히트된 두더지는 무시 (중복 점수 방지)
+    if (hole.mole.isHit) return;
     if (hole.mole.state === 'hidden' || hole.mole.state === 'hiding') return;
 
     // Check if click is within mole area
     const moleY = hole.y - 10 - (hole.mole.progress * 40);
     if (pointInCircle(x, y, hole.x, moleY, MOLE_SIZE / 2)) {
+      // 즉시 히트 플래그 설정 (중복 방지)
+      hole.mole.isHit = true;
+
       const now = Date.now();
 
       if (hole.mole.type === 'normal') {

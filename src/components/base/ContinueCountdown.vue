@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+import Button from './Button.vue';
 
 interface Props {
   show: boolean;
@@ -62,12 +63,12 @@ const handleDecline = () => {
           </p>
 
           <div class="continue-actions">
-            <button class="btn-continue" @click="handleContinue">
+            <Button variant="success" size="large" full-width @click="handleContinue">
               🎬 광고 시청하고 계속
-            </button>
-            <button class="btn-decline" @click="handleDecline">
+            </Button>
+            <Button variant="secondary" size="medium" full-width @click="handleDecline">
               포기
-            </button>
+            </Button>
           </div>
 
           <p class="continue-note">
@@ -162,57 +163,6 @@ const handleDecline = () => {
   flex-direction: column;
   gap: 12px;
   margin-bottom: 16px;
-}
-
-.btn-continue {
-  width: 100%;
-  padding: 16px;
-  font-size: 16px;
-  font-weight: 700;
-  background: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 16px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-  -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
-  touch-action: manipulation;
-  user-select: none;
-}
-
-.btn-continue:hover {
-  background: #45a049;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
-}
-
-.btn-continue:active {
-  transform: translateY(0);
-}
-
-.btn-decline {
-  width: 100%;
-  padding: 12px;
-  font-size: 14px;
-  font-weight: 400;
-  background: transparent;
-  color: #757575;
-  border: 2px solid #E0E0E0;
-  border-radius: 16px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
-  touch-action: manipulation;
-  user-select: none;
-}
-
-.btn-decline:hover {
-  background: rgba(0, 0, 0, 0.05);
-  color: #F44336;
-  border-color: #F44336;
 }
 
 .continue-note {

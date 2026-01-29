@@ -23,19 +23,9 @@
 
       <div class="stats">
         <div class="stat">이동: {{ moves }}</div>
-        <button
-          class="shuffle-btn"
-          :class="{
-            pressed: getTileTouchState(-1).touchId !== null,
-            'pressed-outside': getTileTouchState(-1).touchId !== null && !getTileTouchState(-1).isInside
-          }"
-          @touchstart="handleShuffleTouchStart"
-          @touchmove="handleShuffleTouchMove"
-          @touchend="handleShuffleTouchEnd"
-          @touchcancel="handleShuffleTouchCancel"
-        >
+        <Button variant="secondary" size="small" @click="shufflePuzzle">
           🔄 섞기
-        </button>
+        </Button>
       </div>
     </div>
 
@@ -50,6 +40,7 @@
 <script setup lang="ts">
 import { ref, computed, reactive, onMounted, onUnmounted } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
+import Button from '@/components/base/Button.vue';
 
 const props = defineProps<MiniGameProps>();
 const emit = defineEmits<{
@@ -262,36 +253,6 @@ function handleTileTouchCancel(index: number) {
   state.isInside = false;
 }
 
-// Special case for shuffle button (index = -1)
-function handleShuffleTouchStart(event: TouchEvent) {
-  handleTileTouchStart(event, -1);
-}
-
-function handleShuffleTouchMove(event: TouchEvent) {
-  handleTileTouchMove(event, -1);
-}
-
-function handleShuffleTouchEnd(event: TouchEvent) {
-  const state = getTileTouchState(-1);
-  if (state.touchId === null) return;
-
-  event.preventDefault();
-
-  const touch = Array.from(event.changedTouches).find(t => t.identifier === state.touchId);
-  const element = event.currentTarget as HTMLElement;
-
-  if (touch && isTouchInsideElement(touch, element) && state.isInside) {
-    shufflePuzzle();
-  }
-
-  state.touchId = null;
-  state.isInside = false;
-}
-
-function handleShuffleTouchCancel() {
-  handleTileTouchCancel(-1);
-}
-
 // 게임 완료
 function completeGame() {
   if (gameCompleted) return;
@@ -420,36 +381,6 @@ onUnmounted(() => {
   background: rgba(0, 0, 0, 0.3);
   border-radius: 20px;
   border: 2px solid rgba(255, 255, 255, 0.3);
-}
-
-.shuffle-btn {
-  padding: 12px 24px;
-  font-size: 20px;
-  font-weight: 700;
-  color: white;
-  background: linear-gradient(135deg, #FF6B6B, #EE5A6F);
-  border: none;
-  border-radius: 16px;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  transition: all 0.2s ease;
-}
-
-.shuffle-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-}
-
-.shuffle-btn:active,
-.shuffle-btn.pressed {
-  transform: translateY(0);
-  background: linear-gradient(135deg, #EE5A6F, #DD4960);
-}
-
-.shuffle-btn.pressed-outside {
-  opacity: 0.7;
-  transform: translateY(-1px);
-  background: linear-gradient(135deg, #FF6B6B, #EE5A6F);
 }
 
 .ui-overlay {
