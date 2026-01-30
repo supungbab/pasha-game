@@ -68,7 +68,7 @@ const difficultySettings = computed(() => {
     { ballSpeed: 5, spawnRate: 700, basketWidth: 70 },    // Lv.5
     { ballSpeed: 5.5, spawnRate: 600, basketWidth: 65 },  // Lv.6
   ];
-  return settings[Math.min(props.difficulty - 1, 5)];
+  return settings[Math.min(props.difficulty - 1, 5)] ?? settings[0]!;
 });
 
 interface Ball {
@@ -93,7 +93,9 @@ function spawnBall() {
 
   const settings = difficultySettings.value;
   const isBonus = Math.random() < 0.15; // 15% chance for bonus star
-  const type = isBonus ? BALL_TYPES[4] : BALL_TYPES[Math.floor(Math.random() * 4)];
+  const bonusType = BALL_TYPES[4]!;
+  const normalType = BALL_TYPES[Math.floor(Math.random() * 4)]!;
+  const type = isBonus ? bonusType : normalType;
 
   const ball: Ball = {
     id: ballIdCounter++,

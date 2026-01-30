@@ -55,7 +55,7 @@ const difficultySettings = computed(() => {
     { obstacleSpeed: 5, spawnRate: 700, obstacleSize: 38 },    // Lv.5
     { obstacleSpeed: 5.5, spawnRate: 600, obstacleSize: 40 },  // Lv.6
   ];
-  return settings[Math.min(props.difficulty - 1, 5)];
+  return settings[Math.min(props.difficulty - 1, 5)] ?? settings[0]!;
 });
 
 interface Obstacle {
@@ -86,6 +86,7 @@ function spawnObstacle() {
 
   const settings = difficultySettings.value;
   const typeIndex = Math.floor(Math.random() * OBSTACLE_TYPES.length);
+  const obstacleType = OBSTACLE_TYPES[typeIndex] ?? OBSTACLE_TYPES[0]!;
 
   const obstacle: Obstacle = {
     id: obstacleIdCounter++,
@@ -93,7 +94,7 @@ function spawnObstacle() {
     y: -40,
     radius: settings.obstacleSize,
     speed: settings.obstacleSpeed * (0.8 + Math.random() * 0.4),
-    type: OBSTACLE_TYPES[typeIndex].type as 'car' | 'rock' | 'barrel',
+    type: obstacleType.type as 'car' | 'rock' | 'barrel',
     rotation: 0
   };
 
@@ -165,7 +166,7 @@ function render() {
 
   // Draw obstacles
   obstacles.value.forEach(obs => {
-    const obsType = OBSTACLE_TYPES.find(t => t.type === obs.type) || OBSTACLE_TYPES[0];
+    const obsType = OBSTACLE_TYPES.find(t => t.type === obs.type) ?? OBSTACLE_TYPES[0]!;
 
     ctx.value!.save();
     ctx.value!.translate(obs.x, obs.y);

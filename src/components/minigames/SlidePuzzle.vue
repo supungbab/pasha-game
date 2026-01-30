@@ -109,7 +109,9 @@ function moveTile(index: number) {
   const emptyIndex = getEmptyIndex();
 
   // 타일 교환
-  [tiles.value[index], tiles.value[emptyIndex]] = [tiles.value[emptyIndex], tiles.value[index]];
+  const temp = tiles.value[index]!;
+  tiles.value[index] = tiles.value[emptyIndex]!;
+  tiles.value[emptyIndex] = temp;
 
   moves.value++;
 
@@ -185,8 +187,10 @@ function shufflePuzzle() {
     if (col < size - 1) validMoves.push(emptyIndex + 1); // 오른쪽
 
     if (validMoves.length > 0) {
-      const randomMove = validMoves[Math.floor(Math.random() * validMoves.length)];
-      [tiles.value[emptyIndex], tiles.value[randomMove]] = [tiles.value[randomMove], tiles.value[emptyIndex]];
+      const randomMove = validMoves[Math.floor(Math.random() * validMoves.length)]!;
+      const temp = tiles.value[emptyIndex]!;
+      tiles.value[emptyIndex] = tiles.value[randomMove]!;
+      tiles.value[randomMove] = temp;
     }
   }
 

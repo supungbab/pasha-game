@@ -103,7 +103,7 @@ const initialSequenceLength = Math.min(3 + Math.floor(props.difficulty / 2), 6);
 function initTiles() {
   tiles.value = Array.from({ length: tileCount }, (_, i) => ({
     id: i,
-    color: colors[i],
+    color: colors[i] ?? colors[0]!,
     isActive: false,
     isSuccess: false,
     isError: false
@@ -128,10 +128,12 @@ async function showSequence() {
   const delay = Math.max(800 - props.difficulty * 100, 400);
 
   for (let i = 0; i < sequence.value.length; i++) {
-    const tileId = sequence.value[i];
+    const tileId = sequence.value[i]!;
+    const tile = tiles.value[tileId];
+    if (!tile) continue;
 
     // 타일 활성화
-    tiles.value[tileId].isActive = true;
+    tile.isActive = true;
 
     // 진동 피드백
     if (navigator.vibrate) {
@@ -141,7 +143,7 @@ async function showSequence() {
     await new Promise(resolve => setTimeout(resolve, delay));
 
     // 타일 비활성화
-    tiles.value[tileId].isActive = false;
+    tile.isActive = false;
 
     await new Promise(resolve => setTimeout(resolve, 200));
   }
@@ -152,7 +154,7 @@ async function showSequence() {
 }
 
 // 타일 클릭 핸들러
-function handleTileClick(tile: Tile, event?: MouseEvent) {
+function handleTileClick(tile: Tile, event?: MouseEvent | TouchEvent) {
   if (gameCompleted || gameState.value !== 'playing') return;
 
   const currentIndex = playerSequence.value.length;
@@ -161,8 +163,17 @@ function handleTileClick(tile: Tile, event?: MouseEvent) {
   playerSequence.value.push(tile.id);
 
   // Get screen coordinates for popup
-  const screenX = event?.clientX ?? window.innerWidth / 2;
-  const screenY = event?.clientY ?? window.innerHeight / 2;
+  let screenX = window.innerWidth / 2;
+  let screenY = window.innerHeight / 2;
+  if (event) {
+    if ('touches' in event && event.touches[0]) {
+      screenX = event.touches[0].clientX;
+      screenY = event.touches[0].clientY;
+    } else if ('clientX' in event) {
+      screenX = event.clientX;
+      screenY = event.clientY;
+    }
+  }
 
   if (tile.id === expectedId) {
     // 정답!

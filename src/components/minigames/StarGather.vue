@@ -55,7 +55,7 @@ const difficultySettings = computed(() => {
     { starCount: 9, moveSpeed: 12, playerSize: 21 },   // Lv.5
     { starCount: 10, moveSpeed: 13, playerSize: 20 },  // Lv.6
   ];
-  return settings[Math.min(props.difficulty - 1, 5)];
+  return settings[Math.min(props.difficulty - 1, 5)] ?? settings[0]!;
 });
 
 interface Star {

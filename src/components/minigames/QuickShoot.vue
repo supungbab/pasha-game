@@ -76,8 +76,8 @@ const maxTargets = 3 + Math.floor(props.difficulty / 2);
 
 // 타겟 생성
 function createTarget() {
-  const types = ['normal', 'normal', 'fast', 'bonus'] as const;
-  const type = types[Math.floor(Math.random() * types.length)];
+  const types: Array<'normal' | 'fast' | 'bonus'> = ['normal', 'normal', 'fast', 'bonus'];
+  const type = types[Math.floor(Math.random() * types.length)] ?? 'normal';
 
   let radius: number;
   let speedX: number;
@@ -162,6 +162,7 @@ function processShoot(x: number, y: number) {
   // 타겟 히트 체크
   for (let i = targets.value.length - 1; i >= 0; i--) {
     const target = targets.value[i];
+    if (!target) continue;
     const dx = x - target.x;
     const dy = y - target.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
@@ -219,6 +220,7 @@ function update() {
   // 타겟 이동
   for (let i = targets.value.length - 1; i >= 0; i--) {
     const target = targets.value[i];
+    if (!target) continue;
 
     target.x += target.speedX;
     target.y += target.speedY;

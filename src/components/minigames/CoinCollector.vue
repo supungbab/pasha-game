@@ -67,7 +67,7 @@ const difficultySettings = computed(() => {
     { fallSpeed: 4, spawnRate: 450, bombChance: 0.25, itemSize: 35 },   // Lv.5
     { fallSpeed: 4.5, spawnRate: 400, bombChance: 0.28, itemSize: 32 }, // Lv.6
   ];
-  return settings[Math.min(props.difficulty - 1, 5)];
+  return settings[Math.min(props.difficulty - 1, 5)] ?? settings[0]!;
 });
 
 interface FallingItem {

@@ -196,6 +196,7 @@ function update() {
   // 플랫폼 이동
   for (let i = platforms.value.length - 1; i >= 0; i--) {
     const platform = platforms.value[i];
+    if (!platform) continue;
     platform.x -= platform.speed;
 
     // 화면 밖으로 나간 플랫폼 제거
@@ -205,7 +206,8 @@ function update() {
   }
 
   // 새 플랫폼 생성
-  if (platforms.value.length === 0 || platforms.value[platforms.value.length - 1].x < width - 300) {
+  const lastPlatform = platforms.value[platforms.value.length - 1];
+  if (platforms.value.length === 0 || (lastPlatform && lastPlatform.x < width - 300)) {
     platforms.value.push(createPlatform());
   }
 }

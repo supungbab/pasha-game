@@ -103,9 +103,9 @@ function generateMaze() {
 
   // 재귀적 백트래킹으로 미로 생성
   function carve(x: number, y: number) {
-    maze[y][x] = 0;
+    maze[y]![x] = 0;
 
-    const dirs = [
+    const dirs: [number, number][] = [
       [0, -1],
       [1, 0],
       [0, 1],
@@ -115,12 +115,14 @@ function generateMaze() {
     // 랜덤하게 섞기
     dirs.sort(() => Math.random() - 0.5);
 
-    for (const [dx, dy] of dirs) {
+    for (const dir of dirs) {
+      const dx = dir[0];
+      const dy = dir[1];
       const nx = x + dx * 2;
       const ny = y + dy * 2;
 
-      if (nx >= 0 && nx < mazeWidth && ny >= 0 && ny < mazeHeight && maze[ny][nx] === 1) {
-        maze[y + dy][x + dx] = 0;
+      if (nx >= 0 && nx < mazeWidth && ny >= 0 && ny < mazeHeight && maze[ny]?.[nx] === 1) {
+        maze[y + dy]![x + dx] = 0;
         carve(nx, ny);
       }
     }
@@ -134,17 +136,17 @@ function generateMaze() {
   // 출구 설정 (오른쪽 아래 근처)
   exitX = mazeWidth - 2;
   exitY = mazeHeight - 2;
-  maze[exitY][exitX] = 0;
+  maze[exitY]![exitX] = 0;
 
   // 출구까지 경로 보장 (간단하게)
   for (let i = 1; i < mazeWidth - 1; i++) {
     if (Math.random() < 0.7) {
-      maze[exitY][i] = 0;
+      maze[exitY]![i] = 0;
     }
   }
   for (let i = 1; i < mazeHeight - 1; i++) {
     if (Math.random() < 0.7) {
-      maze[i][exitX] = 0;
+      maze[i]![exitX] = 0;
     }
   }
 }
@@ -166,7 +168,7 @@ function move(dx: number, dy: number) {
   }
 
   // 벽 체크
-  if (maze[newY][newX] === 1) {
+  if (maze[newY]?.[newX] === 1) {
     // 진동 피드백
     if (navigator.vibrate) {
       navigator.vibrate(100);
@@ -332,7 +334,7 @@ function render() {
       const px = offsetX + x * cellSize;
       const py = offsetY + y * cellSize;
 
-      if (maze[y][x] === 1) {
+      if (maze[y]?.[x] === 1) {
         // 벽
         c.fillStyle = '#34495e';
         c.fillRect(px, py, cellSize, cellSize);

@@ -71,7 +71,7 @@ const difficultySettings = computed(() => {
     { complexity: 'complex', tolerance: 20 },   // Lv.5
     { complexity: 'complex', tolerance: 15 },   // Lv.6
   ];
-  return settings[Math.min(props.difficulty - 1, 5)];
+  return settings[Math.min(props.difficulty - 1, 5)] ?? settings[0]!;
 });
 
 interface Point {
@@ -131,7 +131,7 @@ const SHAPES = {
         points.push({ x: cx + Math.cos(outerAngle) * outer, y: cy + Math.sin(outerAngle) * outer });
         points.push({ x: cx + Math.cos(innerAngle) * inner, y: cy + Math.sin(innerAngle) * inner });
       }
-      points.push(points[0]); // Close the shape
+      points.push(points[0]!); // Close the shape
       return points;
     },
     // Square
@@ -151,9 +151,9 @@ let timerInterval: number = 0;
 // Generate target path
 function generateTargetPath() {
   const settings = difficultySettings.value;
-  const shapeSet = SHAPES[settings.complexity as keyof typeof SHAPES];
-  const shapeGenerator = shapeSet[Math.floor(Math.random() * shapeSet.length)];
-  targetPath.value = shapeGenerator();
+  const shapeSet = SHAPES[settings.complexity as keyof typeof SHAPES] ?? SHAPES.simple;
+  const shapeGenerator = shapeSet[Math.floor(Math.random() * shapeSet.length)] ?? shapeSet[0];
+  targetPath.value = shapeGenerator!();
   userPath.value = [];
   roundComplete.value = false;
   accuracy.value = 0;
@@ -169,8 +169,10 @@ function getTargetPathPoints(numPoints: number): Point[] {
   const segments: { start: Point; end: Point; length: number }[] = [];
 
   for (let i = 0; i < path.length - 1; i++) {
-    const len = distance(path[i].x, path[i].y, path[i + 1].x, path[i + 1].y);
-    segments.push({ start: path[i], end: path[i + 1], length: len });
+    const current = path[i]!;
+    const next = path[i + 1]!;
+    const len = distance(current.x, current.y, next.x, next.y);
+    segments.push({ start: current, end: next, length: len });
     totalLength += len;
   }
 
@@ -256,24 +258,25 @@ function render() {
     ctx.value.lineJoin = 'round';
     ctx.value.setLineDash([15, 10]);
 
+    const startPoint = targetPath.value[0]!;
     ctx.value.beginPath();
-    ctx.value.moveTo(targetPath.value[0].x, targetPath.value[0].y);
+    ctx.value.moveTo(startPoint.x, startPoint.y);
     for (let i = 1; i < targetPath.value.length; i++) {
-      ctx.value.lineTo(targetPath.value[i].x, targetPath.value[i].y);
+      ctx.value.lineTo(targetPath.value[i]!.x, targetPath.value[i]!.y);
     }
     ctx.value.stroke();
     ctx.value.setLineDash([]);
 
     // Draw start point
-    helper.value.drawCircle(targetPath.value[0].x, targetPath.value[0].y, 15, '#2ECC71');
+    helper.value.drawCircle(startPoint.x, startPoint.y, 15, '#2ECC71');
     ctx.value.font = 'bold 14px Arial';
     ctx.value.fillStyle = '#FFF';
     ctx.value.textAlign = 'center';
     ctx.value.textBaseline = 'middle';
-    ctx.value.fillText('시작', targetPath.value[0].x, targetPath.value[0].y);
+    ctx.value.fillText('시작', startPoint.x, startPoint.y);
 
     // Draw end point
-    const endPoint = targetPath.value[targetPath.value.length - 1];
+    const endPoint = targetPath.value[targetPath.value.length - 1]!;
     helper.value.drawCircle(endPoint.x, endPoint.y, 15, '#E74C3C');
     ctx.value.fillStyle = '#FFF';
     ctx.value.fillText('끝', endPoint.x, endPoint.y);
@@ -288,10 +291,11 @@ function render() {
     ctx.value.lineCap = 'round';
     ctx.value.lineJoin = 'round';
 
+    const userStart = userPath.value[0]!;
     ctx.value.beginPath();
-    ctx.value.moveTo(userPath.value[0].x, userPath.value[0].y);
+    ctx.value.moveTo(userStart.x, userStart.y);
     for (let i = 1; i < userPath.value.length; i++) {
-      ctx.value.lineTo(userPath.value[i].x, userPath.value[i].y);
+      ctx.value.lineTo(userPath.value[i]!.x, userPath.value[i]!.y);
     }
     ctx.value.stroke();
   }

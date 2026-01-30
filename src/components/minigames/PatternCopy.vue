@@ -34,8 +34,8 @@
             class="pattern-tile clickable"
             :class="{
               selected: userPattern[index],
-              correct: userPattern[index] && pattern[index].isActive,
-              wrong: userPattern[index] && !pattern[index].isActive
+              correct: userPattern[index] && tile.isActive,
+              wrong: userPattern[index] && !tile.isActive
             }"
             :style="{ backgroundColor: tile.color }"
             @touchstart.prevent="handleTileClick(index)"
@@ -115,8 +115,8 @@ function generatePattern() {
 
   for (let i = 0; i < size; i++) {
     pattern.value.push({
-      color: colors[i % colors.length],
-      emoji: emojis[i % emojis.length],
+      color: colors[i % colors.length] ?? colors[0]!,
+      emoji: emojis[i % emojis.length] ?? emojis[0]!,
       isActive: false
     });
   }
@@ -131,7 +131,8 @@ function generatePattern() {
   }
 
   activeIndices.forEach(index => {
-    pattern.value[index].isActive = true;
+    const tile = pattern.value[index];
+    if (tile) tile.isActive = true;
   });
 }
 
@@ -148,7 +149,7 @@ function showPattern() {
   let currentIndex = 0;
   const highlightInterval = safeSetInterval(() => {
     if (currentIndex < activeTiles.length) {
-      highlightIndex.value = activeTiles[currentIndex].index;
+      highlightIndex.value = activeTiles[currentIndex]?.index ?? -1;
       currentIndex++;
     } else {
       safeClearInterval(highlightInterval);
@@ -182,7 +183,8 @@ function submitPattern() {
   // 정답 확인
   let correct = true;
   for (let i = 0; i < pattern.value.length; i++) {
-    if (pattern.value[i].isActive !== userPattern.value[i]) {
+    const tile = pattern.value[i];
+    if (tile && tile.isActive !== userPattern.value[i]) {
       correct = false;
       break;
     }

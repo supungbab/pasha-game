@@ -168,6 +168,7 @@ function update() {
   // 노트 이동
   for (let i = notes.value.length - 1; i >= 0; i--) {
     const note = notes.value[i];
+    if (!note) continue;
     note.y += note.speed;
 
     // 화면 밖으로 나가면 Miss 처리

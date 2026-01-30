@@ -55,7 +55,7 @@ const difficultySettings = computed(() => {
     { circleCount: 5, circleSize: 40, showTime: 1000 },   // Lv.5
     { circleCount: 5, circleSize: 35, showTime: 800 },    // Lv.6
   ];
-  return settings[Math.min(props.difficulty - 1, 5)];
+  return settings[Math.min(props.difficulty - 1, 5)] ?? settings[0]!;
 });
 
 interface ColorOption {
@@ -84,7 +84,8 @@ function generateRound() {
   const settings = difficultySettings.value;
 
   // Pick target color
-  targetColor.value = COLORS[Math.floor(Math.random() * COLORS.length)];
+  const newTargetColor = COLORS[Math.floor(Math.random() * COLORS.length)]!;
+  targetColor.value = newTargetColor;
 
   // Generate color circles with one correct answer
   const circleCount = settings.circleCount;
@@ -102,12 +103,12 @@ function generateRound() {
     let color: ColorOption;
 
     if (i === correctIndex) {
-      color = targetColor.value;
+      color = newTargetColor;
     } else {
       // Pick a different color
       do {
-        color = COLORS[Math.floor(Math.random() * COLORS.length)];
-      } while (color.name === targetColor.value.name || usedColors.has(color.name));
+        color = COLORS[Math.floor(Math.random() * COLORS.length)]!;
+      } while (color.name === newTargetColor.name || usedColors.has(color.name));
     }
 
     usedColors.add(color.name);

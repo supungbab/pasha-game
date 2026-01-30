@@ -91,7 +91,7 @@ const difficultySettings = computed(() => {
     { fruitCount: 20, bombCount: 6, launchPower: 16, size: 40 },   // Lv.5
     { fruitCount: 25, bombCount: 7, launchPower: 17, size: 35 },   // Lv.6
   ];
-  return settings[Math.min(props.difficulty - 1, 5)];
+  return settings[Math.min(props.difficulty - 1, 5)] ?? settings[0]!;
 });
 
 // Combo timeout
@@ -138,7 +138,7 @@ function launchFruit() {
   const bombChance = props.isHardMode ? 0.25 : settings.bombCount / (settings.fruitCount + settings.bombCount);
   const isBomb = Math.random() < bombChance;
 
-  const fruitData = isBomb ? BOMB : FRUITS[Math.floor(Math.random() * FRUITS.length)];
+  const fruitData = isBomb ? BOMB : (FRUITS[Math.floor(Math.random() * FRUITS.length)] ?? FRUITS[0]!);
   const startX = Math.random() * (width - 100) + 50;
   const launchAngle = -Math.PI / 2 + (Math.random() - 0.5) * 0.6;
 
@@ -221,9 +221,9 @@ function render() {
     ctx.value.lineCap = 'round';
     ctx.value.lineJoin = 'round';
     ctx.value.beginPath();
-    ctx.value.moveTo(sliceTrail.value[0].x, sliceTrail.value[0].y);
+    ctx.value.moveTo(sliceTrail.value[0]!.x, sliceTrail.value[0]!.y);
     for (let i = 1; i < sliceTrail.value.length; i++) {
-      ctx.value.lineTo(sliceTrail.value[i].x, sliceTrail.value[i].y);
+      ctx.value.lineTo(sliceTrail.value[i]!.x, sliceTrail.value[i]!.y);
     }
     ctx.value.stroke();
 

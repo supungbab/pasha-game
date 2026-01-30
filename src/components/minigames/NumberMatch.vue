@@ -46,7 +46,7 @@ const difficultySettings = computed(() => {
     { gridSize: 5, tileSize: 65 },   // Lv.5: 5x5 = 25 numbers
     { gridSize: 5, tileSize: 60 },   // Lv.6
   ];
-  return settings[Math.min(props.difficulty - 1, 5)];
+  return settings[Math.min(props.difficulty - 1, 5)] ?? settings[0]!;
 });
 
 interface NumberTile {
@@ -89,15 +89,16 @@ function generateNumbers() {
   for (let row = 0; row < gridSize; row++) {
     for (let col = 0; col < gridSize; col++) {
       const index = row * gridSize + col;
+      const value = numberArray[index] ?? 1;
       tiles.push({
-        value: numberArray[index],
+        value,
         x: startX + col * (tileSize + 10),
         y: startY + row * (tileSize + 10),
         size: tileSize,
         active: true,
         scale: 0,
         targetScale: 1,
-        color: TILE_COLORS[numberArray[index] % TILE_COLORS.length]
+        color: TILE_COLORS[value % TILE_COLORS.length] ?? TILE_COLORS[0]!
       });
     }
   }
@@ -115,7 +116,9 @@ function generateNumbers() {
 function shuffleArray<T>(array: T[]): void {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
+    const temp = array[i]!;
+    array[i] = array[j]!;
+    array[j] = temp;
   }
 }
 
@@ -167,7 +170,7 @@ function render() {
   const numberEmojis = ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣'];
   if (currentTarget.value <= 9) {
     ctx.value.font = '40px Arial';
-    ctx.value.fillText(numberEmojis[currentTarget.value], width / 2, 130);
+    ctx.value.fillText(numberEmojis[currentTarget.value] ?? '', width / 2, 130);
   }
 
   // Draw tiles

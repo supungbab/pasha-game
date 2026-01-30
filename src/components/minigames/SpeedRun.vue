@@ -148,6 +148,7 @@ function update() {
 
   for (let i = obstacles.value.length - 1; i >= 0; i--) {
     const obs = obstacles.value[i];
+    if (!obs) continue;
     obs.x -= gameSpeed;
 
     // 충돌 체크

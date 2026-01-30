@@ -57,7 +57,7 @@ const difficultySettings = computed(() => {
     { itemCount: 6, itemSize: 50 },   // Lv.5
     { itemCount: 7, itemSize: 45 },   // Lv.6
   ];
-  return settings[Math.min(props.difficulty - 1, 5)];
+  return settings[Math.min(props.difficulty - 1, 5)] ?? settings[0]!;
 });
 
 interface SortItem {
@@ -89,7 +89,9 @@ function generateItems() {
   // Shuffle values
   for (let i = values.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [values[i], values[j]] = [values[j], values[i]];
+    const temp = values[i]!;
+    values[i] = values[j]!;
+    values[j] = temp;
   }
 
   // Calculate positions
@@ -99,12 +101,12 @@ function generateItems() {
 
   const newItems: SortItem[] = values.map((value, index) => ({
     id: index,
-    value,
+    value: value ?? 0,
     x: startX + index * (size + 10),
     y,
     targetX: startX + index * (size + 10),
     size,
-    color: ITEM_COLORS[(value - 1) % ITEM_COLORS.length],
+    color: ITEM_COLORS[((value ?? 1) - 1) % ITEM_COLORS.length] ?? ITEM_COLORS[0]!,
     originalIndex: index,
     currentIndex: index
   }));
