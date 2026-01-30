@@ -32,7 +32,7 @@ const { ctx, helper, width, height, clear, getCanvasCoordinates } = useCanvas(ca
 });
 
 // Timer utilities
-const { safeSetTimeout, safeSetInterval, clearInterval, cancelAnimationFrame } = useCleanupTimers();
+const { safeSetTimeout, safeSetInterval, safeRequestAnimationFrame, clearInterval, cancelAnimationFrame } = useCleanupTimers();
 
 // Juicy feedback
 const {
@@ -247,7 +247,7 @@ function gameLoop() {
 
   update();
   render();
-  animationId = requestAnimationFrame(gameLoop);
+  animationId = safeRequestAnimationFrame(gameLoop);
 }
 
 // Handle click/tap
@@ -423,9 +423,6 @@ onMounted(() => {
 });
 
 // useCleanupTimers가 자동으로 모든 타이머를 정리합니다
-onUnmounted(() => {
-  isGameOver.value = true;
-});
 </script>
 
 <style scoped>

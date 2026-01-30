@@ -42,13 +42,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
+import { useCleanupTimers } from '@/composables';
 
 const props = defineProps<MiniGameProps>();
 const emit = defineEmits<{
   complete: [result: MiniGameResult];
 }>();
+
+// Timer utilities
+const { safeSetTimeout } = useCleanupTimers();
 
 // 색상 정의
 interface ColorOption {
@@ -77,7 +81,6 @@ const feedback = ref<{ text: string; type: 'correct' | 'wrong' } | null>(null);
 
 let gameCompleted = false;
 let startTime = 0;
-let timeoutId: number | null = null;
 
 // 새로운 단어 생성
 function generateWord() {
@@ -95,9 +98,14 @@ function generateWord() {
     }
   }
 
+  const textOption = colorOptions[textIndex];
+  const colorOption = colorOptions[colorIndex];
+
+  if (!textOption || !colorOption) return;
+
   currentWord.value = {
-    text: colorOptions[textIndex].name,
-    color: colorOptions[colorIndex].value
+    text: textOption.name,
+    color: colorOption.value
   };
 }
 
@@ -120,7 +128,7 @@ function handleColorSelect(option: ColorOption) {
 
     // 목표 점수 달성 확인
     if (score.value >= props.targetScore) {
-      setTimeout(() => {
+      safeSetTimeout(() => {
         completeGame();
       }, 800);
       return;
@@ -136,7 +144,7 @@ function handleColorSelect(option: ColorOption) {
   }
 
   // 다음 문제
-  setTimeout(() => {
+  safeSetTimeout(() => {
     feedback.value = null;
     selectedColor.value = null;
     generateWord();
@@ -159,7 +167,7 @@ function completeGame() {
     accuracy: correctCount.value / Math.max(correctCount.value + 1, 1)
   };
 
-  setTimeout(() => {
+  safeSetTimeout(() => {
     emit('complete', result);
   }, 500);
 }
@@ -169,18 +177,14 @@ onMounted(() => {
   startTime = Date.now();
 
   // 제한시간 타이머
-  timeoutId = window.setTimeout(() => {
+  safeSetTimeout(() => {
     if (!gameCompleted) {
       completeGame();
     }
   }, props.timeLimit * 1000);
 });
 
-onUnmounted(() => {
-  if (timeoutId) {
-    clearTimeout(timeoutId);
-  }
-});
+// useCleanupTimers가 자동으로 모든 타이머를 정리합니다
 </script>
 
 <style scoped>

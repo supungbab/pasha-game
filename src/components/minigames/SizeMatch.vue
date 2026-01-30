@@ -2,8 +2,6 @@
   <div class="size-match">
     <canvas
       ref="canvasRef"
-      :width="canvasWidth"
-      :height="canvasHeight"
       @touchstart.prevent="handleStop"
     ></canvas>
 
@@ -25,25 +23,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
+import { useCanvas, useCleanupTimers } from '@/composables';
 
 const props = defineProps<MiniGameProps>();
 const emit = defineEmits<{
   complete: [result: MiniGameResult];
 }>();
 
-const canvasRef = ref<HTMLCanvasElement>();
-const canvasWidth = 800;
-const canvasHeight = 600;
+// Canvas setup
+const canvasRef = ref<HTMLCanvasElement | null>(null);
+const { ctx, width, height, clear } = useCanvas(canvasRef, {
+  width: 800,
+  height: 600,
+  backgroundColor: '#667eea'
+});
+
+// Timer utilities
+const { safeSetTimeout, safeRequestAnimationFrame, cancelAnimationFrame } = useCleanupTimers();
 
 // 게임 상태
 const score = ref(0);
 const successCount = ref(0);
 const feedback = ref<{ text: string; type: 'perfect' | 'good' | 'miss' } | null>(null);
 
-let ctx: CanvasRenderingContext2D;
-let animationId: number;
+let animationId: number = 0;
 let gameCompleted = false;
 let startTime = 0;
 
@@ -113,14 +118,14 @@ function handleStop() {
 
   // 목표 점수 달성 확인
   if (score.value >= props.targetScore) {
-    setTimeout(() => {
+    safeSetTimeout(() => {
       completeGame();
     }, 1000);
     return;
   }
 
   // 다음 라운드
-  setTimeout(() => {
+  safeSetTimeout(() => {
     resetRound();
   }, 1200);
 }
@@ -128,7 +133,7 @@ function handleStop() {
 // 피드백 표시
 function showFeedback(text: string, type: 'perfect' | 'good' | 'miss') {
   feedback.value = { text, type };
-  setTimeout(() => {
+  safeSetTimeout(() => {
     feedback.value = null;
   }, 1000);
 }
@@ -164,40 +169,45 @@ function update() {
 
 // 렌더링
 function render() {
-  if (!ctx) return;
+  if (!ctx.value) return;
+
+  const c = ctx.value;
+
+  // 배경 클리어
+  clear();
 
   // 배경
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
+  const gradient = c.createLinearGradient(0, 0, 0, height);
   gradient.addColorStop(0, '#667eea');
   gradient.addColorStop(1, '#764ba2');
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+  c.fillStyle = gradient;
+  c.fillRect(0, 0, width, height);
 
-  const centerX = canvasWidth / 2;
-  const centerY = canvasHeight / 2;
+  const centerX = width / 2;
+  const centerY = height / 2;
 
   // 목표 원 (외곽선)
-  ctx.strokeStyle = '#FFD700';
-  ctx.lineWidth = 4;
-  ctx.setLineDash([10, 10]);
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, targetRadius, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.setLineDash([]);
+  c.strokeStyle = '#FFD700';
+  c.lineWidth = 4;
+  c.setLineDash([10, 10]);
+  c.beginPath();
+  c.arc(centerX, centerY, targetRadius, 0, Math.PI * 2);
+  c.stroke();
+  c.setLineDash([]);
 
   // Perfect 구역
-  ctx.strokeStyle = 'rgba(76, 175, 80, 0.6)';
-  ctx.lineWidth = perfectThreshold * 2;
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, targetRadius, 0, Math.PI * 2);
-  ctx.stroke();
+  c.strokeStyle = 'rgba(76, 175, 80, 0.6)';
+  c.lineWidth = perfectThreshold * 2;
+  c.beginPath();
+  c.arc(centerX, centerY, targetRadius, 0, Math.PI * 2);
+  c.stroke();
 
   // Good 구역
-  ctx.strokeStyle = 'rgba(255, 193, 7, 0.3)';
-  ctx.lineWidth = goodThreshold * 2;
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, targetRadius, 0, Math.PI * 2);
-  ctx.stroke();
+  c.strokeStyle = 'rgba(255, 193, 7, 0.3)';
+  c.lineWidth = goodThreshold * 2;
+  c.beginPath();
+  c.arc(centerX, centerY, targetRadius, 0, Math.PI * 2);
+  c.stroke();
 
   // 현재 원
   let circleColor = '#f44336';
@@ -210,42 +220,42 @@ function render() {
 
   if (isStopped) {
     // 정지 상태에서는 테두리만
-    ctx.strokeStyle = circleColor;
-    ctx.lineWidth = 8;
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, currentRadius, 0, Math.PI * 2);
-    ctx.stroke();
+    c.strokeStyle = circleColor;
+    c.lineWidth = 8;
+    c.beginPath();
+    c.arc(centerX, centerY, currentRadius, 0, Math.PI * 2);
+    c.stroke();
   } else {
     // 이동 중에는 채움
-    ctx.fillStyle = circleColor;
-    ctx.globalAlpha = 0.7;
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, currentRadius, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalAlpha = 1;
+    c.fillStyle = circleColor;
+    c.globalAlpha = 0.7;
+    c.beginPath();
+    c.arc(centerX, centerY, currentRadius, 0, Math.PI * 2);
+    c.fill();
+    c.globalAlpha = 1;
 
     // 테두리
-    ctx.strokeStyle = 'white';
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, currentRadius, 0, Math.PI * 2);
-    ctx.stroke();
+    c.strokeStyle = 'white';
+    c.lineWidth = 4;
+    c.beginPath();
+    c.arc(centerX, centerY, currentRadius, 0, Math.PI * 2);
+    c.stroke();
   }
 
   // 목표 크기 텍스트
-  ctx.fillStyle = 'white';
-  ctx.font = 'bold 24px Arial';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(`목표: ${Math.round(targetRadius)}`, centerX, 50);
+  c.fillStyle = 'white';
+  c.font = 'bold 24px Arial';
+  c.textAlign = 'center';
+  c.textBaseline = 'middle';
+  c.fillText(`목표: ${Math.round(targetRadius)}`, centerX, 50);
 
   // 현재 크기 텍스트
-  ctx.fillText(`현재: ${Math.round(currentRadius)}`, centerX, centerY);
+  c.fillText(`현재: ${Math.round(currentRadius)}`, centerX, centerY);
 
   // 차이 표시
   if (isStopped) {
     const diff = Math.abs(currentRadius - targetRadius);
-    ctx.fillText(`차이: ${Math.round(diff)}`, centerX, centerY + 40);
+    c.fillText(`차이: ${Math.round(diff)}`, centerX, centerY + 40);
   }
 }
 
@@ -263,7 +273,7 @@ function gameLoop() {
     return;
   }
 
-  animationId = requestAnimationFrame(gameLoop);
+  animationId = safeRequestAnimationFrame(gameLoop);
 }
 
 // 게임 완료
@@ -281,26 +291,21 @@ function completeGame() {
     count: successCount.value
   };
 
-  setTimeout(() => {
+  safeSetTimeout(() => {
     emit('complete', result);
   }, 500);
 }
 
 onMounted(() => {
-  const canvas = canvasRef.value;
-  if (!canvas) return;
-
-  ctx = canvas.getContext('2d')!;
   startTime = Date.now();
 
-  gameLoop();
+  // 캔버스 초기화 후 게임 시작
+  safeSetTimeout(() => {
+    gameLoop();
+  }, 100);
 });
 
-onUnmounted(() => {
-  if (animationId) {
-    cancelAnimationFrame(animationId);
-  }
-});
+// useCleanupTimers가 자동으로 모든 타이머를 정리합니다
 </script>
 
 <style scoped>

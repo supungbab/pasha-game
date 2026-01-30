@@ -42,13 +42,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
+import { useCleanupTimers } from '@/composables';
 
 const props = defineProps<MiniGameProps>();
 const emit = defineEmits<{
   complete: [result: MiniGameResult];
 }>();
+
+// Timer utilities
+const { safeSetTimeout, clearTimeout: safeClearTimeout } = useCleanupTimers();
 
 type GameState = 'waiting' | 'ready' | 'go' | 'result' | 'tooEarly';
 
@@ -94,7 +98,7 @@ function handleClick() {
     // 너무 일찍 클릭
     gameState.value = 'tooEarly';
     if (timeoutId) {
-      clearTimeout(timeoutId);
+      safeClearTimeout(timeoutId);
       timeoutId = null;
     }
 
@@ -103,7 +107,7 @@ function handleClick() {
       navigator.vibrate([100, 50, 100]);
     }
 
-    setTimeout(() => {
+    safeSetTimeout(() => {
       nextRound();
     }, 1500);
 
@@ -126,7 +130,7 @@ function handleClick() {
 
     gameState.value = 'result';
 
-    setTimeout(() => {
+    safeSetTimeout(() => {
       if (currentRound.value >= totalRounds.value) {
         completeGame();
       } else {
@@ -156,19 +160,19 @@ function startRound() {
   // 랜덤 대기 시간 (1~3초)
   const waitTime = 1000 + Math.random() * 2000;
 
-  timeoutId = window.setTimeout(() => {
+  timeoutId = safeSetTimeout(() => {
     if (!gameCompleted) {
       gameState.value = 'go';
       goTimestamp = Date.now();
 
       // 3초 내에 반응 없으면 다음 라운드
-      timeoutId = window.setTimeout(() => {
+      timeoutId = safeSetTimeout(() => {
         if (gameState.value === 'go' && !gameCompleted) {
           reactionTime.value = 999;
           reactionTimes.value.push(999);
           gameState.value = 'result';
 
-          setTimeout(() => {
+          safeSetTimeout(() => {
             if (currentRound.value >= totalRounds.value) {
               completeGame();
             } else {
@@ -211,25 +215,21 @@ function completeGame() {
     accuracy: validTimes.length / totalRounds.value
   };
 
-  setTimeout(() => {
+  safeSetTimeout(() => {
     emit('complete', result);
   }, 500);
 }
 
 onMounted(() => {
   // 초기 대기 후 첫 라운드 시작
-  setTimeout(() => {
+  safeSetTimeout(() => {
     if (!gameCompleted) {
       startRound();
     }
   }, 1000);
 });
 
-onUnmounted(() => {
-  if (timeoutId) {
-    clearTimeout(timeoutId);
-  }
-});
+// useCleanupTimers가 자동으로 모든 타이머를 정리합니다
 </script>
 
 <style scoped>

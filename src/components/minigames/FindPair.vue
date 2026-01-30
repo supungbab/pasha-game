@@ -30,13 +30,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
+import { useCleanupTimers } from '@/composables';
 
 const props = defineProps<MiniGameProps>();
 const emit = defineEmits<{
   complete: [result: MiniGameResult];
 }>();
+
+// Timer utilities
+const { safeSetTimeout } = useCleanupTimers();
 
 // 카드 타입
 interface Card {
@@ -56,7 +60,6 @@ const isChecking = ref(false);
 
 let gameCompleted = false;
 let startTime = 0;
-let timeoutId: number | null = null;
 
 // 난이도별 카드 쌍 개수
 const totalPairs = computed(() => {
@@ -80,7 +83,12 @@ function initCards() {
   // 셔플
   for (let i = cardData.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [cardData[i], cardData[j]] = [cardData[j], cardData[i]];
+    const temp = cardData[i];
+    const swapTemp = cardData[j];
+    if (temp && swapTemp) {
+      cardData[i] = swapTemp;
+      cardData[j] = temp;
+    }
   }
 
   // Card 객체 생성
@@ -118,11 +126,14 @@ function handleCardClick(card: Card) {
 function checkMatch() {
   isChecking.value = true;
 
-  const [card1, card2] = flippedCards.value;
+  const card1 = flippedCards.value[0];
+  const card2 = flippedCards.value[1];
+
+  if (!card1 || !card2) return;
 
   if (card1.pairId === card2.pairId) {
     // 매칭 성공!
-    setTimeout(() => {
+    safeSetTimeout(() => {
       card1.isMatched = true;
       card2.isMatched = true;
       matches.value++;
@@ -143,7 +154,7 @@ function checkMatch() {
     }, 500);
   } else {
     // 매칭 실패
-    setTimeout(() => {
+    safeSetTimeout(() => {
       card1.isFlipped = false;
       card2.isFlipped = false;
       flippedCards.value = [];
@@ -176,7 +187,7 @@ function completeGame() {
     count: matches.value
   };
 
-  setTimeout(() => {
+  safeSetTimeout(() => {
     emit('complete', result);
   }, 800);
 }
@@ -186,18 +197,14 @@ onMounted(() => {
   startTime = Date.now();
 
   // 제한시간 타이머
-  timeoutId = window.setTimeout(() => {
+  safeSetTimeout(() => {
     if (!gameCompleted) {
       completeGame();
     }
   }, props.timeLimit * 1000);
 });
 
-onUnmounted(() => {
-  if (timeoutId) {
-    clearTimeout(timeoutId);
-  }
-});
+// useCleanupTimers가 자동으로 모든 타이머를 정리합니다
 </script>
 
 <style scoped>

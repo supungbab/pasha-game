@@ -62,14 +62,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
+import { useCleanupTimers } from '@/composables';
 import Button from '@/components/base/Button.vue';
 
 const props = defineProps<MiniGameProps>();
 const emit = defineEmits<{
   complete: [result: MiniGameResult];
 }>();
+
+// 타이머 유틸리티
+const { safeSetTimeout, safeSetInterval, clearInterval: safeClearInterval } = useCleanupTimers();
 
 // 게임 상태
 const gamePhase = ref<'showing' | 'input' | 'result'>('showing');
@@ -82,8 +86,6 @@ const isCorrect = ref(false);
 
 let startTime = 0;
 let gameCompleted = false;
-let timeoutId: number;
-let showTimeoutId: number;
 
 // 색상 및 이모지 풀
 const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E2'];
@@ -144,16 +146,16 @@ function showPattern() {
     .filter(({ tile }) => tile.isActive);
 
   let currentIndex = 0;
-  const highlightInterval = setInterval(() => {
+  const highlightInterval = safeSetInterval(() => {
     if (currentIndex < activeTiles.length) {
       highlightIndex.value = activeTiles[currentIndex].index;
       currentIndex++;
     } else {
-      clearInterval(highlightInterval);
+      safeClearInterval(highlightInterval);
       highlightIndex.value = -1;
 
       // 표시 시간 후 입력 단계로
-      showTimeoutId = window.setTimeout(() => {
+      safeSetTimeout(() => {
         gamePhase.value = 'input';
         userPattern.value = new Array(pattern.value.length).fill(false);
       }, 500);
@@ -201,7 +203,7 @@ function submitPattern() {
   }
 
   // 다음 라운드 또는 게임 종료
-  setTimeout(() => {
+  safeSetTimeout(() => {
     if (currentRound.value >= totalRounds.value) {
       completeGame();
     } else {
@@ -236,18 +238,14 @@ onMounted(() => {
   showPattern();
 
   // 제한시간 타이머
-  timeoutId = window.setTimeout(() => {
+  safeSetTimeout(() => {
     if (!gameCompleted) {
       completeGame();
     }
   }, props.timeLimit * 1000);
 });
 
-// 정리
-onUnmounted(() => {
-  if (timeoutId) clearTimeout(timeoutId);
-  if (showTimeoutId) clearTimeout(showTimeoutId);
-});
+// useCleanupTimers가 자동으로 모든 타이머를 정리합니다
 </script>
 
 <style scoped>

@@ -5,9 +5,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
-import { useCanvas } from '@/composables/useCanvas';
+import { useCanvas, useCleanupTimers } from '@/composables';
 import { pointInCircle } from '@/utils/canvas';
 
 const props = defineProps<MiniGameProps>();
@@ -22,6 +22,9 @@ const { ctx, helper, width, height, clear, getCanvasCoordinates } = useCanvas(ca
   height: 600,
   backgroundColor: '#FFF8DC' // 노랑 테마와 어울리는 크림색
 });
+
+// Timer utilities
+const { safeSetTimeout, safeSetInterval, safeRequestAnimationFrame, cancelAnimationFrame, clearInterval, clearTimeout } = useCleanupTimers();
 
 // Game state
 const score = ref(0);
@@ -127,7 +130,7 @@ function generateRound() {
 
   // Auto advance if time runs out for this round
   clearTimeout(roundTimeout);
-  roundTimeout = window.setTimeout(() => {
+  roundTimeout = safeSetTimeout(() => {
     if (!isGameOver.value && targetColor.value) {
       // Missed - no points
       attempts.value++;
@@ -230,7 +233,7 @@ function gameLoop() {
 
   update();
   render();
-  animationId = requestAnimationFrame(gameLoop);
+  animationId = safeRequestAnimationFrame(gameLoop);
 }
 
 // Handle click/tap
@@ -244,6 +247,7 @@ function handleTouch(event: TouchEvent) {
   if (isGameOver.value) return;
   event.preventDefault();
   const touch = event.touches[0];
+  if (!touch) return;
   const coords = getCanvasCoordinates(touch);
   checkColorHit(coords.x, coords.y);
 }
@@ -267,7 +271,7 @@ function checkColorHit(x: number, y: number) {
 
       // Animate selected circle
       hitCircle.targetScale = 1.3;
-      setTimeout(() => {
+      safeSetTimeout(() => {
         hitCircle.targetScale = 0;
       }, 200);
     } else {
@@ -276,13 +280,13 @@ function checkColorHit(x: number, y: number) {
 
       // Shake animation (visual feedback)
       hitCircle.targetScale = 0.8;
-      setTimeout(() => {
+      safeSetTimeout(() => {
         hitCircle.targetScale = 0;
       }, 150);
     }
 
     // Generate new round after short delay
-    setTimeout(() => {
+    safeSetTimeout(() => {
       if (!isGameOver.value) {
         generateRound();
       }
@@ -312,7 +316,7 @@ function endGame() {
 // Start game
 function startGame() {
   // Timer countdown
-  timerInterval = window.setInterval(() => {
+  timerInterval = safeSetInterval(() => {
     timeRemaining.value -= 0.1;
     if (timeRemaining.value <= 0) {
       timeRemaining.value = 0;
@@ -328,14 +332,10 @@ function startGame() {
 }
 
 onMounted(() => {
-  setTimeout(startGame, 100);
+  safeSetTimeout(startGame, 100);
 });
 
-onUnmounted(() => {
-  cancelAnimationFrame(animationId);
-  clearInterval(timerInterval);
-  clearTimeout(roundTimeout);
-});
+// useCleanupTimers가 자동으로 모든 타이머를 정리합니다
 </script>
 
 <style scoped>

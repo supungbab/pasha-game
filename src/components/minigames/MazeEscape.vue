@@ -2,8 +2,6 @@
   <div class="maze-escape">
     <canvas
       ref="canvasRef"
-      :width="canvasWidth"
-      :height="canvasHeight"
       @touchstart.prevent="handleTouch"
     ></canvas>
 
@@ -37,22 +35,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
+import { useCanvas, useCleanupTimers } from '@/composables';
 
 const props = defineProps<MiniGameProps>();
 const emit = defineEmits<{
   complete: [result: MiniGameResult];
 }>();
 
-const canvasRef = ref<HTMLCanvasElement>();
-const canvasWidth = 800;
-const canvasHeight = 600;
+// Canvas setup
+const canvasRef = ref<HTMLCanvasElement | null>(null);
+const { ctx, width, height, clear } = useCanvas(canvasRef, {
+  width: 800,
+  height: 600,
+  backgroundColor: '#2c3e50'
+});
+
+// Timer utilities
+const { safeSetTimeout, safeRequestAnimationFrame } = useCleanupTimers();
 
 const isComplete = ref(false);
 
-let ctx: CanvasRenderingContext2D;
-let animationId: number;
+let animationId: number = 0;
 let gameCompleted = false;
 let startTime = 0;
 
@@ -199,18 +204,21 @@ function handleClick(event: MouseEvent) {
 function handleTouch(event: TouchEvent) {
   if (gameCompleted || isComplete.value) return;
 
-  const rect = canvasRef.value!.getBoundingClientRect();
+  const canvas = canvasRef.value;
+  if (!canvas) return;
+  const rect = canvas.getBoundingClientRect();
   const touch = event.touches[0];
-  const touchX = touch.clientX - rect.left;
-  const touchY = touch.clientY - rect.top;
+  if (!touch) return;
+  const touchX = (touch.clientX - rect.left) * (width / rect.width);
+  const touchY = (touch.clientY - rect.top) * (height / rect.height);
 
   processMove(touchX, touchY);
 }
 
 // 공통 이동 처리
 function processMove(inputX: number, inputY: number) {
-  const offsetX = (canvasWidth - mazeWidth * cellSize) / 2;
-  const offsetY = (canvasHeight - mazeHeight * cellSize) / 2;
+  const offsetX = (width - mazeWidth * cellSize) / 2;
+  const offsetY = (height - mazeHeight * cellSize) / 2;
 
   const cellX = Math.floor((inputX - offsetX) / cellSize);
   const cellY = Math.floor((inputY - offsetY) / cellSize);
@@ -233,7 +241,7 @@ function handleEscape() {
     navigator.vibrate([50, 50, 50, 50, 50]);
   }
 
-  setTimeout(() => {
+  safeSetTimeout(() => {
     completeGame();
   }, 1500);
 }
@@ -302,18 +310,21 @@ function handleDirTouchCancel(key: string) {
 
 // 렌더링
 function render() {
-  if (!ctx) return;
+  if (!ctx.value) return;
+
+  const c = ctx.value;
 
   // 배경
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
+  clear();
+  const gradient = c.createLinearGradient(0, 0, 0, height);
   gradient.addColorStop(0, '#2c3e50');
   gradient.addColorStop(1, '#34495e');
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+  c.fillStyle = gradient;
+  c.fillRect(0, 0, width, height);
 
   // 미로 중앙 정렬
-  const offsetX = (canvasWidth - mazeWidth * cellSize) / 2;
-  const offsetY = (canvasHeight - mazeHeight * cellSize) / 2;
+  const offsetX = (width - mazeWidth * cellSize) / 2;
+  const offsetY = (height - mazeHeight * cellSize) / 2;
 
   // 미로 그리기
   for (let y = 0; y < mazeHeight; y++) {
@@ -323,20 +334,20 @@ function render() {
 
       if (maze[y][x] === 1) {
         // 벽
-        ctx.fillStyle = '#34495e';
-        ctx.fillRect(px, py, cellSize, cellSize);
+        c.fillStyle = '#34495e';
+        c.fillRect(px, py, cellSize, cellSize);
 
-        ctx.strokeStyle = '#2c3e50';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(px, py, cellSize, cellSize);
+        c.strokeStyle = '#2c3e50';
+        c.lineWidth = 1;
+        c.strokeRect(px, py, cellSize, cellSize);
       } else {
         // 길
-        ctx.fillStyle = '#ecf0f1';
-        ctx.fillRect(px, py, cellSize, cellSize);
+        c.fillStyle = '#ecf0f1';
+        c.fillRect(px, py, cellSize, cellSize);
 
-        ctx.strokeStyle = '#bdc3c7';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(px, py, cellSize, cellSize);
+        c.strokeStyle = '#bdc3c7';
+        c.lineWidth = 1;
+        c.strokeRect(px, py, cellSize, cellSize);
       }
     }
   }
@@ -344,22 +355,22 @@ function render() {
   // 출구
   const exitPx = offsetX + exitX * cellSize;
   const exitPy = offsetY + exitY * cellSize;
-  ctx.fillStyle = '#4CAF50';
-  ctx.fillRect(exitPx, exitPy, cellSize, cellSize);
+  c.fillStyle = '#4CAF50';
+  c.fillRect(exitPx, exitPy, cellSize, cellSize);
 
-  ctx.font = `${cellSize * 0.6}px Arial`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('🚪', exitPx + cellSize / 2, exitPy + cellSize / 2);
+  c.font = `${cellSize * 0.6}px Arial`;
+  c.textAlign = 'center';
+  c.textBaseline = 'middle';
+  c.fillText('🚪', exitPx + cellSize / 2, exitPy + cellSize / 2);
 
   // 플레이어
   const playerPx = offsetX + playerX * cellSize;
   const playerPy = offsetY + playerY * cellSize;
-  ctx.fillStyle = '#3498db';
-  ctx.fillRect(playerPx, playerPy, cellSize, cellSize);
+  c.fillStyle = '#3498db';
+  c.fillRect(playerPx, playerPy, cellSize, cellSize);
 
-  ctx.font = `${cellSize * 0.6}px Arial`;
-  ctx.fillText('🔵', playerPx + cellSize / 2, playerPy + cellSize / 2);
+  c.font = `${cellSize * 0.6}px Arial`;
+  c.fillText('🔵', playerPx + cellSize / 2, playerPy + cellSize / 2);
 }
 
 // 게임 루프
@@ -375,7 +386,7 @@ function gameLoop() {
     return;
   }
 
-  animationId = requestAnimationFrame(gameLoop);
+  animationId = safeRequestAnimationFrame(gameLoop);
 }
 
 // 게임 완료
@@ -400,51 +411,51 @@ function completeGame() {
     timeRemaining
   };
 
-  setTimeout(() => {
+  safeSetTimeout(() => {
     emit('complete', result);
   }, 500);
 }
 
-onMounted(() => {
-  const canvas = canvasRef.value;
-  if (!canvas) return;
+// 키보드 이벤트 핸들러
+function handleKeyDown(e: KeyboardEvent) {
+  switch (e.key) {
+    case 'ArrowUp':
+    case 'w':
+      move(0, -1);
+      break;
+    case 'ArrowDown':
+    case 's':
+      move(0, 1);
+      break;
+    case 'ArrowLeft':
+    case 'a':
+      move(-1, 0);
+      break;
+    case 'ArrowRight':
+    case 'd':
+      move(1, 0);
+      break;
+  }
+}
 
-  ctx = canvas.getContext('2d')!;
+onMounted(() => {
   startTime = Date.now();
 
   generateMaze();
-  gameLoop();
 
   // 키보드 이벤트
-  const handleKeyDown = (e: KeyboardEvent) => {
-    switch (e.key) {
-      case 'ArrowUp':
-      case 'w':
-        move(0, -1);
-        break;
-      case 'ArrowDown':
-      case 's':
-        move(0, 1);
-        break;
-      case 'ArrowLeft':
-      case 'a':
-        move(-1, 0);
-        break;
-      case 'ArrowRight':
-      case 'd':
-        move(1, 0);
-        break;
-    }
-  };
-
   window.addEventListener('keydown', handleKeyDown);
 
-  onUnmounted(() => {
-    window.removeEventListener('keydown', handleKeyDown);
-    if (animationId) {
-      cancelAnimationFrame(animationId);
-    }
-  });
+  // 캔버스 초기화 후 게임 시작
+  safeSetTimeout(() => {
+    gameLoop();
+  }, 100);
+});
+
+// 클린업은 useCleanupTimers가 자동으로 처리하고, 키보드 이벤트는 수동으로 정리
+import { onUnmounted } from 'vue';
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown);
 });
 </script>
 

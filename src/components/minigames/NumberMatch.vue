@@ -5,9 +5,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
-import { useCanvas } from '@/composables/useCanvas';
+import { useCanvas, useCleanupTimers } from '@/composables';
 import { pointInRect } from '@/utils/canvas';
 
 const props = defineProps<MiniGameProps>();
@@ -22,6 +22,9 @@ const { ctx, helper, width, height, clear, getCanvasCoordinates } = useCanvas(ca
   height: 600,
   backgroundColor: '#2C3E50'
 });
+
+// Timer utilities
+const { safeSetTimeout, safeSetInterval, safeRequestAnimationFrame, cancelAnimationFrame, clearInterval } = useCleanupTimers();
 
 // Game state
 const score = ref(0);
@@ -103,7 +106,7 @@ function generateNumbers() {
 
   // Animate tiles appearing
   tiles.forEach((tile, i) => {
-    setTimeout(() => {
+    safeSetTimeout(() => {
       tile.targetScale = 1;
     }, i * 30);
   });
@@ -225,7 +228,7 @@ function gameLoop() {
 
   update();
   render();
-  animationId = requestAnimationFrame(gameLoop);
+  animationId = safeRequestAnimationFrame(gameLoop);
 }
 
 // Handle click/tap
@@ -239,6 +242,7 @@ function handleTouch(event: TouchEvent) {
   if (isGameOver.value) return;
   event.preventDefault();
   const touch = event.touches[0];
+  if (!touch) return;
   const coords = getCanvasCoordinates(touch);
   checkTileHit(coords.x, coords.y);
 }
@@ -280,12 +284,12 @@ function checkTileHit(x: number, y: number) {
       // Shake animation
       const originalX = hitTile.x;
       let shakeCount = 0;
-      const shakeInterval = setInterval(() => {
+      const shakeIntervalId = safeSetInterval(() => {
         hitTile.x = originalX + (shakeCount % 2 === 0 ? 5 : -5);
         shakeCount++;
         if (shakeCount >= 6) {
           hitTile.x = originalX;
-          clearInterval(shakeInterval);
+          clearInterval(shakeIntervalId);
         }
       }, 50);
     }
@@ -317,7 +321,7 @@ function startGame() {
   generateNumbers();
 
   // Timer countdown
-  timerInterval = window.setInterval(() => {
+  timerInterval = safeSetInterval(() => {
     timeRemaining.value -= 0.1;
     if (timeRemaining.value <= 0) {
       timeRemaining.value = 0;
@@ -330,13 +334,10 @@ function startGame() {
 }
 
 onMounted(() => {
-  setTimeout(startGame, 100);
+  safeSetTimeout(startGame, 100);
 });
 
-onUnmounted(() => {
-  cancelAnimationFrame(animationId);
-  clearInterval(timerInterval);
-});
+// useCleanupTimers가 자동으로 모든 타이머를 정리합니다
 </script>
 
 <style scoped>

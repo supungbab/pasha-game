@@ -38,14 +38,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, onMounted, onUnmounted } from 'vue';
+import { ref, computed, reactive, onMounted } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
 import Button from '@/components/base/Button.vue';
+import { useCleanupTimers } from '@/composables';
 
 const props = defineProps<MiniGameProps>();
 const emit = defineEmits<{
   complete: [result: MiniGameResult];
 }>();
+
+// Timer utilities
+const { safeSetTimeout } = useCleanupTimers();
 
 // 게임 상태
 const tiles = ref<number[]>([]);
@@ -55,7 +59,6 @@ let isSolved = false;
 
 let gameCompleted = false;
 let startTime = 0;
-let timeoutId: number | null = null;
 
 // Touch state for tiles
 interface TouchState {
@@ -150,7 +153,7 @@ function handleSolved() {
   }
 
   // 게임 완료
-  setTimeout(() => {
+  safeSetTimeout(() => {
     completeGame();
   }, 1000);
 }
@@ -268,7 +271,7 @@ function completeGame() {
     count: moves.value
   };
 
-  setTimeout(() => {
+  safeSetTimeout(() => {
     emit('complete', result);
   }, 500);
 }
@@ -278,18 +281,14 @@ onMounted(() => {
   shufflePuzzle();
 
   // 제한시간 타이머
-  timeoutId = window.setTimeout(() => {
+  safeSetTimeout(() => {
     if (!gameCompleted) {
       completeGame();
     }
   }, props.timeLimit * 1000);
 });
 
-onUnmounted(() => {
-  if (timeoutId) {
-    clearTimeout(timeoutId);
-  }
-});
+// useCleanupTimers가 자동으로 모든 타이머를 정리합니다
 </script>
 
 <style scoped>

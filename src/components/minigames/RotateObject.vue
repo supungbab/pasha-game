@@ -2,8 +2,6 @@
   <div class="rotate-object">
     <canvas
       ref="canvasRef"
-      :width="canvasWidth"
-      :height="canvasHeight"
       @mousedown="handleStart"
       @mousemove="handleMove"
       @mouseup="handleEnd"
@@ -30,25 +28,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
+import { useCanvas, useCleanupTimers } from '@/composables';
 
 const props = defineProps<MiniGameProps>();
 const emit = defineEmits<{
   complete: [result: MiniGameResult];
 }>();
 
-const canvasRef = ref<HTMLCanvasElement>();
-const canvasWidth = 800;
-const canvasHeight = 600;
+// Canvas setup
+const canvasRef = ref<HTMLCanvasElement | null>(null);
+const { ctx, width, height, clear } = useCanvas(canvasRef, {
+  width: 800,
+  height: 600,
+  backgroundColor: '#667eea'
+});
+
+// Timer utilities
+const { safeSetTimeout, safeRequestAnimationFrame, cancelAnimationFrame } = useCleanupTimers();
 
 // 게임 상태
 const score = ref(0);
 const successCount = ref(0);
 const feedback = ref<{ text: string; type: 'perfect' | 'good' | 'miss' } | null>(null);
 
-let ctx: CanvasRenderingContext2D;
-let animationId: number;
+let animationId: number = 0;
 let gameCompleted = false;
 let startTime = 0;
 
@@ -65,8 +70,8 @@ const goodThreshold = Math.max(15 - props.difficulty, 8);
 
 // 마우스 각도 계산
 function calculateAngle(x: number, y: number): number {
-  const centerX = canvasWidth / 2;
-  const centerY = canvasHeight / 2;
+  const centerX = width / 2;
+  const centerY = height / 2;
   const dx = x - centerX;
   const dy = y - centerY;
   return Math.atan2(dy, dx) * (180 / Math.PI);
@@ -76,17 +81,23 @@ function calculateAngle(x: number, y: number): number {
 function handleStart(event: MouseEvent) {
   if (gameCompleted || isLocked) return;
 
+  const rect = canvasRef.value?.getBoundingClientRect();
+  if (!rect) return;
+
   isDragging = true;
-  const rect = canvasRef.value!.getBoundingClientRect();
   lastMouseAngle = calculateAngle(event.clientX - rect.left, event.clientY - rect.top);
 }
 
 function handleTouchStart(event: TouchEvent) {
   if (gameCompleted || isLocked) return;
 
-  isDragging = true;
-  const rect = canvasRef.value!.getBoundingClientRect();
+  const rect = canvasRef.value?.getBoundingClientRect();
+  if (!rect) return;
+
   const touch = event.touches[0];
+  if (!touch) return;
+
+  isDragging = true;
   lastMouseAngle = calculateAngle(touch.clientX - rect.left, touch.clientY - rect.top);
 }
 
@@ -94,7 +105,9 @@ function handleTouchStart(event: TouchEvent) {
 function handleMove(event: MouseEvent) {
   if (!isDragging || isLocked) return;
 
-  const rect = canvasRef.value!.getBoundingClientRect();
+  const rect = canvasRef.value?.getBoundingClientRect();
+  if (!rect) return;
+
   const currentMouseAngle = calculateAngle(event.clientX - rect.left, event.clientY - rect.top);
   const angleDiff = currentMouseAngle - lastMouseAngle;
 
@@ -108,8 +121,12 @@ function handleMove(event: MouseEvent) {
 function handleTouchMove(event: TouchEvent) {
   if (!isDragging || isLocked) return;
 
-  const rect = canvasRef.value!.getBoundingClientRect();
+  const rect = canvasRef.value?.getBoundingClientRect();
+  if (!rect) return;
+
   const touch = event.touches[0];
+  if (!touch) return;
+
   const currentMouseAngle = calculateAngle(touch.clientX - rect.left, touch.clientY - rect.top);
   const angleDiff = currentMouseAngle - lastMouseAngle;
 
@@ -178,14 +195,14 @@ function checkAngle() {
 
   // 목표 점수 달성 확인
   if (score.value >= props.targetScore) {
-    setTimeout(() => {
+    safeSetTimeout(() => {
       completeGame();
     }, 1000);
     return;
   }
 
   // 다음 라운드
-  setTimeout(() => {
+  safeSetTimeout(() => {
     resetRound();
   }, 1500);
 }
@@ -193,7 +210,7 @@ function checkAngle() {
 // 피드백 표시
 function showFeedback(text: string, type: 'perfect' | 'good' | 'miss') {
   feedback.value = { text, type };
-  setTimeout(() => {
+  safeSetTimeout(() => {
     feedback.value = null;
   }, 1200);
 }
@@ -207,95 +224,100 @@ function resetRound() {
 
 // 렌더링
 function render() {
-  if (!ctx) return;
+  if (!ctx.value) return;
+
+  const c = ctx.value;
+
+  // 배경 클리어
+  clear();
 
   // 배경
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
+  const gradient = c.createLinearGradient(0, 0, 0, height);
   gradient.addColorStop(0, '#667eea');
   gradient.addColorStop(1, '#764ba2');
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+  c.fillStyle = gradient;
+  c.fillRect(0, 0, width, height);
 
-  const centerX = canvasWidth / 2;
-  const centerY = canvasHeight / 2;
+  const centerX = width / 2;
+  const centerY = height / 2;
 
   // 목표 각도 표시 (화살표)
-  ctx.save();
-  ctx.translate(centerX, centerY);
-  ctx.rotate((targetAngle * Math.PI) / 180);
+  c.save();
+  c.translate(centerX, centerY);
+  c.rotate((targetAngle * Math.PI) / 180);
 
   // 목표 화살표 (점선)
-  ctx.strokeStyle = '#FFD700';
-  ctx.lineWidth = 4;
-  ctx.setLineDash([10, 10]);
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.lineTo(150, 0);
-  ctx.stroke();
-  ctx.setLineDash([]);
+  c.strokeStyle = '#FFD700';
+  c.lineWidth = 4;
+  c.setLineDash([10, 10]);
+  c.beginPath();
+  c.moveTo(0, 0);
+  c.lineTo(150, 0);
+  c.stroke();
+  c.setLineDash([]);
 
   // 화살표 끝
-  ctx.fillStyle = '#FFD700';
-  ctx.beginPath();
-  ctx.moveTo(150, 0);
-  ctx.lineTo(135, -10);
-  ctx.lineTo(135, 10);
-  ctx.closePath();
-  ctx.fill();
+  c.fillStyle = '#FFD700';
+  c.beginPath();
+  c.moveTo(150, 0);
+  c.lineTo(135, -10);
+  c.lineTo(135, 10);
+  c.closePath();
+  c.fill();
 
-  ctx.restore();
+  c.restore();
 
   // 중앙 원 (배경)
-  ctx.fillStyle = 'white';
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, 100, 0, Math.PI * 2);
-  ctx.fill();
+  c.fillStyle = 'white';
+  c.beginPath();
+  c.arc(centerX, centerY, 100, 0, Math.PI * 2);
+  c.fill();
 
-  ctx.strokeStyle = '#333';
-  ctx.lineWidth = 3;
-  ctx.stroke();
+  c.strokeStyle = '#333';
+  c.lineWidth = 3;
+  c.stroke();
 
   // 현재 각도 표시 (물체)
-  ctx.save();
-  ctx.translate(centerX, centerY);
-  ctx.rotate((currentAngle * Math.PI) / 180);
+  c.save();
+  c.translate(centerX, centerY);
+  c.rotate((currentAngle * Math.PI) / 180);
 
   // 다이아몬드 모양
-  ctx.fillStyle = '#f44336';
-  ctx.beginPath();
-  ctx.moveTo(0, -40);
-  ctx.lineTo(40, 0);
-  ctx.lineTo(0, 40);
-  ctx.lineTo(-40, 0);
-  ctx.closePath();
-  ctx.fill();
+  c.fillStyle = '#f44336';
+  c.beginPath();
+  c.moveTo(0, -40);
+  c.lineTo(40, 0);
+  c.lineTo(0, 40);
+  c.lineTo(-40, 0);
+  c.closePath();
+  c.fill();
 
-  ctx.strokeStyle = '#c62828';
-  ctx.lineWidth = 3;
-  ctx.stroke();
+  c.strokeStyle = '#c62828';
+  c.lineWidth = 3;
+  c.stroke();
 
   // 방향 표시 (작은 원)
-  ctx.fillStyle = '#FFD700';
-  ctx.beginPath();
-  ctx.arc(0, -40, 8, 0, Math.PI * 2);
-  ctx.fill();
+  c.fillStyle = '#FFD700';
+  c.beginPath();
+  c.arc(0, -40, 8, 0, Math.PI * 2);
+  c.fill();
 
-  ctx.restore();
+  c.restore();
 
   // 각도 텍스트
-  ctx.fillStyle = 'white';
-  ctx.font = 'bold 32px Arial';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(`목표: ${targetAngle}°`, centerX, 80);
-  ctx.fillText(`현재: ${Math.round(currentAngle)}°`, centerX, centerY);
+  c.fillStyle = 'white';
+  c.font = 'bold 32px Arial';
+  c.textAlign = 'center';
+  c.textBaseline = 'middle';
+  c.fillText(`목표: ${targetAngle}°`, centerX, 80);
+  c.fillText(`현재: ${Math.round(currentAngle)}°`, centerX, centerY);
 
   // 각도 차이
   if (isLocked) {
     let diff = Math.abs(currentAngle - targetAngle);
     if (diff > 180) diff = 360 - diff;
-    ctx.font = 'bold 24px Arial';
-    ctx.fillText(`차이: ${Math.round(diff)}°`, centerX, centerY + 50);
+    c.font = 'bold 24px Arial';
+    c.fillText(`차이: ${Math.round(diff)}°`, centerX, centerY + 50);
   }
 }
 
@@ -312,7 +334,7 @@ function gameLoop() {
     return;
   }
 
-  animationId = requestAnimationFrame(gameLoop);
+  animationId = safeRequestAnimationFrame(gameLoop);
 }
 
 // 게임 완료
@@ -330,29 +352,24 @@ function completeGame() {
     count: successCount.value
   };
 
-  setTimeout(() => {
+  safeSetTimeout(() => {
     emit('complete', result);
   }, 500);
 }
 
 onMounted(() => {
-  const canvas = canvasRef.value;
-  if (!canvas) return;
-
-  ctx = canvas.getContext('2d')!;
   startTime = Date.now();
 
   // 초기 목표 각도 설정
   targetAngle = Math.floor(Math.random() * 360);
 
-  gameLoop();
+  // 캔버스 초기화 후 게임 시작
+  safeSetTimeout(() => {
+    gameLoop();
+  }, 100);
 });
 
-onUnmounted(() => {
-  if (animationId) {
-    cancelAnimationFrame(animationId);
-  }
-});
+// useCleanupTimers가 자동으로 모든 타이머를 정리합니다
 </script>
 
 <style scoped>

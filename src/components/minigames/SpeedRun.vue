@@ -2,8 +2,6 @@
   <div class="speed-run">
     <canvas
       ref="canvasRef"
-      :width="canvasWidth"
-      :height="canvasHeight"
       @touchstart.prevent="handleJump"
     ></canvas>
 
@@ -20,22 +18,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
+import { useCanvas, useCleanupTimers } from '@/composables';
 
 const props = defineProps<MiniGameProps>();
 const emit = defineEmits<{
   complete: [result: MiniGameResult];
 }>();
 
-const canvasRef = ref<HTMLCanvasElement>();
-const canvasWidth = 800;
-const canvasHeight = 600;
+// Canvas setup
+const canvasRef = ref<HTMLCanvasElement | null>(null);
+const { ctx, width, height, clear } = useCanvas(canvasRef, {
+  width: 800,
+  height: 600,
+  backgroundColor: '#87CEEB'
+});
+
+// Timer utilities
+const { safeSetTimeout, safeRequestAnimationFrame, cancelAnimationFrame } = useCleanupTimers();
 
 const distance = ref(0);
 
-let ctx: CanvasRenderingContext2D;
-let animationId: number;
+let animationId: number = 0;
 let gameCompleted = false;
 let startTime = 0;
 
@@ -79,14 +84,14 @@ const obstacleSpawnInterval = Math.max(100 - props.difficulty * 10, 60);
 
 // 장애물 생성
 function createObstacle(): Obstacle {
-  const width = 30 + Math.random() * 20;
-  const height = 40 + Math.random() * 30;
+  const obsWidth = 30 + Math.random() * 20;
+  const obsHeight = 40 + Math.random() * 30;
 
   return {
-    x: canvasWidth,
-    y: GROUND_Y + player.height - height,
-    width,
-    height,
+    x: width,
+    y: GROUND_Y + player.height - obsHeight,
+    width: obsWidth,
+    height: obsHeight,
     passed: false
   };
 }
@@ -179,70 +184,73 @@ function update() {
 
 // 렌더링
 function render() {
-  if (!ctx) return;
+  if (!ctx.value) return;
+
+  const c = ctx.value;
 
   // 배경
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
+  clear();
+  const gradient = c.createLinearGradient(0, 0, 0, height);
   gradient.addColorStop(0, '#87CEEB');
   gradient.addColorStop(1, '#E0F6FF');
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+  c.fillStyle = gradient;
+  c.fillRect(0, 0, width, height);
 
   // 구름 (장식)
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+  c.fillStyle = 'rgba(255, 255, 255, 0.7)';
   const cloudOffset = (distance.value * 5) % 800;
   for (let i = -1; i <= 2; i++) {
-    const x = i * 400 - cloudOffset;
-    if (x > -100 && x < canvasWidth + 100) {
-      ctx.beginPath();
-      ctx.arc(x, 100, 25, 0, Math.PI * 2);
-      ctx.arc(x + 30, 100, 35, 0, Math.PI * 2);
-      ctx.arc(x + 60, 100, 25, 0, Math.PI * 2);
-      ctx.fill();
+    const cloudX = i * 400 - cloudOffset;
+    if (cloudX > -100 && cloudX < width + 100) {
+      c.beginPath();
+      c.arc(cloudX, 100, 25, 0, Math.PI * 2);
+      c.arc(cloudX + 30, 100, 35, 0, Math.PI * 2);
+      c.arc(cloudX + 60, 100, 25, 0, Math.PI * 2);
+      c.fill();
     }
   }
 
   // 땅
-  ctx.fillStyle = '#8B4513';
-  ctx.fillRect(0, GROUND_Y + player.height, canvasWidth, canvasHeight - GROUND_Y - player.height);
+  c.fillStyle = '#8B4513';
+  c.fillRect(0, GROUND_Y + player.height, width, height - GROUND_Y - player.height);
 
   // 땅 위 잔디
-  ctx.fillStyle = '#90EE90';
-  ctx.fillRect(0, GROUND_Y + player.height, canvasWidth, 5);
+  c.fillStyle = '#90EE90';
+  c.fillRect(0, GROUND_Y + player.height, width, 5);
 
   // 땅 패턴 (이동)
-  ctx.fillStyle = '#654321';
+  c.fillStyle = '#654321';
   const groundOffset = (distance.value * 10) % 40;
-  for (let x = -groundOffset; x < canvasWidth; x += 40) {
-    ctx.fillRect(x, GROUND_Y + player.height + 10, 30, 10);
+  for (let gx = -groundOffset; gx < width; gx += 40) {
+    c.fillRect(gx, GROUND_Y + player.height + 10, 30, 10);
   }
 
   // 장애물
   for (const obs of obstacles.value) {
-    ctx.fillStyle = '#DC143C';
-    ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+    c.fillStyle = '#DC143C';
+    c.fillRect(obs.x, obs.y, obs.width, obs.height);
 
     // 테두리
-    ctx.strokeStyle = '#8B0000';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(obs.x, obs.y, obs.width, obs.height);
+    c.strokeStyle = '#8B0000';
+    c.lineWidth = 2;
+    c.strokeRect(obs.x, obs.y, obs.width, obs.height);
 
     // 위험 패턴
-    ctx.fillStyle = '#FFD700';
-    ctx.fillRect(obs.x, obs.y, obs.width, 5);
+    c.fillStyle = '#FFD700';
+    c.fillRect(obs.x, obs.y, obs.width, 5);
   }
 
   // 플레이어 (러너 이모지)
-  ctx.font = `${player.height}px Arial`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('🏃', player.x + player.width / 2, player.y + player.height / 2);
+  c.font = `${player.height}px Arial`;
+  c.textAlign = 'center';
+  c.textBaseline = 'middle';
+  c.fillText('🏃', player.x + player.width / 2, player.y + player.height / 2);
 
   // 목표 거리 표시
-  ctx.fillStyle = 'white';
-  ctx.font = 'bold 20px Arial';
-  ctx.textAlign = 'left';
-  ctx.fillText(`목표: ${props.targetScore}m`, 20, 50);
+  c.fillStyle = 'white';
+  c.font = 'bold 20px Arial';
+  c.textAlign = 'left';
+  c.fillText(`목표: ${props.targetScore}m`, 20, 50);
 }
 
 // 게임 루프
@@ -259,7 +267,7 @@ function gameLoop() {
     return;
   }
 
-  animationId = requestAnimationFrame(gameLoop);
+  animationId = safeRequestAnimationFrame(gameLoop);
 }
 
 // 게임 완료
@@ -278,26 +286,21 @@ function completeGame() {
     timeRemaining
   };
 
-  setTimeout(() => {
+  safeSetTimeout(() => {
     emit('complete', result);
   }, 500);
 }
 
 onMounted(() => {
-  const canvas = canvasRef.value;
-  if (!canvas) return;
-
-  ctx = canvas.getContext('2d')!;
   startTime = Date.now();
 
-  gameLoop();
+  // 캔버스 초기화 후 게임 시작
+  safeSetTimeout(() => {
+    gameLoop();
+  }, 100);
 });
 
-onUnmounted(() => {
-  if (animationId) {
-    cancelAnimationFrame(animationId);
-  }
-});
+// useCleanupTimers가 자동으로 모든 타이머를 정리합니다
 </script>
 
 <style scoped>

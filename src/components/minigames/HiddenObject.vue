@@ -27,13 +27,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
+import { useCleanupTimers } from '@/composables';
 
 const props = defineProps<MiniGameProps>();
 const emit = defineEmits<{
   complete: [result: MiniGameResult];
 }>();
+
+// Timer utilities
+const { safeSetTimeout } = useCleanupTimers();
 
 // 게임 상태
 const emojis = ref<string[]>([]);
@@ -44,7 +48,6 @@ const gridRef = ref<HTMLElement>();
 
 let gameCompleted = false;
 let startTime = 0;
-let timeoutId: number | null = null;
 
 // 난이도별 그리드 크기와 목표 개수
 const gridSize = computed(() => {
@@ -72,7 +75,9 @@ function generateGrid() {
   const totalCells = gridSize.value * gridSize.value;
 
   // 타겟 이모지 선택
-  targetEmoji.value = emojiPool[Math.floor(Math.random() * emojiPool.length)];
+  const selectedTarget = emojiPool[Math.floor(Math.random() * emojiPool.length)];
+  if (!selectedTarget) return;
+  targetEmoji.value = selectedTarget;
 
   // 나머지 이모지 (타겟 제외)
   const otherEmojis = emojiPool.filter(e => e !== targetEmoji.value);
@@ -88,13 +93,20 @@ function generateGrid() {
   // 나머지 칸 채우기
   while (grid.length < totalCells) {
     const randomEmoji = otherEmojis[Math.floor(Math.random() * otherEmojis.length)];
-    grid.push(randomEmoji);
+    if (randomEmoji) {
+      grid.push(randomEmoji);
+    }
   }
 
   // 셔플
   for (let i = grid.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [grid[i], grid[j]] = [grid[j], grid[i]];
+    const temp = grid[i];
+    const swapTemp = grid[j];
+    if (temp !== undefined && swapTemp !== undefined) {
+      grid[i] = swapTemp;
+      grid[j] = temp;
+    }
   }
 
   emojis.value = grid;
@@ -116,7 +128,7 @@ function handleClick(index: number, emoji: string) {
 
     // 모두 찾았는지 확인
     if (foundCount.value === totalTargets.value) {
-      setTimeout(() => {
+      safeSetTimeout(() => {
         completeGame();
       }, 500);
     }
@@ -133,7 +145,7 @@ function handleClick(index: number, emoji: string) {
     const element = gridRef.value?.children[index] as HTMLElement;
     if (element) {
       element.classList.add('wrong');
-      setTimeout(() => {
+      safeSetTimeout(() => {
         element.classList.remove('wrong');
       }, 500);
     }
@@ -159,7 +171,7 @@ function completeGame() {
     count: foundCount.value
   };
 
-  setTimeout(() => {
+  safeSetTimeout(() => {
     emit('complete', result);
   }, 500);
 }
@@ -169,18 +181,14 @@ onMounted(() => {
   startTime = Date.now();
 
   // 제한시간 타이머
-  timeoutId = window.setTimeout(() => {
+  safeSetTimeout(() => {
     if (!gameCompleted) {
       completeGame();
     }
   }, props.timeLimit * 1000);
 });
 
-onUnmounted(() => {
-  if (timeoutId) {
-    clearTimeout(timeoutId);
-  }
-});
+// useCleanupTimers가 자동으로 모든 타이머를 정리합니다
 </script>
 
 <style scoped>

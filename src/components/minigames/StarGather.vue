@@ -13,9 +13,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
-import { useCanvas } from '@/composables/useCanvas';
+import { useCanvas, useCleanupTimers } from '@/composables';
 import { circlesIntersect } from '@/utils/canvas';
 import type { Particle } from '@/utils/canvas';
 
@@ -31,6 +31,9 @@ const { ctx, helper, width, height, clear, getCanvasCoordinates } = useCanvas(ca
   height: 600,
   backgroundColor: '#0f0c29'
 });
+
+// Timer utilities
+const { safeSetTimeout, safeSetInterval, safeRequestAnimationFrame, cancelAnimationFrame, clearInterval } = useCleanupTimers();
 
 // Game state
 const score = ref(0);
@@ -96,7 +99,7 @@ function spawnStars() {
 
   // Animate stars appearing
   newStars.forEach((star, i) => {
-    setTimeout(() => {
+    safeSetTimeout(() => {
       star.scale = 1;
     }, i * 50);
   });
@@ -148,7 +151,7 @@ function update() {
   const remainingStars = stars.value.filter(s => !s.collected).length;
   if (remainingStars === 0 && !collectedThisFrame) {
     // Spawn new stars
-    setTimeout(spawnStars, 300);
+    safeSetTimeout(spawnStars, 300);
   }
 
   // Update particles
@@ -259,7 +262,7 @@ function gameLoop() {
 
   update();
   render();
-  animationId = requestAnimationFrame(gameLoop);
+  animationId = safeRequestAnimationFrame(gameLoop);
 }
 
 // Pointer handlers
@@ -283,6 +286,7 @@ function handleTouchStart(event: TouchEvent) {
   event.preventDefault();
   isDragging.value = true;
   const touch = event.touches[0];
+  if (!touch) return;
   const coords = getCanvasCoordinates(touch);
   setPlayerTarget(coords.x, coords.y);
 }
@@ -291,6 +295,7 @@ function handleTouchMove(event: TouchEvent) {
   if (!isDragging.value) return;
   event.preventDefault();
   const touch = event.touches[0];
+  if (!touch) return;
   const coords = getCanvasCoordinates(touch);
   setPlayerTarget(coords.x, coords.y);
 }
@@ -328,7 +333,7 @@ function startGame() {
   spawnStars();
 
   // Timer countdown
-  timerInterval = window.setInterval(() => {
+  timerInterval = safeSetInterval(() => {
     timeRemaining.value -= 0.1;
     if (timeRemaining.value <= 0) {
       timeRemaining.value = 0;
@@ -341,13 +346,10 @@ function startGame() {
 }
 
 onMounted(() => {
-  setTimeout(startGame, 100);
+  safeSetTimeout(startGame, 100);
 });
 
-onUnmounted(() => {
-  cancelAnimationFrame(animationId);
-  clearInterval(timerInterval);
-});
+// useCleanupTimers가 자동으로 모든 타이머를 정리합니다
 </script>
 
 <style scoped>

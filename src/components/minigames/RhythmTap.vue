@@ -2,8 +2,6 @@
   <div class="rhythm-tap">
     <canvas
       ref="canvasRef"
-      :width="canvasWidth"
-      :height="canvasHeight"
       @touchstart.prevent="handleTap"
     ></canvas>
 
@@ -26,30 +24,37 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
+import { useCanvas, useCleanupTimers } from '@/composables';
 
 const props = defineProps<MiniGameProps>();
 const emit = defineEmits<{
   complete: [result: MiniGameResult];
 }>();
 
-const canvasRef = ref<HTMLCanvasElement>();
-const canvasWidth = 800;
-const canvasHeight = 600;
+// Canvas setup
+const canvasRef = ref<HTMLCanvasElement | null>(null);
+const { ctx, width, height, clear } = useCanvas(canvasRef, {
+  width: 800,
+  height: 600,
+  backgroundColor: '#4a0e4e'
+});
+
+// Timer utilities
+const { safeSetTimeout, safeRequestAnimationFrame, cancelAnimationFrame } = useCleanupTimers();
 
 // 게임 상태
 const score = ref(0);
 const combo = ref(0);
 const judgment = ref<{ text: string; type: 'perfect' | 'good' | 'miss' } | null>(null);
 
-let ctx: CanvasRenderingContext2D;
-let animationId: number;
+let animationId: number = 0;
 let gameCompleted = false;
 let startTime = 0;
 
 // 판정 구역
-const TARGET_Y = canvasHeight - 150;
+const TARGET_Y = height - 150;
 const TARGET_RADIUS = 60;
 const PERFECT_THRESHOLD = 20;
 const GOOD_THRESHOLD = 40;
@@ -73,7 +78,7 @@ const noteInterval = Math.max(800 - props.difficulty * 100, 400);
 
 // 노트 생성
 function createNote() {
-  const x = canvasWidth / 2;
+  const x = width / 2;
   const y = -50;
 
   notes.value.push({
@@ -145,7 +150,7 @@ function handleTap() {
 // 판정 표시
 function showJudgment(text: string, type: 'perfect' | 'good' | 'miss') {
   judgment.value = { text, type };
-  setTimeout(() => {
+  safeSetTimeout(() => {
     judgment.value = null;
   }, 500);
 }
@@ -166,7 +171,7 @@ function update() {
     note.y += note.speed;
 
     // 화면 밖으로 나가면 Miss 처리
-    if (note.y > canvasHeight && !note.hit) {
+    if (note.y > height && !note.hit) {
       notes.value.splice(i, 1);
       combo.value = 0;
       showJudgment('Miss! 😢', 'miss');
@@ -179,73 +184,78 @@ function update() {
 
 // 렌더링
 function render() {
-  if (!ctx) return;
+  if (!ctx.value) return;
+
+  const c = ctx.value;
+
+  // 배경 클리어
+  clear();
 
   // 배경
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
+  const gradient = c.createLinearGradient(0, 0, 0, height);
   gradient.addColorStop(0, '#4a0e4e');
   gradient.addColorStop(1, '#81689d');
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+  c.fillStyle = gradient;
+  c.fillRect(0, 0, width, height);
 
   // 판정선 (가이드)
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-  ctx.lineWidth = 2;
-  ctx.setLineDash([10, 10]);
-  ctx.beginPath();
-  ctx.moveTo(0, TARGET_Y);
-  ctx.lineTo(canvasWidth, TARGET_Y);
-  ctx.stroke();
-  ctx.setLineDash([]);
+  c.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+  c.lineWidth = 2;
+  c.setLineDash([10, 10]);
+  c.beginPath();
+  c.moveTo(0, TARGET_Y);
+  c.lineTo(width, TARGET_Y);
+  c.stroke();
+  c.setLineDash([]);
 
   // Perfect 구역
-  ctx.fillStyle = 'rgba(255, 215, 0, 0.2)';
-  ctx.fillRect(0, TARGET_Y - PERFECT_THRESHOLD, canvasWidth, PERFECT_THRESHOLD * 2);
+  c.fillStyle = 'rgba(255, 215, 0, 0.2)';
+  c.fillRect(0, TARGET_Y - PERFECT_THRESHOLD, width, PERFECT_THRESHOLD * 2);
 
   // Good 구역
-  ctx.fillStyle = 'rgba(76, 175, 80, 0.1)';
-  ctx.fillRect(0, TARGET_Y - GOOD_THRESHOLD, canvasWidth, GOOD_THRESHOLD * 2);
+  c.fillStyle = 'rgba(76, 175, 80, 0.1)';
+  c.fillRect(0, TARGET_Y - GOOD_THRESHOLD, width, GOOD_THRESHOLD * 2);
 
   // 노트
   for (const note of notes.value) {
     if (note.hit) {
       // 히트 이펙트
-      ctx.globalAlpha = Math.max(0, 1 - (note.y - TARGET_Y) / 100);
-      ctx.fillStyle = '#FFD700';
+      c.globalAlpha = Math.max(0, 1 - (note.y - TARGET_Y) / 100);
+      c.fillStyle = '#FFD700';
     } else {
-      ctx.globalAlpha = 1;
-      ctx.fillStyle = '#FF1744';
+      c.globalAlpha = 1;
+      c.fillStyle = '#FF1744';
     }
 
-    ctx.beginPath();
-    ctx.arc(note.x, note.y, 30, 0, Math.PI * 2);
-    ctx.fill();
+    c.beginPath();
+    c.arc(note.x, note.y, 30, 0, Math.PI * 2);
+    c.fill();
 
     // 노트 내부 아이콘
     if (!note.hit) {
-      ctx.fillStyle = 'white';
-      ctx.font = '24px Arial';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('🎵', note.x, note.y);
+      c.fillStyle = 'white';
+      c.font = '24px Arial';
+      c.textAlign = 'center';
+      c.textBaseline = 'middle';
+      c.fillText('🎵', note.x, note.y);
     }
 
-    ctx.globalAlpha = 1;
+    c.globalAlpha = 1;
   }
 
   // 판정 원
-  ctx.strokeStyle = '#00BCD4';
-  ctx.lineWidth = 4;
-  ctx.beginPath();
-  ctx.arc(canvasWidth / 2, TARGET_Y, TARGET_RADIUS, 0, Math.PI * 2);
-  ctx.stroke();
+  c.strokeStyle = '#00BCD4';
+  c.lineWidth = 4;
+  c.beginPath();
+  c.arc(width / 2, TARGET_Y, TARGET_RADIUS, 0, Math.PI * 2);
+  c.stroke();
 
   // Perfect 원
-  ctx.strokeStyle = '#FFD700';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.arc(canvasWidth / 2, TARGET_Y, PERFECT_THRESHOLD, 0, Math.PI * 2);
-  ctx.stroke();
+  c.strokeStyle = '#FFD700';
+  c.lineWidth = 2;
+  c.beginPath();
+  c.arc(width / 2, TARGET_Y, PERFECT_THRESHOLD, 0, Math.PI * 2);
+  c.stroke();
 }
 
 // 게임 루프
@@ -262,7 +272,7 @@ function gameLoop() {
     return;
   }
 
-  animationId = requestAnimationFrame(gameLoop);
+  animationId = safeRequestAnimationFrame(gameLoop);
 }
 
 // 게임 완료
@@ -279,27 +289,22 @@ function completeGame() {
     timeRemaining
   };
 
-  setTimeout(() => {
+  safeSetTimeout(() => {
     emit('complete', result);
   }, 500);
 }
 
 onMounted(() => {
-  const canvas = canvasRef.value;
-  if (!canvas) return;
-
-  ctx = canvas.getContext('2d')!;
   startTime = Date.now();
   lastNoteTime = Date.now();
 
-  gameLoop();
+  // 캔버스 초기화 후 게임 시작
+  safeSetTimeout(() => {
+    gameLoop();
+  }, 100);
 });
 
-onUnmounted(() => {
-  if (animationId) {
-    cancelAnimationFrame(animationId);
-  }
-});
+// useCleanupTimers가 자동으로 모든 타이머를 정리합니다
 </script>
 
 <style scoped>

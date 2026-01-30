@@ -2,8 +2,6 @@
   <div class="jump-up">
     <canvas
       ref="canvasRef"
-      :width="canvasWidth"
-      :height="canvasHeight"
       @touchstart.prevent="handleJump"
     ></canvas>
 
@@ -20,22 +18,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
+import { useCanvas, useCleanupTimers } from '@/composables';
 
 const props = defineProps<MiniGameProps>();
 const emit = defineEmits<{
   complete: [result: MiniGameResult];
 }>();
 
-const canvasRef = ref<HTMLCanvasElement>();
-const canvasWidth = 800;
-const canvasHeight = 600;
+// Canvas setup
+const canvasRef = ref<HTMLCanvasElement | null>(null);
+const { ctx, width, height, clear } = useCanvas(canvasRef, {
+  width: 800,
+  height: 600,
+  backgroundColor: '#87CEEB'
+});
+
+// Timer utilities
+const { safeSetTimeout, safeRequestAnimationFrame, cancelAnimationFrame } = useCleanupTimers();
 
 const maxHeight = ref(0);
 
-let ctx: CanvasRenderingContext2D;
-let animationId: number;
+let animationId: number = 0;
 let gameCompleted = false;
 let startTime = 0;
 
@@ -79,13 +84,13 @@ const platformGap = Math.max(100 - props.difficulty * 5, 70);
 
 // 플랫폼 생성
 function createPlatform(y: number): Platform {
-  const width = Math.max(120 - props.difficulty * 5, 80);
-  const x = Math.random() * (canvasWidth - width);
+  const platformWidth = Math.max(120 - props.difficulty * 5, 80);
+  const x = Math.random() * (width - platformWidth);
 
   return {
     x,
     y,
-    width,
+    width: platformWidth,
     height: 15,
     passed: false
   };
@@ -151,10 +156,10 @@ function update() {
   }
 
   // 카메라 이동 (플레이어가 위쪽에 있으면)
-  if (player.y < canvasHeight / 3) {
-    const diff = canvasHeight / 3 - player.y;
+  if (player.y < height / 3) {
+    const diff = height / 3 - player.y;
     cameraY += diff;
-    player.y = canvasHeight / 3;
+    player.y = height / 3;
 
     // 플랫폼도 같이 이동
     for (const platform of platforms.value) {
@@ -163,70 +168,75 @@ function update() {
   }
 
   // 화면 아래로 떨어진 플랫폼 제거
-  platforms.value = platforms.value.filter(p => p.y < canvasHeight + 100);
+  platforms.value = platforms.value.filter(p => p.y < height + 100);
 
   // 새 플랫폼 생성
-  const highestPlatform = platforms.value.reduce((min, p) => Math.min(min, p.y), canvasHeight);
+  const highestPlatform = platforms.value.reduce((min, p) => Math.min(min, p.y), height);
   if (highestPlatform > -200) {
     platforms.value.push(createPlatform(highestPlatform - platformGap));
   }
 
   // 바닥에 떨어지면 게임 오버
-  if (player.y > canvasHeight) {
+  if (player.y > height) {
     completeGame();
   }
 }
 
 // 렌더링
 function render() {
-  if (!ctx) return;
+  if (!ctx.value) return;
 
-  // 배경
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
+  const c = ctx.value;
+
+  // 배경 클리어
+  clear();
+
+  // 배경 그라데이션
+  const gradient = c.createLinearGradient(0, 0, 0, height);
   gradient.addColorStop(0, '#87CEEB');
   gradient.addColorStop(1, '#E0F6FF');
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+  c.fillStyle = gradient;
+  c.fillRect(0, 0, width, height);
 
   // 구름 (장식)
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+  c.fillStyle = 'rgba(255, 255, 255, 0.6)';
   const cloudOffset = cameraY % 300;
   for (let i = 0; i < 5; i++) {
     const y = i * 300 + cloudOffset;
-    if (y > -100 && y < canvasHeight + 100) {
-      ctx.beginPath();
-      ctx.arc(150 + i * 100, y, 25, 0, Math.PI * 2);
-      ctx.arc(180 + i * 100, y, 35, 0, Math.PI * 2);
-      ctx.arc(210 + i * 100, y, 25, 0, Math.PI * 2);
-      ctx.fill();
+    if (y > -100 && y < height + 100) {
+      c.beginPath();
+      c.arc(150 + i * 100, y, 25, 0, Math.PI * 2);
+      c.arc(180 + i * 100, y, 35, 0, Math.PI * 2);
+      c.arc(210 + i * 100, y, 25, 0, Math.PI * 2);
+      c.fill();
     }
   }
 
   // 플랫폼
   for (const platform of platforms.value) {
-    ctx.fillStyle = platform.passed ? '#90EE90' : '#8B4513';
-    ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+    c.fillStyle = platform.passed ? '#90EE90' : '#8B4513';
+    c.fillRect(platform.x, platform.y, platform.width, platform.height);
 
     // 테두리
-    ctx.strokeStyle = '#654321';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(platform.x, platform.y, platform.width, platform.height);
+    c.strokeStyle = '#654321';
+    c.lineWidth = 2;
+    c.strokeRect(platform.x, platform.y, platform.width, platform.height);
   }
 
   // 플레이어 (이모지)
-  ctx.font = `${player.height}px Arial`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('🔴', player.x + player.width / 2, player.y + player.height / 2);
+  c.font = `${player.height}px Arial`;
+  c.textAlign = 'center';
+  c.textBaseline = 'middle';
+  c.fillText('🔴', player.x + player.width / 2, player.y + player.height / 2);
 
   // 목표 높이 표시 (참고용)
-  const targetY = canvasHeight - 50;
-  ctx.fillStyle = 'rgba(76, 175, 80, 0.3)';
-  ctx.fillRect(0, targetY, canvasWidth, 2);
-  ctx.fillStyle = '#4CAF50';
-  ctx.font = 'bold 18px Arial';
-  ctx.textAlign = 'right';
-  ctx.fillText(`목표: ${props.targetScore}m`, canvasWidth - 20, targetY - 10);
+  const targetY = height - 50;
+  c.fillStyle = 'rgba(76, 175, 80, 0.3)';
+  c.fillRect(0, targetY, width, 2);
+  c.fillStyle = '#4CAF50';
+  c.font = 'bold 18px Arial';
+  c.textAlign = 'right';
+  c.fillText(`목표: ${props.targetScore}m`, width - 20, targetY - 10);
 }
 
 // 게임 루프
@@ -243,7 +253,7 @@ function gameLoop() {
     return;
   }
 
-  animationId = requestAnimationFrame(gameLoop);
+  animationId = safeRequestAnimationFrame(gameLoop);
 }
 
 // 게임 완료
@@ -262,16 +272,12 @@ function completeGame() {
     timeRemaining
   };
 
-  setTimeout(() => {
+  safeSetTimeout(() => {
     emit('complete', result);
   }, 500);
 }
 
 onMounted(() => {
-  const canvas = canvasRef.value;
-  if (!canvas) return;
-
-  ctx = canvas.getContext('2d')!;
   startTime = Date.now();
 
   // 초기 플랫폼 생성
@@ -280,14 +286,13 @@ onMounted(() => {
     platforms.value.push(createPlatform(500 - i * platformGap));
   }
 
-  gameLoop();
+  // 캔버스 초기화 후 게임 시작
+  safeSetTimeout(() => {
+    gameLoop();
+  }, 100);
 });
 
-onUnmounted(() => {
-  if (animationId) {
-    cancelAnimationFrame(animationId);
-  }
-});
+// useCleanupTimers가 자동으로 모든 타이머를 정리합니다
 </script>
 
 <style scoped>

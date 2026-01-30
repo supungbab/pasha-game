@@ -2,8 +2,6 @@
   <div class="perfect-jump">
     <canvas
       ref="canvasRef"
-      :width="canvasWidth"
-      :height="canvasHeight"
       @touchstart.prevent="handleJump"
     ></canvas>
 
@@ -20,24 +18,31 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
+import { useCanvas, useCleanupTimers } from '@/composables';
 
 const props = defineProps<MiniGameProps>();
 const emit = defineEmits<{
   complete: [result: MiniGameResult];
 }>();
 
-const canvasRef = ref<HTMLCanvasElement>();
-const canvasWidth = 800;
-const canvasHeight = 600;
+// Canvas setup
+const canvasRef = ref<HTMLCanvasElement | null>(null);
+const { ctx, width, height, clear } = useCanvas(canvasRef, {
+  width: 800,
+  height: 600,
+  backgroundColor: '#87CEEB'
+});
+
+// Timer utilities
+const { safeSetTimeout, safeRequestAnimationFrame, cancelAnimationFrame } = useCleanupTimers();
 
 // 게임 상태
 const score = ref(0);
 const feedback = ref<{ text: string; type: 'perfect' | 'good' | 'miss' } | null>(null);
 
-let ctx: CanvasRenderingContext2D;
-let animationId: number;
+let animationId: number = 0;
 let gameCompleted = false;
 let startTime = 0;
 
@@ -80,7 +85,7 @@ const platformSpeed = 2 + props.difficulty * 0.5;
 function createPlatform(): Platform {
   const width = 150 - props.difficulty * 10;
   const perfectZoneWidth = width * 0.3;
-  const x = canvasWidth;
+  const x = width;
   const y = 350 + Math.random() * 100;
 
   return {
@@ -162,10 +167,10 @@ function checkLanding() {
   }
 
   // 바닥에 떨어짐
-  if (character.y + character.size >= canvasHeight - 50) {
+  if (character.y + character.size >= height - 50) {
     character.isJumping = false;
     character.velocityY = 0;
-    character.y = canvasHeight - 50 - character.size;
+    character.y = height - 50 - character.size;
     showFeedback('Miss! 😢', 'miss');
   }
 }
@@ -173,7 +178,7 @@ function checkLanding() {
 // 피드백 표시
 function showFeedback(text: string, type: 'perfect' | 'good' | 'miss') {
   feedback.value = { text, type };
-  setTimeout(() => {
+  safeSetTimeout(() => {
     feedback.value = null;
   }, 800);
 }
@@ -200,32 +205,37 @@ function update() {
   }
 
   // 새 플랫폼 생성
-  if (platforms.value.length === 0 || platforms.value[platforms.value.length - 1].x < canvasWidth - 300) {
+  if (platforms.value.length === 0 || platforms.value[platforms.value.length - 1].x < width - 300) {
     platforms.value.push(createPlatform());
   }
 }
 
 // 렌더링
 function render() {
-  if (!ctx) return;
+  if (!ctx.value) return;
+
+  const c = ctx.value;
+
+  // 배경 클리어
+  clear();
 
   // 배경
-  ctx.fillStyle = '#87CEEB';
-  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+  c.fillStyle = '#87CEEB';
+  c.fillRect(0, 0, width, height);
 
   // 바닥
-  ctx.fillStyle = '#8B4513';
-  ctx.fillRect(0, canvasHeight - 50, canvasWidth, 50);
+  c.fillStyle = '#8B4513';
+  c.fillRect(0, height - 50, width, 50);
 
   // 플랫폼
   for (const platform of platforms.value) {
     // 일반 영역
-    ctx.fillStyle = '#D2691E';
-    ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+    c.fillStyle = '#D2691E';
+    c.fillRect(platform.x, platform.y, platform.width, platform.height);
 
     // Perfect 영역
-    ctx.fillStyle = '#FFD700';
-    ctx.fillRect(
+    c.fillStyle = '#FFD700';
+    c.fillRect(
       platform.x + platform.perfectZoneStart,
       platform.y,
       platform.perfectZoneWidth,
@@ -233,24 +243,24 @@ function render() {
     );
 
     // 테두리
-    ctx.strokeStyle = '#8B4513';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(platform.x, platform.y, platform.width, platform.height);
+    c.strokeStyle = '#8B4513';
+    c.lineWidth = 2;
+    c.strokeRect(platform.x, platform.y, platform.width, platform.height);
   }
 
   // 캐릭터 (이모지)
-  ctx.font = `${character.size}px Arial`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('🧍', character.x + character.size / 2, character.y + character.size / 2);
+  c.font = `${character.size}px Arial`;
+  c.textAlign = 'center';
+  c.textBaseline = 'middle';
+  c.fillText('🧍', character.x + character.size / 2, character.y + character.size / 2);
 
   // 점프 궤적 표시 (점프 중일 때)
   if (character.isJumping && character.velocityY < 0) {
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([5, 5]);
-    ctx.beginPath();
-    ctx.moveTo(character.x + character.size / 2, character.y + character.size);
+    c.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+    c.lineWidth = 2;
+    c.setLineDash([5, 5]);
+    c.beginPath();
+    c.moveTo(character.x + character.size / 2, character.y + character.size);
 
     // 간단한 포물선 예측
     let testY = character.y;
@@ -258,11 +268,11 @@ function render() {
     for (let i = 0; i < 30; i++) {
       testVY += GRAVITY;
       testY += testVY;
-      if (testY > canvasHeight - 50 - character.size) break;
-      ctx.lineTo(character.x + character.size / 2, testY);
+      if (testY > height - 50 - character.size) break;
+      c.lineTo(character.x + character.size / 2, testY);
     }
-    ctx.stroke();
-    ctx.setLineDash([]);
+    c.stroke();
+    c.setLineDash([]);
   }
 }
 
@@ -280,7 +290,7 @@ function gameLoop() {
     return;
   }
 
-  animationId = requestAnimationFrame(gameLoop);
+  animationId = safeRequestAnimationFrame(gameLoop);
 }
 
 // 게임 완료
@@ -297,29 +307,24 @@ function completeGame() {
     timeRemaining
   };
 
-  setTimeout(() => {
+  safeSetTimeout(() => {
     emit('complete', result);
   }, 500);
 }
 
 onMounted(() => {
-  const canvas = canvasRef.value;
-  if (!canvas) return;
-
-  ctx = canvas.getContext('2d')!;
   startTime = Date.now();
 
   // 초기 플랫폼 생성
   platforms.value.push(createPlatform());
 
-  gameLoop();
+  // 캔버스 초기화 후 게임 시작
+  safeSetTimeout(() => {
+    gameLoop();
+  }, 100);
 });
 
-onUnmounted(() => {
-  if (animationId) {
-    cancelAnimationFrame(animationId);
-  }
-});
+// useCleanupTimers가 자동으로 모든 타이머를 정리합니다
 </script>
 
 <style scoped>

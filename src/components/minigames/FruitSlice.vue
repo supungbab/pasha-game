@@ -40,7 +40,7 @@ const { ctx, helper, width, height, clear, getCanvasCoordinates } = useCanvas(ca
 });
 
 // Timer utilities
-const { safeSetTimeout, safeSetInterval, clearInterval, cancelAnimationFrame } = useCleanupTimers();
+const { safeSetTimeout, safeSetInterval, safeRequestAnimationFrame, clearInterval, cancelAnimationFrame } = useCleanupTimers();
 
 // Juicy feedback
 const {
@@ -299,7 +299,7 @@ function gameLoop() {
 
   update();
   render();
-  animationId = requestAnimationFrame(gameLoop);
+  animationId = safeRequestAnimationFrame(gameLoop);
 }
 
 // Slice detection
@@ -438,6 +438,7 @@ function handleTouchStart(event: TouchEvent) {
   if (isGameOver.value) return;
   event.preventDefault();
   const touch = event.touches[0];
+  if (!touch) return;
   const coords = getCanvasCoordinates(touch);
   lastScreenPoint.value = { x: touch.clientX, y: touch.clientY };
   startSlice(coords.x, coords.y);
@@ -447,6 +448,7 @@ function handleTouchMove(event: TouchEvent) {
   if (!isSlicing.value || isGameOver.value) return;
   event.preventDefault();
   const touch = event.touches[0];
+  if (!touch) return;
   const coords = getCanvasCoordinates(touch);
   lastScreenPoint.value = { x: touch.clientX, y: touch.clientY };
   continueSlice(coords.x, coords.y);
@@ -542,9 +544,7 @@ onMounted(() => {
   safeSetTimeout(startGame, 100);
 });
 
-onUnmounted(() => {
-  isGameOver.value = true;
-});
+// useCleanupTimers가 자동으로 모든 타이머를 정리합니다
 </script>
 
 <style scoped>

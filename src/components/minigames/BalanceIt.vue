@@ -2,8 +2,6 @@
   <div class="balance-it">
     <canvas
       ref="canvasRef"
-      :width="canvasWidth"
-      :height="canvasHeight"
       @mousemove="handleMouseMove"
       @touchmove.prevent="handleTouchMove"
     ></canvas>
@@ -21,29 +19,36 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
+import { useCanvas, useCleanupTimers } from '@/composables';
 
 const props = defineProps<MiniGameProps>();
 const emit = defineEmits<{
   complete: [result: MiniGameResult];
 }>();
 
-const canvasRef = ref<HTMLCanvasElement>();
-const canvasWidth = 800;
-const canvasHeight = 600;
+// Canvas setup
+const canvasRef = ref<HTMLCanvasElement | null>(null);
+const { ctx, width, height, clear } = useCanvas(canvasRef, {
+  width: 800,
+  height: 600,
+  backgroundColor: '#87CEEB'
+});
+
+// Timer utilities
+const { safeSetTimeout, safeRequestAnimationFrame } = useCleanupTimers();
 
 const balanceTime = ref(0);
 
-let ctx: CanvasRenderingContext2D;
-let animationId: number;
+let animationId: number = 0;
 let gameCompleted = false;
 let startTime = 0;
 
 // 시소 상태
 let seesawAngle = 0; // -30 ~ 30도
 let targetAngle = 0;
-let mouseX = canvasWidth / 2;
+let mouseX = 400; // width / 2 초기값
 
 // 상자들
 interface Box {
@@ -82,16 +87,21 @@ function generateBoxes() {
 function handleMouseMove(event: MouseEvent) {
   if (gameCompleted) return;
 
-  const rect = canvasRef.value!.getBoundingClientRect();
-  mouseX = event.clientX - rect.left;
+  const canvas = canvasRef.value;
+  if (!canvas) return;
+  const rect = canvas.getBoundingClientRect();
+  mouseX = (event.clientX - rect.left) * (width / rect.width);
 }
 
 function handleTouchMove(event: TouchEvent) {
   if (gameCompleted) return;
 
-  const rect = canvasRef.value!.getBoundingClientRect();
+  const canvas = canvasRef.value;
+  if (!canvas) return;
+  const rect = canvas.getBoundingClientRect();
   const touch = event.touches[0];
-  mouseX = touch.clientX - rect.left;
+  if (!touch) return;
+  mouseX = (touch.clientX - rect.left) * (width / rect.width);
 }
 
 // 업데이트
@@ -103,7 +113,7 @@ function update() {
   }
 
   // 마우스 위치에 따른 조정
-  const mouseOffset = (mouseX - canvasWidth / 2) / 20;
+  const mouseOffset = (mouseX - width / 2) / 20;
   targetAngle = totalTorque * 5 - mouseOffset;
   targetAngle = Math.max(-maxAngle, Math.min(maxAngle, targetAngle));
 
@@ -144,97 +154,100 @@ function update() {
 
 // 렌더링
 function render() {
-  if (!ctx) return;
+  if (!ctx.value) return;
+
+  const c = ctx.value;
 
   // 배경
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
+  clear();
+  const gradient = c.createLinearGradient(0, 0, 0, height);
   gradient.addColorStop(0, '#87CEEB');
   gradient.addColorStop(1, '#E0F6FF');
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+  c.fillStyle = gradient;
+  c.fillRect(0, 0, width, height);
 
-  const centerX = canvasWidth / 2;
-  const centerY = canvasHeight / 2;
+  const centerX = width / 2;
+  const centerY = height / 2;
 
   // 균형 구역 표시
-  ctx.fillStyle = 'rgba(76, 175, 80, 0.1)';
-  ctx.fillRect(0, centerY - 50, canvasWidth, 100);
+  c.fillStyle = 'rgba(76, 175, 80, 0.1)';
+  c.fillRect(0, centerY - 50, width, 100);
 
   // 균형 표시
-  ctx.strokeStyle = Math.abs(seesawAngle) < balanceThreshold ? '#4CAF50' : '#f44336';
-  ctx.lineWidth = 4;
-  ctx.setLineDash([10, 10]);
-  ctx.beginPath();
-  ctx.moveTo(0, centerY);
-  ctx.lineTo(canvasWidth, centerY);
-  ctx.stroke();
-  ctx.setLineDash([]);
+  c.strokeStyle = Math.abs(seesawAngle) < balanceThreshold ? '#4CAF50' : '#f44336';
+  c.lineWidth = 4;
+  c.setLineDash([10, 10]);
+  c.beginPath();
+  c.moveTo(0, centerY);
+  c.lineTo(width, centerY);
+  c.stroke();
+  c.setLineDash([]);
 
   // 시소
-  ctx.save();
-  ctx.translate(centerX, centerY);
-  ctx.rotate((seesawAngle * Math.PI) / 180);
+  c.save();
+  c.translate(centerX, centerY);
+  c.rotate((seesawAngle * Math.PI) / 180);
 
   // 시소 판자
   const seesawWidth = 400;
   const seesawHeight = 20;
 
-  ctx.fillStyle = '#8B4513';
-  ctx.fillRect(-seesawWidth / 2, -seesawHeight / 2, seesawWidth, seesawHeight);
+  c.fillStyle = '#8B4513';
+  c.fillRect(-seesawWidth / 2, -seesawHeight / 2, seesawWidth, seesawHeight);
 
-  ctx.strokeStyle = '#654321';
-  ctx.lineWidth = 3;
-  ctx.strokeRect(-seesawWidth / 2, -seesawHeight / 2, seesawWidth, seesawHeight);
+  c.strokeStyle = '#654321';
+  c.lineWidth = 3;
+  c.strokeRect(-seesawWidth / 2, -seesawHeight / 2, seesawWidth, seesawHeight);
 
   // 상자들
   for (const box of boxes.value) {
     const boxY = -seesawHeight / 2 - box.size;
 
-    ctx.fillStyle = '#FFD700';
-    ctx.fillRect(box.x - box.size / 2, boxY, box.size, box.size);
+    c.fillStyle = '#FFD700';
+    c.fillRect(box.x - box.size / 2, boxY, box.size, box.size);
 
-    ctx.strokeStyle = '#F9A825';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(box.x - box.size / 2, boxY, box.size, box.size);
+    c.strokeStyle = '#F9A825';
+    c.lineWidth = 2;
+    c.strokeRect(box.x - box.size / 2, boxY, box.size, box.size);
 
     // 무게 표시
-    ctx.fillStyle = '#2c3e50';
-    ctx.font = 'bold 16px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('📦', box.x, boxY + box.size / 2);
+    c.fillStyle = '#2c3e50';
+    c.font = 'bold 16px Arial';
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+    c.fillText('📦', box.x, boxY + box.size / 2);
   }
 
-  ctx.restore();
+  c.restore();
 
   // 받침대 (삼각형)
-  ctx.fillStyle = '#2c3e50';
-  ctx.beginPath();
-  ctx.moveTo(centerX, centerY);
-  ctx.lineTo(centerX - 30, centerY + 50);
-  ctx.lineTo(centerX + 30, centerY + 50);
-  ctx.closePath();
-  ctx.fill();
+  c.fillStyle = '#2c3e50';
+  c.beginPath();
+  c.moveTo(centerX, centerY);
+  c.lineTo(centerX - 30, centerY + 50);
+  c.lineTo(centerX + 30, centerY + 50);
+  c.closePath();
+  c.fill();
 
-  ctx.strokeStyle = '#1a1a1a';
-  ctx.lineWidth = 3;
-  ctx.stroke();
+  c.strokeStyle = '#1a1a1a';
+  c.lineWidth = 3;
+  c.stroke();
 
   // 각도 표시
-  ctx.fillStyle = 'white';
-  ctx.font = 'bold 24px Arial';
-  ctx.textAlign = 'center';
-  ctx.fillText(`각도: ${Math.round(seesawAngle)}°`, centerX, 80);
+  c.fillStyle = 'white';
+  c.font = 'bold 24px Arial';
+  c.textAlign = 'center';
+  c.fillText(`각도: ${Math.round(seesawAngle)}°`, centerX, 80);
 
   // 균형 상태 표시
   if (Math.abs(seesawAngle) < balanceThreshold) {
-    ctx.fillStyle = '#4CAF50';
-    ctx.font = 'bold 32px Arial';
-    ctx.fillText('균형! ⚖️', centerX, 130);
+    c.fillStyle = '#4CAF50';
+    c.font = 'bold 32px Arial';
+    c.fillText('균형! ⚖️', centerX, 130);
   } else {
-    ctx.fillStyle = '#f44336';
-    ctx.font = 'bold 28px Arial';
-    ctx.fillText(seesawAngle < 0 ? '← 왼쪽으로!' : '오른쪽으로! →', centerX, 130);
+    c.fillStyle = '#f44336';
+    c.font = 'bold 28px Arial';
+    c.fillText(seesawAngle < 0 ? '← 왼쪽으로!' : '오른쪽으로! →', centerX, 130);
   }
 }
 
@@ -252,7 +265,7 @@ function gameLoop() {
     return;
   }
 
-  animationId = requestAnimationFrame(gameLoop);
+  animationId = safeRequestAnimationFrame(gameLoop);
 }
 
 // 게임 완료
@@ -272,28 +285,24 @@ function completeGame() {
     timeRemaining
   };
 
-  setTimeout(() => {
+  safeSetTimeout(() => {
     emit('complete', result);
   }, 500);
 }
 
 onMounted(() => {
-  const canvas = canvasRef.value;
-  if (!canvas) return;
-
-  ctx = canvas.getContext('2d')!;
   startTime = Date.now();
   lastBalanceTime = Date.now();
 
   generateBoxes();
-  gameLoop();
+
+  // 캔버스 초기화 후 게임 시작
+  safeSetTimeout(() => {
+    gameLoop();
+  }, 100);
 });
 
-onUnmounted(() => {
-  if (animationId) {
-    cancelAnimationFrame(animationId);
-  }
-});
+// useCleanupTimers가 자동으로 모든 타이머를 정리합니다
 </script>
 
 <style scoped>

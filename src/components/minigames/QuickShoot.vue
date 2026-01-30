@@ -2,8 +2,6 @@
   <div class="quick-shoot">
     <canvas
       ref="canvasRef"
-      :width="canvasWidth"
-      :height="canvasHeight"
       @touchstart.prevent="handleTouchShoot"
     ></canvas>
 
@@ -27,15 +25,23 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
+import { useCanvas, useCleanupTimers } from '@/composables';
 
 const props = defineProps<MiniGameProps>();
 const emit = defineEmits<{
   complete: [result: MiniGameResult];
 }>();
 
-const canvasRef = ref<HTMLCanvasElement>();
-const canvasWidth = 800;
-const canvasHeight = 600;
+// Canvas setup
+const canvasRef = ref<HTMLCanvasElement | null>(null);
+const { ctx, width, height, clear } = useCanvas(canvasRef, {
+  width: 800,
+  height: 600,
+  backgroundColor: '#2c3e50'
+});
+
+// Timer utilities
+const { safeSetTimeout, safeRequestAnimationFrame, cancelAnimationFrame } = useCleanupTimers();
 
 // 게임 상태
 const score = ref(0);
@@ -44,8 +50,7 @@ const hitEffect = ref(false);
 const crosshairX = ref(0);
 const crosshairY = ref(0);
 
-let ctx: CanvasRenderingContext2D;
-let animationId: number;
+let animationId: number = 0;
 let gameCompleted = false;
 let startTime = 0;
 
@@ -99,8 +104,8 @@ function createTarget() {
       points = 10;
   }
 
-  const x = Math.random() * (canvasWidth - radius * 2) + radius;
-  const y = Math.random() * (canvasHeight - radius * 2) + radius;
+  const x = Math.random() * (width - radius * 2) + radius;
+  const y = Math.random() * (height - radius * 2) + radius;
 
   targets.value.push({
     id: targetIdCounter++,
@@ -144,6 +149,8 @@ function handleTouchShoot(event: TouchEvent) {
   if (!rect) return;
 
   const touch = event.touches[0];
+  if (!touch) return;
+
   const x = touch.clientX - rect.left;
   const y = touch.clientY - rect.top;
 
@@ -194,7 +201,7 @@ function processShoot(x: number, y: number) {
 // 히트 이펙트 표시
 function showHitEffect() {
   hitEffect.value = true;
-  setTimeout(() => {
+  safeSetTimeout(() => {
     hitEffect.value = false;
   }, 300);
 }
@@ -217,42 +224,47 @@ function update() {
     target.y += target.speedY;
 
     // 벽 충돌
-    if (target.x - target.radius <= 0 || target.x + target.radius >= canvasWidth) {
+    if (target.x - target.radius <= 0 || target.x + target.radius >= width) {
       target.speedX *= -1;
-      target.x = Math.max(target.radius, Math.min(canvasWidth - target.radius, target.x));
+      target.x = Math.max(target.radius, Math.min(width - target.radius, target.x));
     }
-    if (target.y - target.radius <= 0 || target.y + target.radius >= canvasHeight) {
+    if (target.y - target.radius <= 0 || target.y + target.radius >= height) {
       target.speedY *= -1;
-      target.y = Math.max(target.radius, Math.min(canvasHeight - target.radius, target.y));
+      target.y = Math.max(target.radius, Math.min(height - target.radius, target.y));
     }
   }
 }
 
 // 렌더링
 function render() {
-  if (!ctx) return;
+  if (!ctx.value) return;
+
+  const c = ctx.value;
+
+  // 배경 클리어
+  clear();
 
   // 배경
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
+  const gradient = c.createLinearGradient(0, 0, 0, height);
   gradient.addColorStop(0, '#2c3e50');
   gradient.addColorStop(1, '#34495e');
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+  c.fillStyle = gradient;
+  c.fillRect(0, 0, width, height);
 
   // 그리드 (배경 장식)
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-  ctx.lineWidth = 1;
-  for (let i = 0; i < canvasWidth; i += 50) {
-    ctx.beginPath();
-    ctx.moveTo(i, 0);
-    ctx.lineTo(i, canvasHeight);
-    ctx.stroke();
+  c.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+  c.lineWidth = 1;
+  for (let i = 0; i < width; i += 50) {
+    c.beginPath();
+    c.moveTo(i, 0);
+    c.lineTo(i, height);
+    c.stroke();
   }
-  for (let i = 0; i < canvasHeight; i += 50) {
-    ctx.beginPath();
-    ctx.moveTo(0, i);
-    ctx.lineTo(canvasWidth, i);
-    ctx.stroke();
+  for (let i = 0; i < height; i += 50) {
+    c.beginPath();
+    c.moveTo(0, i);
+    c.lineTo(width, i);
+    c.stroke();
   }
 
   // 타겟 렌더링
@@ -271,32 +283,32 @@ function render() {
     }
 
     // 외곽 원
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.arc(target.x, target.y, target.radius, 0, Math.PI * 2);
-    ctx.fill();
+    c.fillStyle = color;
+    c.beginPath();
+    c.arc(target.x, target.y, target.radius, 0, Math.PI * 2);
+    c.fill();
 
     // 내부 원 (과녁 패턴)
-    ctx.fillStyle = 'white';
-    ctx.beginPath();
-    ctx.arc(target.x, target.y, target.radius * 0.6, 0, Math.PI * 2);
-    ctx.fill();
+    c.fillStyle = 'white';
+    c.beginPath();
+    c.arc(target.x, target.y, target.radius * 0.6, 0, Math.PI * 2);
+    c.fill();
 
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.arc(target.x, target.y, target.radius * 0.3, 0, Math.PI * 2);
-    ctx.fill();
+    c.fillStyle = color;
+    c.beginPath();
+    c.arc(target.x, target.y, target.radius * 0.3, 0, Math.PI * 2);
+    c.fill();
 
     // 이모지
-    ctx.font = `${target.radius}px Arial`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('🎯', target.x, target.y);
+    c.font = `${target.radius}px Arial`;
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+    c.fillText('🎯', target.x, target.y);
 
     // 점수 표시
-    ctx.fillStyle = 'white';
-    ctx.font = 'bold 14px Arial';
-    ctx.fillText(`+${target.points}`, target.x, target.y + target.radius + 15);
+    c.fillStyle = 'white';
+    c.font = 'bold 14px Arial';
+    c.fillText(`+${target.points}`, target.x, target.y + target.radius + 15);
   }
 }
 
@@ -314,7 +326,7 @@ function gameLoop() {
     return;
   }
 
-  animationId = requestAnimationFrame(gameLoop);
+  animationId = safeRequestAnimationFrame(gameLoop);
 }
 
 // 게임 완료
@@ -332,16 +344,12 @@ function completeGame() {
     count: hits.value
   };
 
-  setTimeout(() => {
+  safeSetTimeout(() => {
     emit('complete', result);
   }, 500);
 }
 
 onMounted(() => {
-  const canvas = canvasRef.value;
-  if (!canvas) return;
-
-  ctx = canvas.getContext('2d')!;
   startTime = Date.now();
   lastTargetTime = Date.now();
 
@@ -353,15 +361,17 @@ onMounted(() => {
   // 마우스 이벤트 리스너
   window.addEventListener('mousemove', handleMouseMove);
 
-  gameLoop();
+  // 캔버스 초기화 후 게임 시작
+  safeSetTimeout(() => {
+    gameLoop();
+  }, 100);
 });
 
 onUnmounted(() => {
-  if (animationId) {
-    cancelAnimationFrame(animationId);
-  }
   window.removeEventListener('mousemove', handleMouseMove);
 });
+
+// useCleanupTimers가 자동으로 모든 타이머를 정리합니다
 </script>
 
 <style scoped>

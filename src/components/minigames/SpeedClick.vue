@@ -32,13 +32,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
+import { useCleanupTimers } from '@/composables';
 
 const props = defineProps<MiniGameProps>();
 const emit = defineEmits<{
   complete: [result: MiniGameResult];
 }>();
+
+// Timer utilities
+const { safeSetTimeout } = useCleanupTimers();
 
 // 게임 상태
 const clicks = ref(0);
@@ -84,6 +88,8 @@ function handleTouchClick(event: TouchEvent) {
 
   const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
   const touch = event.touches[0];
+  if (!touch) return;
+
   const x = touch.clientX - rect.left;
   const y = touch.clientY - rect.top;
 
@@ -104,7 +110,7 @@ function processClick(x: number, y: number) {
   clickEffects.value.push(effect);
 
   // 0.5초 후 이펙트 제거
-  setTimeout(() => {
+  safeSetTimeout(() => {
     const index = clickEffects.value.findIndex(e => e.id === effect.id);
     if (index !== -1) {
       clickEffects.value.splice(index, 1);
@@ -142,30 +148,23 @@ function completeGame() {
     count: clicks.value
   };
 
-  setTimeout(() => {
+  safeSetTimeout(() => {
     emit('complete', result);
   }, 300);
 }
-
-// 타이머
-let timeoutId: number;
 
 onMounted(() => {
   startTime = Date.now();
 
   // 제한시간 타이머
-  timeoutId = window.setTimeout(() => {
+  safeSetTimeout(() => {
     if (!gameCompleted) {
       completeGame();
     }
   }, props.timeLimit * 1000);
 });
 
-onUnmounted(() => {
-  if (timeoutId) {
-    clearTimeout(timeoutId);
-  }
-});
+// useCleanupTimers가 자동으로 모든 타이머를 정리합니다
 </script>
 
 <style scoped>

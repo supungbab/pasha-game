@@ -13,9 +13,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
-import { useCanvas } from '@/composables/useCanvas';
+import { useCanvas, useCleanupTimers } from '@/composables';
 import { circlesIntersect } from '@/utils/canvas';
 import type { Particle } from '@/utils/canvas';
 
@@ -31,6 +31,9 @@ const { ctx, helper, width, height, clear, getCanvasCoordinates } = useCanvas(ca
   height: 600,
   backgroundColor: '#1a1a2e'
 });
+
+// Timer utilities
+const { safeSetTimeout, safeSetInterval, safeRequestAnimationFrame, cancelAnimationFrame, clearInterval } = useCleanupTimers();
 
 // Game state
 const score = ref(0);
@@ -227,7 +230,7 @@ function gameLoop() {
 
   update();
   render();
-  animationId = requestAnimationFrame(gameLoop);
+  animationId = safeRequestAnimationFrame(gameLoop);
 }
 
 // Pointer handlers
@@ -251,6 +254,7 @@ function handleTouchStart(event: TouchEvent) {
   event.preventDefault();
   isDragging.value = true;
   const touch = event.touches[0];
+  if (!touch) return;
   const coords = getCanvasCoordinates(touch);
   movePlayer(coords.x);
 }
@@ -259,6 +263,7 @@ function handleTouchMove(event: TouchEvent) {
   if (!isDragging.value) return;
   event.preventDefault();
   const touch = event.touches[0];
+  if (!touch) return;
   const coords = getCanvasCoordinates(touch);
   movePlayer(coords.x);
 }
@@ -292,11 +297,14 @@ function endGame() {
 
 // Start game
 function startGame() {
+  const settings = difficultySettings.value;
+  if (!settings) return;
+
   // Spawn obstacles periodically
-  spawnInterval = window.setInterval(spawnObstacle, difficultySettings.value.spawnRate);
+  spawnInterval = safeSetInterval(spawnObstacle, settings.spawnRate);
 
   // Timer countdown
-  timerInterval = window.setInterval(() => {
+  timerInterval = safeSetInterval(() => {
     timeRemaining.value -= 0.1;
     survivalTime.value += 0.1;
     if (timeRemaining.value <= 0) {
@@ -306,29 +314,24 @@ function startGame() {
   }, 100);
 
   // Score based on survival time
-  scoreInterval = window.setInterval(() => {
+  scoreInterval = safeSetInterval(() => {
     if (!isGameOver.value) {
       score.value += 5;
     }
   }, 1000);
 
   // Initial obstacles
-  setTimeout(spawnObstacle, 500);
+  safeSetTimeout(spawnObstacle, 500);
 
   // Start game loop
   gameLoop();
 }
 
 onMounted(() => {
-  setTimeout(startGame, 100);
+  safeSetTimeout(startGame, 100);
 });
 
-onUnmounted(() => {
-  cancelAnimationFrame(animationId);
-  clearInterval(spawnInterval);
-  clearInterval(timerInterval);
-  clearInterval(scoreInterval);
-});
+// useCleanupTimers가 자동으로 모든 타이머를 정리합니다
 </script>
 
 <style scoped>

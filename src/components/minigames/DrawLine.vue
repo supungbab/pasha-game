@@ -39,7 +39,7 @@ const { ctx, helper, width, height, clear, getCanvasCoordinates } = useCanvas(ca
 });
 
 // Timer utilities
-const { safeSetTimeout, safeSetInterval, clearInterval, cancelAnimationFrame } = useCleanupTimers();
+const { safeSetTimeout, safeSetInterval, safeRequestAnimationFrame, clearInterval, cancelAnimationFrame } = useCleanupTimers();
 
 // Juicy feedback
 const {
@@ -327,7 +327,7 @@ function gameLoop() {
 
   update();
   render();
-  animationId = requestAnimationFrame(gameLoop);
+  animationId = safeRequestAnimationFrame(gameLoop);
 }
 
 // Pointer handlers
@@ -357,6 +357,7 @@ function handleTouchStart(event: TouchEvent) {
   isDrawing.value = true;
   userPath.value = [];
   const touch = event.touches[0];
+  if (!touch) return;
   const coords = getCanvasCoordinates(touch);
   userPath.value.push({ x: coords.x, y: coords.y });
 }
@@ -365,6 +366,7 @@ function handleTouchMove(event: TouchEvent) {
   if (!isDrawing.value || roundComplete.value) return;
   event.preventDefault();
   const touch = event.touches[0];
+  if (!touch) return;
   const coords = getCanvasCoordinates(touch);
   userPath.value.push({ x: coords.x, y: coords.y });
 }
@@ -478,9 +480,6 @@ onMounted(() => {
 });
 
 // useCleanupTimers가 자동으로 모든 타이머를 정리합니다
-onUnmounted(() => {
-  isGameOver.value = true;
-});
 </script>
 
 <style scoped>
