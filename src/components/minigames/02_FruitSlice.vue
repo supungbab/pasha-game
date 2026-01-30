@@ -2,12 +2,9 @@
   <div ref="containerRef" class="minigame fruit-slice">
     <canvas
       ref="canvasRef"
-      @mousedown="handlePointerDown"
-      @mousemove="handlePointerMove"
-      @mouseup="handlePointerUp"
-      @touchstart="handleTouchStart"
-      @touchmove="handleTouchMove"
-      @touchend="handleTouchEnd"
+      @touchstart.prevent="handleTouchStart"
+      @touchmove.prevent="handleTouchMove"
+      @touchend.prevent="handleTouchEnd"
     ></canvas>
 
     <!-- Score Popups -->
@@ -410,25 +407,6 @@ function checkSlice(x: number, y: number) {
   });
 
   lastSlicePoint.value = { x, y };
-}
-
-// Pointer handlers
-function handlePointerDown(event: MouseEvent) {
-  if (isGameOver.value) return;
-  const coords = getCanvasCoordinates(event);
-  lastScreenPoint.value = { x: event.clientX, y: event.clientY };
-  startSlice(coords.x, coords.y);
-}
-
-function handlePointerMove(event: MouseEvent) {
-  if (!isSlicing.value || isGameOver.value) return;
-  const coords = getCanvasCoordinates(event);
-  lastScreenPoint.value = { x: event.clientX, y: event.clientY };
-  continueSlice(coords.x, coords.y);
-}
-
-function handlePointerUp() {
-  endSlice();
 }
 
 function handleTouchStart(event: TouchEvent) {

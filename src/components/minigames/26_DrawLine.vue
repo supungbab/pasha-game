@@ -2,12 +2,9 @@
   <div ref="containerRef" class="minigame draw-line">
     <canvas
       ref="canvasRef"
-      @mousedown="handlePointerDown"
-      @mousemove="handlePointerMove"
-      @mouseup="handlePointerUp"
-      @touchstart="handleTouchStart"
-      @touchmove="handleTouchMove"
-      @touchend="handleTouchEnd"
+      @touchstart.prevent="handleTouchStart"
+      @touchmove.prevent="handleTouchMove"
+      @touchend.prevent="handleTouchEnd"
     ></canvas>
 
     <!-- Score Popups -->
@@ -332,27 +329,6 @@ function gameLoop() {
   update();
   render();
   animationId = safeRequestAnimationFrame(gameLoop);
-}
-
-// Pointer handlers
-function handlePointerDown(event: MouseEvent) {
-  if (roundComplete.value) return;
-  isDrawing.value = true;
-  userPath.value = [];
-  const coords = getCanvasCoordinates(event);
-  userPath.value.push({ x: coords.x, y: coords.y });
-}
-
-function handlePointerMove(event: MouseEvent) {
-  if (!isDrawing.value || roundComplete.value) return;
-  const coords = getCanvasCoordinates(event);
-  userPath.value.push({ x: coords.x, y: coords.y });
-}
-
-function handlePointerUp() {
-  if (!isDrawing.value) return;
-  isDrawing.value = false;
-  evaluateDrawing();
 }
 
 function handleTouchStart(event: TouchEvent) {

@@ -6,9 +6,6 @@
       <button
         class="climb-btn left"
         :class="{ active: isLeftPressed }"
-        @mousedown="handlePress('left')"
-        @mouseup="handleRelease"
-        @mouseleave="handleRelease"
         @touchstart.prevent="handlePress('left')"
         @touchend.prevent="handleRelease"
       >
@@ -17,9 +14,6 @@
       <button
         class="climb-btn right"
         :class="{ active: isRightPressed }"
-        @mousedown="handlePress('right')"
-        @mouseup="handleRelease"
-        @mouseleave="handleRelease"
         @touchstart.prevent="handlePress('right')"
         @touchend.prevent="handleRelease"
       >

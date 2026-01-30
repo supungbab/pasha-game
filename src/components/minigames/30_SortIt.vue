@@ -2,12 +2,9 @@
   <div class="minigame sort-it">
     <canvas
       ref="canvasRef"
-      @mousedown="handlePointerDown"
-      @mousemove="handlePointerMove"
-      @mouseup="handlePointerUp"
-      @touchstart="handleTouchStart"
-      @touchmove="handleTouchMove"
-      @touchend="handleTouchEnd"
+      @touchstart.prevent="handleTouchStart"
+      @touchmove.prevent="handleTouchMove"
+      @touchend.prevent="handleTouchEnd"
     ></canvas>
   </div>
 </template>
@@ -269,23 +266,6 @@ function gameLoop() {
   update();
   render();
   animationId = safeRequestAnimationFrame(gameLoop);
-}
-
-// Pointer handlers
-function handlePointerDown(event: MouseEvent) {
-  if (roundComplete.value) return;
-  const coords = getCanvasCoordinates(event);
-  startDrag(coords.x, coords.y);
-}
-
-function handlePointerMove(event: MouseEvent) {
-  if (!isDragging.value || roundComplete.value) return;
-  const coords = getCanvasCoordinates(event);
-  moveDrag(coords.x, coords.y);
-}
-
-function handlePointerUp() {
-  endDrag();
 }
 
 function handleTouchStart(event: TouchEvent) {

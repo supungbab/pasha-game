@@ -2,7 +2,6 @@
   <div class="balance-it">
     <canvas
       ref="canvasRef"
-      @mousemove="handleMouseMove"
       @touchmove.prevent="handleTouchMove"
     ></canvas>
 
@@ -80,16 +79,6 @@ function generateBoxes() {
       weight
     });
   }
-}
-
-// 마우스 이동
-function handleMouseMove(event: MouseEvent) {
-  if (gameCompleted) return;
-
-  const canvas = canvasRef.value;
-  if (!canvas) return;
-  const rect = canvas.getBoundingClientRect();
-  mouseX = (event.clientX - rect.left) * (width / rect.width);
 }
 
 function handleTouchMove(event: TouchEvent) {

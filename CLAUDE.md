@@ -127,20 +127,21 @@
 
 ### ⚠️ 이벤트 처리 (중요)
 
-> **웹뷰 환경**에서 동작하므로 이벤트 처리에 각별히 주의해야 합니다.
+> **모바일 전용** 앱이므로 터치 이벤트만 지원합니다.
 
 | 요구사항 | 설명 |
 |----------|------|
-| **터치 + 클릭 동시 지원** | 모든 인터랙션은 `@touchstart` + `@click` 모두 구현 |
+| **터치 전용** | 모든 인터랙션은 `@touchstart`, `@touchmove`, `@touchend` 사용 |
 | **터치 기본동작 방지** | `@touchstart.prevent`로 스크롤/줌 방지 |
 | **좌표 변환** | `getCanvasCoordinates()`로 캔버스 좌표 정확히 계산 |
-| **이벤트 중복 방지** | 터치 디바이스에서 click 중복 발생 주의 |
+| **드래그 조작** | 연속 입력이 필요한 경우 `@touchmove` + `@touchend` 조합 |
 
 ```vue
 <!-- 올바른 이벤트 바인딩 예시 -->
 <canvas
   @touchstart.prevent="handleTouch"
-  @click="handleClick"
+  @touchmove.prevent="handleMove"
+  @touchend.prevent="handleEnd"
 ></canvas>
 ```
 

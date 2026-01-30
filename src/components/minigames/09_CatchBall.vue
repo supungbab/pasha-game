@@ -2,12 +2,9 @@
   <div class="minigame catch-ball">
     <canvas
       ref="canvasRef"
-      @mousedown="handlePointerDown"
-      @mousemove="handlePointerMove"
-      @mouseup="handlePointerUp"
-      @touchstart="handleTouchStart"
-      @touchmove="handleTouchMove"
-      @touchend="handleTouchEnd"
+      @touchstart.prevent="handleTouchStart"
+      @touchmove.prevent="handleTouchMove"
+      @touchend.prevent="handleTouchEnd"
     ></canvas>
   </div>
 </template>
@@ -254,24 +251,6 @@ function gameLoop() {
   update();
   render();
   animationId = safeRequestAnimationFrame(gameLoop);
-}
-
-// Pointer handlers
-function handlePointerDown(event: MouseEvent) {
-  isDragging.value = true;
-  const coords = getCanvasCoordinates(event);
-  lastPointerX.value = coords.x;
-  basket.value.x = coords.x;
-}
-
-function handlePointerMove(event: MouseEvent) {
-  if (!isDragging.value) return;
-  const coords = getCanvasCoordinates(event);
-  basket.value.x = Math.max(basket.value.width / 2, Math.min(width - basket.value.width / 2, coords.x));
-}
-
-function handlePointerUp() {
-  isDragging.value = false;
 }
 
 function handleTouchStart(event: TouchEvent) {

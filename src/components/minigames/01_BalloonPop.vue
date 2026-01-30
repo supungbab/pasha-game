@@ -3,7 +3,6 @@
     <canvas
       ref="canvasRef"
       @touchstart.prevent="handleTouch"
-      @click="handleClick"
     ></canvas>
 
     <!-- Score Popups -->
@@ -222,14 +221,6 @@ function handleTouch(event: TouchEvent) {
   if (!touch) return;
   const coords = getCanvasCoordinates(touch);
   checkBalloonHit(coords.x, coords.y, touch.clientX, touch.clientY);
-}
-
-// Handle mouse click (for desktop)
-function handleClick(event: MouseEvent) {
-  if (isGameOver.value) return;
-
-  const coords = getCanvasCoordinates(event);
-  checkBalloonHit(coords.x, coords.y, event.clientX, event.clientY);
 }
 
 function checkBalloonHit(x: number, y: number, screenX: number, screenY: number) {

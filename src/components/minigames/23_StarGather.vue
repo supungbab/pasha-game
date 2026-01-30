@@ -2,12 +2,9 @@
   <div class="minigame star-gather">
     <canvas
       ref="canvasRef"
-      @mousedown="handlePointerDown"
-      @mousemove="handlePointerMove"
-      @mouseup="handlePointerUp"
-      @touchstart="handleTouchStart"
-      @touchmove="handleTouchMove"
-      @touchend="handleTouchEnd"
+      @touchstart.prevent="handleTouchStart"
+      @touchmove.prevent="handleTouchMove"
+      @touchend.prevent="handleTouchEnd"
     ></canvas>
   </div>
 </template>
@@ -263,23 +260,6 @@ function gameLoop() {
   update();
   render();
   animationId = safeRequestAnimationFrame(gameLoop);
-}
-
-// Pointer handlers
-function handlePointerDown(event: MouseEvent) {
-  isDragging.value = true;
-  const coords = getCanvasCoordinates(event);
-  setPlayerTarget(coords.x, coords.y);
-}
-
-function handlePointerMove(event: MouseEvent) {
-  if (!isDragging.value) return;
-  const coords = getCanvasCoordinates(event);
-  setPlayerTarget(coords.x, coords.y);
-}
-
-function handlePointerUp() {
-  isDragging.value = false;
 }
 
 function handleTouchStart(event: TouchEvent) {

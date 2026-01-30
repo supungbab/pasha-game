@@ -2,12 +2,9 @@
   <div class="rotate-object">
     <canvas
       ref="canvasRef"
-      @mousedown="handleStart"
-      @mousemove="handleMove"
-      @mouseup="handleEnd"
       @touchstart.prevent="handleTouchStart"
       @touchmove.prevent="handleTouchMove"
-      @touchend.prevent="handleEnd"
+      @touchend.prevent="handleTouchEnd"
     ></canvas>
 
     <div class="ui-overlay">
@@ -76,17 +73,6 @@ function calculateAngle(x: number, y: number): number {
   return Math.atan2(dy, dx) * (180 / Math.PI);
 }
 
-// 드래그 시작
-function handleStart(event: MouseEvent) {
-  if (gameCompleted || isLocked) return;
-
-  const rect = canvasRef.value?.getBoundingClientRect();
-  if (!rect) return;
-
-  isDragging = true;
-  lastMouseAngle = calculateAngle(event.clientX - rect.left, event.clientY - rect.top);
-}
-
 function handleTouchStart(event: TouchEvent) {
   if (gameCompleted || isLocked) return;
 
@@ -98,23 +84,6 @@ function handleTouchStart(event: TouchEvent) {
 
   isDragging = true;
   lastMouseAngle = calculateAngle(touch.clientX - rect.left, touch.clientY - rect.top);
-}
-
-// 드래그 이동
-function handleMove(event: MouseEvent) {
-  if (!isDragging || isLocked) return;
-
-  const rect = canvasRef.value?.getBoundingClientRect();
-  if (!rect) return;
-
-  const currentMouseAngle = calculateAngle(event.clientX - rect.left, event.clientY - rect.top);
-  const angleDiff = currentMouseAngle - lastMouseAngle;
-
-  currentAngle += angleDiff;
-  currentAngle = currentAngle % 360;
-  if (currentAngle < 0) currentAngle += 360;
-
-  lastMouseAngle = currentMouseAngle;
 }
 
 function handleTouchMove(event: TouchEvent) {
@@ -137,7 +106,7 @@ function handleTouchMove(event: TouchEvent) {
 }
 
 // 드래그 종료
-function handleEnd() {
+function handleTouchEnd() {
   if (!isDragging || isLocked) return;
 
   isDragging = false;
