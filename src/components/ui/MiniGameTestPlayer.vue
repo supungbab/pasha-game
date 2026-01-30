@@ -5,8 +5,11 @@ import { getMiniGameById } from '@/config/miniGames';
 import { IMPLEMENTED_MINIGAME_IDS } from '@/components/minigames';
 import { DIFFICULTY_MULTIPLIERS, type DifficultyLevel } from '@/types/game';
 import { Button, Card } from '@/components/base';
-import { TimerBorder } from '@/components/common';
+import { TimerBorder, PauseMenu } from '@/components/common';
 import type { MiniGameResult } from '@/types/minigame';
+
+// Pause state
+const isPaused = ref(false);
 
 const router = useRouter();
 const route = useRoute();
@@ -46,6 +49,16 @@ function startGame() {
   gameKey.value++;
   gameState.value = 'playing';
   lastResult.value = null;
+  isPaused.value = false;
+}
+
+function togglePause() {
+  isPaused.value = !isPaused.value;
+}
+
+function handleExit() {
+  isPaused.value = false;
+  gameState.value = 'setup';
 }
 
 function handleGameComplete(result: MiniGameResult) {
@@ -159,16 +172,15 @@ onMounted(() => {
 
     <!-- Playing Screen -->
     <div v-else-if="gameState === 'playing'" class="playing-screen">
-      <TimerBorder :time-limit="adjustedTimeLimit" :border-width="6">
-        <!-- Floating header overlay -->
-        <header class="playing-header">
-          <div class="playing-info">
-            <span class="playing-difficulty">Lv.{{ testDifficulty }}</span>
-            <span v-if="testHardMode" class="playing-hard">🔥</span>
-          </div>
-          <div class="playing-target">🎯 {{ adjustedTargetScore }}</div>
-        </header>
+      <!-- Game HUD - GameView와 동일한 스타일 -->
+      <header class="game-hud">
+        <button class="menu-btn" @touchstart.prevent="togglePause">☰</button>
+        <div class="hud-item">Lv.{{ testDifficulty }}</div>
+        <div class="hud-item">🎯{{ adjustedTargetScore }}</div>
+        <div v-if="testHardMode" class="hud-item hard">🔥</div>
+      </header>
 
+      <TimerBorder :time-limit="adjustedTimeLimit" :paused="isPaused" :border-width="6">
         <main class="game-container">
           <component
             v-if="gameData?.component"
@@ -182,6 +194,14 @@ onMounted(() => {
           />
         </main>
       </TimerBorder>
+
+      <!-- Pause Menu -->
+      <PauseMenu
+        v-if="isPaused"
+        :subtitle="`#${gameData?.id} ${gameData?.name}`"
+        @resume="togglePause"
+        @exit="handleExit"
+      />
     </div>
 
     <!-- Result Screen -->
@@ -396,51 +416,62 @@ onMounted(() => {
   overflow: hidden;
   background: #FFF8DC;
   z-index: 100;
+  display: flex;
+  flex-direction: column;
 }
 
-.playing-header {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  right: 10px;
+/* Game HUD - GameView와 동일한 스타일 */
+.game-hud {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 8px 14px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(8px);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.95) 100%);
+  border-bottom: 2px solid #FFD700;
   z-index: 100;
+  flex-shrink: 0;
 }
 
-.playing-info {
+.menu-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #F5F5F5 0%, #E0E0E0 100%);
+  color: #424242;
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
   display: flex;
-  gap: 8px;
   align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 0 #BDBDBD;
+  transition: all 0.1s;
 }
 
-.playing-difficulty {
-  padding: 4px 10px;
-  background: linear-gradient(180deg, #FFD700 0%, #FFC107 100%);
+.menu-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 #BDBDBD;
+}
+
+.hud-item {
+  padding: 0.3rem 0.6rem;
+  background: linear-gradient(180deg, #FFF8DC 0%, #FFFAEB 100%);
+  border: 2px solid #FFD700;
   border-radius: 8px;
-  font-size: 0.85rem;
-  font-weight: 700;
-}
-
-.playing-hard {
   font-size: 1rem;
+  font-weight: 700;
+  color: #424242;
 }
 
-.playing-target {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #F9A825;
+.hud-item.hard {
+  background: linear-gradient(180deg, #FFEBEE 0%, #FFCDD2 100%);
+  border-color: #FF6B6B;
 }
 
 .game-container {
+  flex: 1;
   width: 100%;
-  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;

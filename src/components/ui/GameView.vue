@@ -61,26 +61,13 @@
       </div>
     </div>
 
-    <!-- Pause Overlay -->
-    <Teleport to="body">
-      <Transition name="fade">
-        <div v-if="isPaused" class="pause-overlay" @touchstart.prevent>
-          <div class="pause-modal">
-            <div class="pause-icon">⏸️</div>
-            <h2 class="pause-title">일시정지</h2>
-            <p class="pause-stage">STAGE {{ gameState.state.value.currentStage }} / {{ currentGameData?.name }}</p>
-            <div class="pause-actions">
-              <button class="pause-action-btn resume" @touchstart.prevent="togglePause">
-                ▶️ 계속하기
-              </button>
-              <button class="pause-action-btn exit" @touchstart.prevent="handleExit">
-                🏠 나가기
-              </button>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
+    <!-- Pause Menu -->
+    <PauseMenu
+      v-if="isPaused"
+      :subtitle="`STAGE ${gameState.state.value.currentStage} / ${currentGameData?.name}`"
+      @resume="togglePause"
+      @exit="handleExit"
+    />
   </div>
 </template>
 
@@ -90,7 +77,7 @@ import { useGameState, useCleanupTimers, useAudio } from '@/composables';
 import { MINI_GAMES } from '@/config/miniGames';
 import { IMPLEMENTED_MINIGAME_IDS } from '@/components/minigames';
 import { GAME_CONSTANTS, DIFFICULTY_MULTIPLIERS } from '@/types/game';
-import { TimerBorder } from '@/components/common';
+import { TimerBorder, PauseMenu } from '@/components/common';
 import type { MiniGameResult } from '@/types/minigame';
 import type { GameResult, DifficultyLevel } from '@/types/game';
 
@@ -577,102 +564,5 @@ function handleExit() {
   .game-box {
     border-radius: var(--radius-md);
   }
-}
-
-/* Pause Overlay */
-.pause-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  backdrop-filter: blur(4px);
-}
-
-.pause-modal {
-  background: white;
-  border-radius: var(--radius-xl);
-  padding: 2rem;
-  text-align: center;
-  min-width: 280px;
-  max-width: 90%;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  animation: popIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-.pause-icon {
-  font-size: 4rem;
-  margin-bottom: 0.5rem;
-}
-
-.pause-title {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: var(--text-dark);
-  margin: 0 0 0.5rem 0;
-}
-
-.pause-stage {
-  font-size: 1rem;
-  color: var(--text-light);
-  margin: 0 0 1.5rem 0;
-}
-
-.pause-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.pause-action-btn {
-  width: 100%;
-  padding: 1rem 1.5rem;
-  border: none;
-  border-radius: var(--radius-lg);
-  font-size: 1.2rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.pause-action-btn.resume {
-  background: var(--gradient-success);
-  color: white;
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
-}
-
-.pause-action-btn.resume:active {
-  transform: scale(0.98);
-  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
-}
-
-.pause-action-btn.exit {
-  background: var(--gray-100);
-  color: var(--text-dark);
-}
-
-.pause-action-btn.exit:active {
-  transform: scale(0.98);
-  background: var(--gray-200);
-}
-
-/* Fade transition */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
 }
 </style>
