@@ -24,24 +24,15 @@
     <!-- Playing Phase -->
     <main v-else-if="gameState.state.value.phase === 'playing'" class="game-area">
       <div class="game-box">
-        <TimerBorder
+        <component
+          v-if="currentGameData"
+          :is="currentGameData.component"
+          :difficulty="gameState.state.value.currentDifficulty"
           :time-limit="adjustedTimeLimit"
-          :paused="isPaused"
-          :warning-threshold="3"
-          :border-width="6"
-          @time-up="handleTimeUp"
-          @warning="handleWarning"
-        >
-          <component
-            v-if="currentGameData"
-            :is="currentGameData.component"
-            :difficulty="gameState.state.value.currentDifficulty"
-            :time-limit="adjustedTimeLimit"
-            :target-score="adjustedTargetScore"
-            :is-hard-mode="gameState.state.value.isHardMode"
-            @complete="handleGameComplete"
-          />
-        </TimerBorder>
+          :target-score="adjustedTargetScore"
+          :is-hard-mode="gameState.state.value.isHardMode"
+          @complete="handleGameComplete"
+        />
       </div>
     </main>
 
@@ -73,11 +64,11 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
-import { useGameState, useCleanupTimers, useAudio } from '@/composables';
+import { useGameState, useCleanupTimers } from '@/composables';
 import { MINI_GAMES } from '@/config/miniGames';
 import { IMPLEMENTED_MINIGAME_IDS } from '@/components/minigames';
 import { GAME_CONSTANTS, DIFFICULTY_MULTIPLIERS } from '@/types/game';
-import { TimerBorder, PauseMenu } from '@/components/common';
+import { PauseMenu } from '@/components/common';
 import type { MiniGameResult } from '@/types/minigame';
 import type { GameResult, DifficultyLevel } from '@/types/game';
 
@@ -196,27 +187,6 @@ function startResultTimer() {
   safeSetTimeout(() => {
     gameState.proceedToNext();
   }, GAME_CONSTANTS.RESULT_DISPLAY_DURATION * 1000);
-}
-
-// Audio for feedback
-const { playSoundEffect, vibrate } = useAudio();
-
-// Handle timer warning
-function handleWarning() {
-  vibrate(100);
-  playSoundEffect('warning');
-}
-
-// Handle time up (game failed due to timeout)
-function handleTimeUp() {
-  vibrate([100, 50, 100]);
-  const result: MiniGameResult = {
-    success: false,
-    score: 0,
-    timeRemaining: 0
-  };
-  lastResult.value = result;
-  gameState.completeMiniGame(result);
 }
 
 // Handle game completion

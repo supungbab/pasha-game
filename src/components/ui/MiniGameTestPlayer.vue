@@ -5,7 +5,7 @@ import { getMiniGameById } from '@/config/miniGames';
 import { IMPLEMENTED_MINIGAME_IDS } from '@/components/minigames';
 import { DIFFICULTY_MULTIPLIERS, type DifficultyLevel } from '@/types/game';
 import { Button, Card } from '@/components/base';
-import { TimerBorder, PauseMenu } from '@/components/common';
+import { PauseMenu } from '@/components/common';
 import type { MiniGameResult } from '@/types/minigame';
 
 // Pause state
@@ -180,20 +180,18 @@ onMounted(() => {
         <div v-if="testHardMode" class="hud-item hard">🔥</div>
       </header>
 
-      <TimerBorder :time-limit="adjustedTimeLimit" :paused="isPaused" :border-width="6">
-        <main class="game-container">
-          <component
-            v-if="gameData?.component"
-            :is="gameData.component"
-            :key="`game-${gameId}-${gameKey}`"
-            :difficulty="testDifficulty"
-            :time-limit="adjustedTimeLimit"
-            :target-score="adjustedTargetScore"
-            :is-hard-mode="testHardMode"
-            @complete="handleGameComplete"
-          />
-        </main>
-      </TimerBorder>
+      <main class="game-container">
+        <component
+          v-if="gameData?.component"
+          :is="gameData.component"
+          :key="`game-${gameId}-${gameKey}`"
+          :difficulty="testDifficulty"
+          :time-limit="adjustedTimeLimit"
+          :target-score="adjustedTargetScore"
+          :is-hard-mode="testHardMode"
+          @complete="handleGameComplete"
+        />
+      </main>
 
       <!-- Pause Menu -->
       <PauseMenu
