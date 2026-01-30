@@ -1,6 +1,10 @@
 <template>
   <div ref="containerRef" class="minigame balloon-pop">
-    <canvas ref="canvasRef" @touchstart.prevent="handleTouch"></canvas>
+    <canvas
+      ref="canvasRef"
+      @touchstart.prevent="handleTouch"
+      @click="handleClick"
+    ></canvas>
 
     <!-- Score Popups -->
     <ScorePopup :popups="scorePopups" />
@@ -31,7 +35,7 @@ const { ctx, helper, width, height, clear, getCanvasCoordinates } = useCanvas(ca
 });
 
 // Timer utilities
-const { safeSetTimeout, safeSetInterval, clearInterval, cancelAnimationFrame } = useCleanupTimers();
+const { safeSetTimeout, safeSetInterval, safeRequestAnimationFrame, clearInterval, cancelAnimationFrame } = useCleanupTimers();
 
 // Juicy feedback
 const {
@@ -120,10 +124,16 @@ function update() {
   balloons.value = balloons.value.filter(balloon => {
     balloon.y -= balloon.speed;
 
-    // Hard mode: swing animation
+    // Hard mode: swing animation with boundary check
     if (props.isHardMode) {
       balloon.swingOffset += balloon.swingSpeed;
       balloon.x += Math.sin(balloon.swingOffset) * 2;
+
+      // Keep balloon within screen bounds
+      const minX = balloon.radius + 10;
+      const maxX = width - balloon.radius - 10;
+      if (balloon.x < minX) balloon.x = minX;
+      if (balloon.x > maxX) balloon.x = maxX;
     }
 
     // Animate scale back to 1 (squish recovery)
@@ -136,10 +146,7 @@ function update() {
     return balloon.y > -balloon.radius;
   });
 
-  // Update particles
-  if (helper.value) {
-    particles.value = helper.value.updateAndDrawParticles(particles.value);
-  }
+  // Particles are updated in render() to avoid double update
 }
 
 // Render game
@@ -203,7 +210,7 @@ function gameLoop() {
 
   update();
   render();
-  animationId = requestAnimationFrame(gameLoop);
+  animationId = safeRequestAnimationFrame(gameLoop);
 }
 
 // Handle touch
@@ -215,6 +222,14 @@ function handleTouch(event: TouchEvent) {
   if (!touch) return;
   const coords = getCanvasCoordinates(touch);
   checkBalloonHit(coords.x, coords.y, touch.clientX, touch.clientY);
+}
+
+// Handle mouse click (for desktop)
+function handleClick(event: MouseEvent) {
+  if (isGameOver.value) return;
+
+  const coords = getCanvasCoordinates(event);
+  checkBalloonHit(coords.x, coords.y, event.clientX, event.clientY);
 }
 
 function checkBalloonHit(x: number, y: number, screenX: number, screenY: number) {
