@@ -1,27 +1,14 @@
 <template>
   <div class="game-view">
-    <!-- Game HUD -->
+    <!-- Game HUD - CLAUDE.md 형식: ☰ ❤️❤️❤️ | #5 | ⭐60 | 🔥 -->
     <header class="game-hud">
-      <div class="hud-left">
-        <div class="stage-info">
-          <span class="stage-number">STAGE {{ gameState.state.value.currentStage }}</span>
-          <span class="difficulty-badge">{{ difficultyEmoji }} Lv.{{ gameState.state.value.currentDifficulty }}</span>
-          <span v-if="gameState.state.value.isHardMode" class="hard-mode-badge">🔥 HARD</span>
-        </div>
+      <button class="menu-btn" @touchstart.prevent="togglePause">☰</button>
+      <div class="hud-item lives">
+        <span v-for="i in 3" :key="i">{{ i <= gameState.state.value.lives ? '❤️' : '🖤' }}</span>
       </div>
-      <div class="hud-center">
-        <div class="score-display">
-          <span class="score-label">SCORE</span>
-          <span class="score-value">{{ gameState.state.value.score }}</span>
-        </div>
-      </div>
-      <div class="hud-right">
-        <div class="lives-display">
-          <span v-for="i in 3" :key="i" class="life-icon" :class="{ active: i <= gameState.state.value.lives }">
-            {{ i <= gameState.state.value.lives ? '❤️' : '🖤' }}
-          </span>
-        </div>
-      </div>
+      <div class="hud-item stage">#{{ gameState.state.value.currentStage }}</div>
+      <div class="hud-item score">⭐{{ gameState.state.value.score }}</div>
+      <div v-if="gameState.state.value.isHardMode" class="hud-item hard">🔥</div>
     </header>
 
     <!-- Instruction Phase -->
@@ -39,6 +26,7 @@
       <div class="game-box">
         <TimerBorder
           :time-limit="adjustedTimeLimit"
+          :paused="isPaused"
           :warning-threshold="3"
           :border-width="6"
           @time-up="handleTimeUp"
@@ -72,6 +60,27 @@
         </div>
       </div>
     </div>
+
+    <!-- Pause Overlay -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="isPaused" class="pause-overlay" @touchstart.prevent>
+          <div class="pause-modal">
+            <div class="pause-icon">⏸️</div>
+            <h2 class="pause-title">일시정지</h2>
+            <p class="pause-stage">STAGE {{ gameState.state.value.currentStage }} / {{ currentGameData?.name }}</p>
+            <div class="pause-actions">
+              <button class="pause-action-btn resume" @touchstart.prevent="togglePause">
+                ▶️ 계속하기
+              </button>
+              <button class="pause-action-btn exit" @touchstart.prevent="handleExit">
+                🏠 나가기
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -80,7 +89,7 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { useGameState, useCleanupTimers, useAudio } from '@/composables';
 import { MINI_GAMES } from '@/config/miniGames';
 import { IMPLEMENTED_MINIGAME_IDS } from '@/components/minigames';
-import { DIFFICULTY_TIERS, GAME_CONSTANTS, DIFFICULTY_MULTIPLIERS } from '@/types/game';
+import { GAME_CONSTANTS, DIFFICULTY_MULTIPLIERS } from '@/types/game';
 import { TimerBorder } from '@/components/common';
 import type { MiniGameResult } from '@/types/minigame';
 import type { GameResult, DifficultyLevel } from '@/types/game';
@@ -89,6 +98,7 @@ import type { GameResult, DifficultyLevel } from '@/types/game';
 const emit = defineEmits<{
   gameover: [result: GameResult];
   complete: [result: GameResult];
+  exit: [];
 }>();
 
 // Game state management
@@ -104,6 +114,9 @@ let instructionTimerId: number | null = null;
 // Last result
 const lastResult = ref<MiniGameResult | null>(null);
 
+// Pause state
+const isPaused = ref(false);
+
 // Get implemented games
 const implementedGames = computed(() =>
   MINI_GAMES.filter(game => IMPLEMENTED_MINIGAME_IDS.includes(game.id))
@@ -111,12 +124,6 @@ const implementedGames = computed(() =>
 
 // Current game data
 const currentGameData = computed(() => gameState.queue.value.current);
-
-// Difficulty emoji
-const difficultyEmoji = computed(() => {
-  const tier = DIFFICULTY_TIERS.find(t => t.level === gameState.state.value.currentDifficulty);
-  return tier?.emoji || '⭐';
-});
 
 // Adjusted time limit based on difficulty
 const adjustedTimeLimit = computed(() => {
@@ -230,6 +237,18 @@ function handleGameComplete(result: MiniGameResult) {
   lastResult.value = result;
   gameState.completeMiniGame(result);
 }
+
+// Pause functions
+function togglePause() {
+  // Only allow pause during playing phase
+  if (gameState.state.value.phase !== 'playing') return;
+  isPaused.value = !isPaused.value;
+}
+
+function handleExit() {
+  isPaused.value = false;
+  emit('exit');
+}
 </script>
 
 <style scoped>
@@ -244,114 +263,72 @@ function handleGameComplete(result: MiniGameResult) {
   overflow: hidden;
 }
 
-/* Game HUD */
+/* Game HUD - 한 줄 레이아웃 */
 .game-hud {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1rem;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
   background: rgba(255, 255, 255, 0.95);
-  border-bottom: 2px solid var(--primary-yellow);
+  border-bottom: 3px solid var(--primary-yellow);
   box-shadow: var(--shadow-sm);
   z-index: var(--z-header);
 }
 
-.hud-left,
-.hud-center,
-.hud-right {
-  flex: 1;
-}
-
-.hud-center {
+.menu-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: var(--gray-100);
+  border-radius: var(--radius-md);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  cursor: pointer;
   display: flex;
-  justify-content: center;
-}
-
-.hud-right {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.stage-info {
-  display: flex;
-  gap: 0.5rem;
   align-items: center;
-  flex-wrap: wrap;
+  justify-content: center;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
 }
 
-.stage-number {
-  font-size: 0.95rem;
+.menu-btn:active {
+  transform: scale(0.92);
+  background: var(--gray-200);
+}
+
+.hud-item {
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--text-dark);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
-.difficulty-badge {
-  display: inline-block;
-  padding: 0.25rem 0.6rem;
-  background: var(--gradient-primary);
-  border-radius: var(--radius-md);
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--text-dark);
-  box-shadow: var(--shadow-primary);
+.hud-item.lives {
+  display: flex;
+  gap: 2px;
+  font-size: 1.2rem;
 }
 
-.hard-mode-badge {
-  display: inline-block;
-  padding: 0.25rem 0.6rem;
-  background: var(--gradient-danger);
-  border-radius: var(--radius-md);
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--white);
-  box-shadow: var(--shadow-danger);
+.hud-item.stage {
+  color: var(--accent-purple);
+  font-size: 1.2rem;
+}
+
+.hud-item.score {
+  color: var(--primary-yellow);
+  font-size: 1.2rem;
+  margin-left: auto;
+}
+
+.hud-item.hard {
+  font-size: 1.3rem;
   animation: pulse 1s ease-in-out infinite;
 }
 
 @keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-}
-
-.score-display {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.score-label {
-  font-size: 0.7rem;
-  color: var(--text-light);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.score-value {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: var(--primary-yellow);
-  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
-}
-
-.lives-display {
-  display: flex;
-  gap: 0.3rem;
-}
-
-.life-icon {
-  font-size: 1.5rem;
-  transition: all 0.3s ease;
-}
-
-.life-icon.active {
-  filter: drop-shadow(0 2px 4px rgba(255, 0, 0, 0.3));
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
 }
 
 /* Instruction Screen */
@@ -550,25 +527,19 @@ function handleGameComplete(result: MiniGameResult) {
 /* Mobile responsive */
 @media (max-width: 600px) {
   .game-hud {
-    padding: 0.5rem 0.75rem;
+    padding: 0.4rem 0.6rem;
+    gap: 0.4rem;
   }
 
-  .stage-number {
-    font-size: 0.85rem;
+  .menu-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
   }
 
-  .difficulty-badge,
-  .hard-mode-badge {
-    font-size: 0.7rem;
-    padding: 0.2rem 0.5rem;
-  }
-
-  .score-value {
-    font-size: 1.3rem;
-  }
-
-  .life-icon {
-    font-size: 1.2rem;
+  .hud-item {
+    font-size: 0.9rem;
+    padding: 0.25rem 0.5rem;
   }
 
   .instruction-emoji {
@@ -606,5 +577,102 @@ function handleGameComplete(result: MiniGameResult) {
   .game-box {
     border-radius: var(--radius-md);
   }
+}
+
+/* Pause Overlay */
+.pause-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+
+.pause-modal {
+  background: white;
+  border-radius: var(--radius-xl);
+  padding: 2rem;
+  text-align: center;
+  min-width: 280px;
+  max-width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: popIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.pause-icon {
+  font-size: 4rem;
+  margin-bottom: 0.5rem;
+}
+
+.pause-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0 0 0.5rem 0;
+}
+
+.pause-stage {
+  font-size: 1rem;
+  color: var(--text-light);
+  margin: 0 0 1.5rem 0;
+}
+
+.pause-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.pause-action-btn {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.pause-action-btn.resume {
+  background: var(--gradient-success);
+  color: white;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+}
+
+.pause-action-btn.resume:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
+.pause-action-btn.exit {
+  background: var(--gray-100);
+  color: var(--text-dark);
+}
+
+.pause-action-btn.exit:active {
+  transform: scale(0.98);
+  background: var(--gray-200);
+}
+
+/* Fade transition */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

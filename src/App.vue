@@ -170,6 +170,7 @@ const showSettingsScreen = computed(() => appState.value === 'settings');
           key="playing"
           @gameover="handleGameOver"
           @complete="handleGameOver"
+          @exit="returnToMenu"
         />
         <!-- Game Over -->
         <GameOver
