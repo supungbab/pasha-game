@@ -41,7 +41,7 @@ const { ctx, width, height, clear } = useCanvas(canvasRef, {
 });
 
 // Timer utilities
-const { safeSetTimeout, safeRequestAnimationFrame, cancelAnimationFrame } = useCleanupTimers();
+const { safeSetTimeout, safeRequestAnimationFrame } = useCleanupTimers();
 
 // 게임 상태
 const score = ref(0);
@@ -50,7 +50,6 @@ const hitEffect = ref(false);
 const crosshairX = ref(0);
 const crosshairY = ref(0);
 
-let animationId: number = 0;
 let gameCompleted = false;
 let startTime = 0;
 
@@ -126,19 +125,6 @@ function handleMouseMove(event: MouseEvent) {
 
   crosshairX.value = event.clientX;
   crosshairY.value = event.clientY;
-}
-
-// 사격 핸들러
-function handleShoot(event: MouseEvent) {
-  if (gameCompleted) return;
-
-  const rect = canvasRef.value?.getBoundingClientRect();
-  if (!rect) return;
-
-  const x = event.clientX - rect.left;
-  const y = event.clientY - rect.top;
-
-  processShoot(x, y);
 }
 
 // 터치 사격 핸들러
@@ -328,7 +314,7 @@ function gameLoop() {
     return;
   }
 
-  animationId = safeRequestAnimationFrame(gameLoop);
+  safeRequestAnimationFrame(gameLoop);
 }
 
 // 게임 완료

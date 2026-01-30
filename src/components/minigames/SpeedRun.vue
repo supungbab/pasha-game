@@ -36,11 +36,10 @@ const { ctx, width, height, clear } = useCanvas(canvasRef, {
 });
 
 // Timer utilities
-const { safeSetTimeout, safeRequestAnimationFrame, cancelAnimationFrame } = useCleanupTimers();
+const { safeSetTimeout, safeRequestAnimationFrame } = useCleanupTimers();
 
 const distance = ref(0);
 
-let animationId: number = 0;
 let gameCompleted = false;
 let startTime = 0;
 
@@ -268,7 +267,7 @@ function gameLoop() {
     return;
   }
 
-  animationId = safeRequestAnimationFrame(gameLoop);
+  safeRequestAnimationFrame(gameLoop);
 }
 
 // 게임 완료

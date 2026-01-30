@@ -71,17 +71,6 @@ const instructionText = computed(() => {
   return `${targetClicks.value - clicks.value}번 더!`;
 });
 
-// 클릭 핸들러
-function handleClick(event: MouseEvent) {
-  if (gameCompleted) return;
-
-  const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-  const x = event.clientX - rect.left;
-  const y = event.clientY - rect.top;
-
-  processClick(x, y);
-}
-
 // 터치 핸들러
 function handleTouchClick(event: TouchEvent) {
   if (gameCompleted) return;

@@ -42,14 +42,13 @@ const { ctx, width, height, clear } = useCanvas(canvasRef, {
 });
 
 // Timer utilities
-const { safeSetTimeout, safeRequestAnimationFrame, cancelAnimationFrame } = useCleanupTimers();
+const { safeSetTimeout, safeRequestAnimationFrame } = useCleanupTimers();
 
 // 게임 상태
 const score = ref(0);
 const combo = ref(0);
 const judgment = ref<{ text: string; type: 'perfect' | 'good' | 'miss' } | null>(null);
 
-let animationId: number = 0;
 let gameCompleted = false;
 let startTime = 0;
 
@@ -273,7 +272,7 @@ function gameLoop() {
     return;
   }
 
-  animationId = safeRequestAnimationFrame(gameLoop);
+  safeRequestAnimationFrame(gameLoop);
 }
 
 // 게임 완료

@@ -272,13 +272,7 @@ function gameLoop() {
   animationId = requestAnimationFrame(gameLoop);
 }
 
-// Handle click/tap
-function handleClick(event: MouseEvent) {
-  if (isGameOver.value) return;
-  const coords = getCanvasCoordinates(event);
-  checkMoleHit(coords.x, coords.y, event.clientX, event.clientY);
-}
-
+// Handle touch
 function handleTouch(event: TouchEvent) {
   if (isGameOver.value) return;
   event.preventDefault();

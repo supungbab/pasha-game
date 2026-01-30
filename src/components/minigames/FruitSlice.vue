@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted,  computed } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
 import { useCanvas, useCleanupTimers, useJuicyFeedback } from '@/composables';
 import { ScorePopup } from '@/components/common';
@@ -314,8 +314,6 @@ function checkSlice(x: number, y: number) {
   const screenX = lastScreenPoint.value?.x ?? 0;
   const screenY = lastScreenPoint.value?.y ?? 0;
 
-  let slicedInThisFrame = 0;
-
   fruits.value.forEach(fruit => {
     if (fruit.sliced) return;
 
@@ -336,7 +334,6 @@ function checkSlice(x: number, y: number) {
       // Slice fruit
       fruit.sliced = true;
       slicedCount.value++;
-      slicedInThisFrame++;
 
       const now = Date.now();
 

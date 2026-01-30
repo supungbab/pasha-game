@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted,  computed } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
 import { useCanvas, useCleanupTimers, useJuicyFeedback } from '@/composables';
 import { ScorePopup } from '@/components/common';
@@ -250,13 +250,7 @@ function gameLoop() {
   animationId = safeRequestAnimationFrame(gameLoop);
 }
 
-// Handle click/tap
-function handleClick(event: MouseEvent) {
-  if (isGameOver.value) return;
-  const coords = getCanvasCoordinates(event);
-  checkItemHit(coords.x, coords.y, event.clientX, event.clientY);
-}
-
+// Handle touch
 function handleTouch(event: TouchEvent) {
   if (isGameOver.value) return;
   event.preventDefault();

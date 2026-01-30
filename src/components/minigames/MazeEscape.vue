@@ -57,7 +57,6 @@ const { safeSetTimeout, safeRequestAnimationFrame } = useCleanupTimers();
 
 const isComplete = ref(false);
 
-let animationId: number = 0;
 let gameCompleted = false;
 let startTime = 0;
 
@@ -189,17 +188,6 @@ function move(dx: number, dy: number) {
   if (playerX === exitX && playerY === exitY) {
     handleEscape();
   }
-}
-
-// 클릭 이동 (보조)
-function handleClick(event: MouseEvent) {
-  if (gameCompleted || isComplete.value) return;
-
-  const rect = canvasRef.value!.getBoundingClientRect();
-  const clickX = event.clientX - rect.left;
-  const clickY = event.clientY - rect.top;
-
-  processMove(clickX, clickY);
 }
 
 // 터치 이동
@@ -388,7 +376,7 @@ function gameLoop() {
     return;
   }
 
-  animationId = safeRequestAnimationFrame(gameLoop);
+  safeRequestAnimationFrame(gameLoop);
 }
 
 // 게임 완료

@@ -41,7 +41,6 @@ const { safeSetTimeout, safeRequestAnimationFrame } = useCleanupTimers();
 
 const balanceTime = ref(0);
 
-let animationId: number = 0;
 let gameCompleted = false;
 let startTime = 0;
 
@@ -265,7 +264,7 @@ function gameLoop() {
     return;
   }
 
-  animationId = safeRequestAnimationFrame(gameLoop);
+  safeRequestAnimationFrame(gameLoop);
 }
 
 // 게임 완료

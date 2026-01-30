@@ -16,7 +16,6 @@
 import { ref, onMounted, computed } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
 import { useCanvas, useCleanupTimers } from '@/composables';
-import { circlesIntersect } from '@/utils/canvas';
 import type { Particle } from '@/utils/canvas';
 
 const props = defineProps<MiniGameProps>();
