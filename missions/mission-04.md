@@ -15,13 +15,13 @@
 | **조작 방식** | 탭 (4버튼) 👆 |
 | **기본 제한시간** | 12초 |
 | **기본 목표점수** | 60점 |
-| **구현 파일** | `src/components/minigames/04_PerfectJump.vue` |
+| **구현 파일** | `src/components/minigames/04_SkewerMaster.vue` |
 
 ---
 
 ## 게임 설명
 
-3개의 재료(🥩 고기, 🥬 채소, 🧅 양파)가 화면을 가로질러 이동합니다. 재료들이 화면 중앙의 겹침 지점에서 만날 때, 꼬치 버튼을 눌러 재료를 꼬치에 꽂으세요! 많은 재료를 한번에 꽂을수록 높은 점수를 획득합니다.
+3개의 재료(🥩 고기, 🥬 채소, 🧅 양파)가 화면 상/중/하에서 각각 1개씩 출발하여 좌우로 이동합니다. 재료들이 겹치는 위치를 예측하여, 해당 방향의 꼬치 버튼을 눌러 재료를 꽂으세요! 많은 재료를 한번에 꽂을수록 높은 점수를 획득합니다.
 
 ---
 
@@ -37,11 +37,13 @@
 
 ## 게임 규칙
 
-1. 3개 재료가 좌/우에서 화면 중앙으로 이동
-2. 재료들이 겹침 지점(중앙)에 도달할 때 타이밍 맞춰 버튼 터치
-3. **3개 버튼 (↙️⬇️↘️)**: 기능 동일, 꼬치가 꽂히는 방향만 다름
-4. **피니시 버튼 (🏁)**: 꼬치 성공 후 활성화, 누르면 보너스 +20점
-5. 겹침 지점에 재료가 없을 때 버튼 누르면 Miss
+1. 3개 재료가 **상/중/하** 각각 1개씩 출발
+2. 각 재료는 **좌→우** 또는 **우→좌**로 수평 이동 (랜덤)
+3. 어떤 재료가 어디서 나올지 **랜덤** 배치
+4. 플레이어가 재료들이 **겹치는 위치를 예측**
+5. **3개 버튼 (↖️⬆️↗️)**: 꼬치가 가운데 아래에서 해당 방향으로 뻗음
+6. **피니시 버튼 (🏁)**: 꼬치 성공 후 활성화, 누르면 보너스 +20점
+7. 해당 위치에 재료가 없을 때 버튼 누르면 Miss
 
 ---
 
@@ -109,7 +111,7 @@ const baseSpeed = 2.0 + props.difficulty * 0.5;
 ### 디자인 시스템 준수 사항
 > 모든 미니게임은 동일한 디자인 시스템을 따릅니다.
 > - **Primary Yellow**: `#FFD700` (피니시 버튼 활성화, 강조)
-> - **Secondary Orange**: `#FF9800` (꼬치 버튼, 겹침 지점)
+> - **Secondary Orange**: `#FF9800` (꼬치 버튼)
 > - **Neutral Cream**: `#FFF8E7` → `#FFE4B5` (배경 그라데이션)
 > - 둥근 모서리 (border-radius: 12-20px)
 > - 부드러운 그림자 (box-shadow)
@@ -120,28 +122,43 @@ const baseSpeed = 2.0 + props.difficulty * 0.5;
 │  점수: 40 / 60         Wave 1       │
 ├─────────────────────────────────────┤
 │                                     │
-│           [🏁 피니시]               │
+│  🥩 ──→                             │  ← 상단 (1개)
 │                                     │
-│  🥩 ──→                             │
-│          ◎ (겹침점)     ←── 🥬      │
-│  🧅 ──→                             │
+│                         ←── 🥬      │  ← 중단 (1개)
 │                                     │
-│    [↙️]    [⬇️]    [↘️]            │
+│  🧅 ──→                             │  ← 하단 (1개)
+│                                     │
+│      [↖️]      [⬆️]      [↗️]      │
+│              [🏁]                   │
 └─────────────────────────────────────┘
 ```
+
+### 꼬치 동작
+```
+          ↖️ 버튼        ⬆️ 버튼       ↗️ 버튼
+
+            ↖             ↑             ↗
+             ↖            ↑            ↗
+              ↖           ↑           ↗
+               ↖          ↑          ↗
+                ↖         ↑         ↗
+                 ↖        ↑        ↗
+                  ↖       ↑       ↗
+                   ↖      ↑      ↗
+                    ↖     ↑     ↗
+                     ↖    ↑    ↗
+                      ↖   ↑   ↗
+                        ● ● ●
+                          │
+                          ●  ← 시작점 (가운데 아래)
+```
+
+모든 꼬치가 **동일한 시작점**(가운데 아래)에서 출발해서 각 방향으로 뻗어나감.
 
 ### 색상 팔레트
 ```javascript
 // 배경 그라데이션
 backgroundColor: '#FFF8E7' → '#FFE4B5'
-
-// 겹침 지점
-crossingAreaColor: 'rgba(255, 152, 0, 0.2)'  // 영역
-crossingBorderColor: '#FF9800'  // 테두리
-crossingCenterColor: '#FF9800'  // 중심점
-
-// 가이드라인
-guidelineColor: 'rgba(139, 69, 19, 0.2)'
 
 // 꼬치 버튼
 skewerBtnColor: '#FF9800' → '#F57C00'  // 그라데이션
@@ -188,13 +205,16 @@ ctx.fillText(ingredient.emoji, ingredient.x, ingredient.y);
 // 재료 타입
 type IngredientType = 'meat' | 'vegetable' | 'onion';
 
+// Y 위치 (상/중/하)
+type VerticalPosition = 'top' | 'middle' | 'bottom';
+
 // 재료 인터페이스
 interface Ingredient {
   type: IngredientType;
   emoji: string;        // '🥩', '🥬', '🧅'
   x: number;            // X 위치
   y: number;            // Y 위치
-  baseY: number;        // 기본 Y 위치 (흔들림 기준)
+  verticalPos: VerticalPosition;  // 상/중/하 위치
   speed: number;        // 이동 속도
   direction: 'left-to-right' | 'right-to-left';
   skewered: boolean;    // 꼬치에 꽂혔는지
@@ -203,7 +223,6 @@ interface Ingredient {
 // 웨이브 인터페이스
 interface Wave {
   ingredients: Ingredient[];
-  crossingX: number;    // 겹침 지점 X좌표
   completed: boolean;   // 웨이브 완료 여부
   skeweredCount: number;// 꽂힌 재료 수
 }
@@ -211,9 +230,10 @@ interface Wave {
 // 꼬치 애니메이션
 interface SkewerAnimation {
   active: boolean;
-  direction: 'left' | 'center' | 'right';
+  direction: 'left' | 'center' | 'right';  // ↖️ | ⬆️ | ↗️
   progress: number;
-  startY: number;
+  startX: number;       // 가운데 아래 X
+  startY: number;       // 가운데 아래 Y
   ingredients: Ingredient[];
 }
 ```
@@ -221,46 +241,67 @@ interface SkewerAnimation {
 ### 상수 정의
 ```typescript
 const OVERLAP_THRESHOLD = 40;    // 겹침 판정 범위 (픽셀)
-const CROSSING_X = width / 2;    // 겹침 지점 X
-const CROSSING_Y = height / 2 - 30;  // 겹침 지점 Y
+
+// 재료 Y 위치 (상/중/하)
+const Y_POSITIONS = {
+  top: height * 0.25,
+  middle: height * 0.4,
+  bottom: height * 0.55
+};
+
+// 꼬치 시작점 (가운데 아래)
+const SKEWER_START_X = width / 2;
+const SKEWER_START_Y = height * 0.8;
+
+// 꼬치 방향별 목표 X
+const SKEWER_TARGET_X = {
+  left: width * 0.25,    // 왼쪽 대각선
+  center: width * 0.5,   // 가운데
+  right: width * 0.75    // 오른쪽 대각선
+};
 ```
 
 ### 웨이브 생성 로직
 ```typescript
 function createWave(): Wave {
-  const ingredients: Ingredient[] = [];
   const speed = 2.0 + props.difficulty * 0.5;
 
-  INGREDIENTS.forEach((ing, index) => {
-    // 방향 교대로 설정
-    const direction = index % 2 === 0 ? 'left-to-right' : 'right-to-left';
-    const startX = direction === 'left-to-right' ? -30 : width + 30;
-    const yOffset = (index - 1) * 25;  // -25, 0, 25
+  // 재료 순서 셔플
+  const shuffledIngredients = shuffle([...INGREDIENTS]);
 
-    ingredients.push({
+  // Y 위치 배열
+  const positions: VerticalPosition[] = ['top', 'middle', 'bottom'];
+
+  const ingredients: Ingredient[] = shuffledIngredients.map((ing, index) => {
+    // 이동 방향 랜덤
+    const direction = Math.random() > 0.5 ? 'left-to-right' : 'right-to-left';
+    const startX = direction === 'left-to-right' ? -30 : width + 30;
+    const verticalPos = positions[index];
+
+    return {
       type: ing.type,
       emoji: ing.emoji,
       x: startX,
-      y: CROSSING_Y + yOffset,
-      baseY: CROSSING_Y + yOffset,
+      y: Y_POSITIONS[verticalPos],
+      verticalPos,
       speed,
       direction,
       skewered: false
-    });
+    };
   });
 
-  return { ingredients, crossingX: CROSSING_X, completed: false, skeweredCount: 0 };
+  return { ingredients, completed: false, skeweredCount: 0 };
 }
 ```
 
 ### 겹침 판정 로직
 ```typescript
-function checkIngredientsAtCrossing(): Ingredient[] {
+function checkIngredientsAtPosition(targetX: number): Ingredient[] {
   if (!currentWave.value) return [];
 
   return currentWave.value.ingredients.filter(ing => {
     if (ing.skewered) return false;
-    return Math.abs(ing.x - CROSSING_X) <= OVERLAP_THRESHOLD;
+    return Math.abs(ing.x - targetX) <= OVERLAP_THRESHOLD;
   });
 }
 ```
@@ -268,19 +309,22 @@ function checkIngredientsAtCrossing(): Ingredient[] {
 ### 꼬치 핸들러
 ```typescript
 function handleSkewer(direction: 'left' | 'center' | 'right') {
-  const ingredientsAtCrossing = checkIngredientsAtCrossing();
+  const targetX = SKEWER_TARGET_X[direction];
+  const ingredientsAtPosition = checkIngredientsAtPosition(targetX);
 
-  if (ingredientsAtCrossing.length === 0) {
+  if (ingredientsAtPosition.length === 0) {
     showFeedback('Miss! 😢', 'miss');
     return;
   }
 
   // 점수 계산
-  const count = ingredientsAtCrossing.length;
+  const count = ingredientsAtPosition.length;
   let points = count === 3 ? 50 : count === 2 ? 25 : 10;
   score.value += points;
 
-  // 꼬치 애니메이션 시작
+  // 꼬치 애니메이션 시작 (가운데 아래에서 해당 방향으로)
+  startSkewerAnimation(direction, ingredientsAtPosition);
+
   // 피니시 버튼 활성화
   canFinish.value = true;
 }
@@ -339,9 +383,9 @@ function handleFinish() {
 ### 꼬치 버튼
 ```html
 <div class="controls">
-  <button class="skewer-btn" @touchstart.prevent="handleSkewer('left')">↙️</button>
-  <button class="skewer-btn center" @touchstart.prevent="handleSkewer('center')">⬇️</button>
-  <button class="skewer-btn" @touchstart.prevent="handleSkewer('right')">↘️</button>
+  <button class="skewer-btn" @touchstart.prevent="handleSkewer('left')">↖️</button>
+  <button class="skewer-btn center" @touchstart.prevent="handleSkewer('center')">⬆️</button>
+  <button class="skewer-btn" @touchstart.prevent="handleSkewer('right')">↗️</button>
 </div>
 ```
 
@@ -349,10 +393,11 @@ function handleFinish() {
 
 ## 테스트 체크리스트
 
-- [ ] 3개 재료가 화면 양쪽에서 중앙으로 이동하는가?
-- [ ] 재료들이 겹침 지점에서 만나는 타이밍이 적절한가?
-- [ ] 3개 버튼(↙️⬇️↘️) 모두 정상 작동하는가?
-- [ ] 각 버튼별 꼬치 방향 애니메이션이 다른가?
+- [ ] 3개 재료가 상/중/하에서 각각 1개씩 출발하는가?
+- [ ] 재료 배치가 매 웨이브마다 랜덤인가?
+- [ ] 재료 이동 방향(좌→우, 우→좌)이 랜덤인가?
+- [ ] 3개 버튼(↖️⬆️↗️) 모두 정상 작동하는가?
+- [ ] 꼬치가 가운데 아래에서 시작하여 해당 방향으로 뻗는가?
 - [ ] 1/2/3개 재료 차등 점수가 정확한가?
 - [ ] 피니시 버튼이 꼬치 성공 후에만 활성화되는가?
 - [ ] 피니시 보너스 +20점이 적용되는가?
@@ -381,6 +426,6 @@ function handleFinish() {
 
 ---
 
-**문서 버전**: 2.0
+**문서 버전**: 3.0
 **최종 수정**: 2026-02-02
-**참고 자료**: `MISSIONS_SUMMARY.md`, `04_PerfectJump.vue`
+**참고 자료**: `MISSIONS_SUMMARY.md`, `04_SkewerMaster.vue`

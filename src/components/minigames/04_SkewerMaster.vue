@@ -82,21 +82,21 @@ let startTime = 0;
 
 // 재료 타입
 type IngredientType = 'meat' | 'vegetable' | 'onion';
+type VerticalPosition = 'top' | 'middle' | 'bottom';
 
 interface Ingredient {
   type: IngredientType;
   emoji: string;
   x: number;
   y: number;
+  verticalPos: VerticalPosition;
   speed: number;
   direction: 'left-to-right' | 'right-to-left';
   skewered: boolean;
-  baseY: number;
 }
 
 interface Wave {
   ingredients: Ingredient[];
-  crossingX: number;
   completed: boolean;
   skeweredCount: number;
 }
@@ -111,7 +111,6 @@ interface SkewerAnimation {
   active: boolean;
   direction: 'left' | 'center' | 'right';
   progress: number;
-  startY: number;
   ingredients: Ingredient[];
 }
 
@@ -119,7 +118,6 @@ const skewerAnimation = ref<SkewerAnimation>({
   active: false,
   direction: 'center',
   progress: 0,
-  startY: 0,
   ingredients: []
 });
 
@@ -128,8 +126,24 @@ const baseSpeed = computed(() => 2.0 + props.difficulty * 0.5);
 
 // 겹침 판정 범위 (픽셀)
 const OVERLAP_THRESHOLD = 40;
-const CROSSING_X = width / 2;
-const CROSSING_Y = height / 2 - 30;
+
+// 재료 Y 위치 (상/중/하)
+const Y_POSITIONS = {
+  top: height * 0.25,
+  middle: height * 0.4,
+  bottom: height * 0.55
+};
+
+// 꼬치 시작점 (가운데 아래)
+const SKEWER_START_X = width / 2;
+const SKEWER_START_Y = height * 0.75;
+
+// 꼬치 방향별 목표 X (겹침 판정 위치)
+const SKEWER_TARGET_X = {
+  left: width * 0.25,
+  center: width * 0.5,
+  right: width * 0.75
+};
 
 // 이모지 정보
 const INGREDIENTS: { type: IngredientType; emoji: string }[] = [
@@ -138,72 +152,72 @@ const INGREDIENTS: { type: IngredientType; emoji: string }[] = [
   { type: 'onion', emoji: '🧅' }
 ];
 
+// 배열 셔플 유틸리티
+function shuffle<T>(array: T[]): T[] {
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const temp = result[i];
+    result[i] = result[j]!;
+    result[j] = temp!;
+  }
+  return result;
+}
+
 // 웨이브 생성
 function createWave(): Wave {
-  const crossingX = CROSSING_X;
-  const ingredients: Ingredient[] = [];
-
-  // 3개 재료 생성 - 각각 다른 방향에서 시작하여 동시에 겹침 지점 도달
   const speed = baseSpeed.value;
 
-  INGREDIENTS.forEach((ing, index) => {
-    // 방향 결정 (교대로)
-    const direction: 'left-to-right' | 'right-to-left' = index % 2 === 0 ? 'left-to-right' : 'right-to-left';
+  // 재료 순서 셔플
+  const shuffledIngredients = shuffle([...INGREDIENTS]);
 
-    // 시작 위치 계산 (동시에 겹침 지점 도달하도록)
+  // Y 위치 배열
+  const positions: VerticalPosition[] = ['top', 'middle', 'bottom'];
+
+  const ingredients: Ingredient[] = shuffledIngredients.map((ing, index) => {
+    // 이동 방향 랜덤
+    const direction: 'left-to-right' | 'right-to-left' = Math.random() > 0.5 ? 'left-to-right' : 'right-to-left';
     const startX = direction === 'left-to-right' ? -30 : width + 30;
-    const distanceToCenter = Math.abs(startX - crossingX);
+    const verticalPos = positions[index] as VerticalPosition;
 
-    // Y 위치 (겹침 지점 주변에 약간 분산)
-    const yOffset = (index - 1) * 25; // -25, 0, 25
-    const baseY = CROSSING_Y + yOffset;
-
-    ingredients.push({
+    return {
       type: ing.type,
       emoji: ing.emoji,
       x: startX,
-      y: baseY,
-      baseY: baseY,
-      speed: speed,
+      y: Y_POSITIONS[verticalPos],
+      verticalPos,
+      speed,
       direction,
       skewered: false
-    });
+    };
   });
 
   return {
     ingredients,
-    crossingX,
     completed: false,
     skeweredCount: 0
   };
 }
 
-// 재료들이 겹침 지점에 있는지 확인
-function checkIngredientsAtCrossing(): Ingredient[] {
+// 특정 X 위치에 재료들이 있는지 확인
+function checkIngredientsAtPosition(targetX: number): Ingredient[] {
   if (!currentWave.value) return [];
 
-  const ingredientsAtCrossing: Ingredient[] = [];
-
-  for (const ing of currentWave.value.ingredients) {
-    if (ing.skewered) continue;
-
-    const distanceFromCenter = Math.abs(ing.x - CROSSING_X);
-    if (distanceFromCenter <= OVERLAP_THRESHOLD) {
-      ingredientsAtCrossing.push(ing);
-    }
-  }
-
-  return ingredientsAtCrossing;
+  return currentWave.value.ingredients.filter(ing => {
+    if (ing.skewered) return false;
+    return Math.abs(ing.x - targetX) <= OVERLAP_THRESHOLD;
+  });
 }
 
 // 꼬치 버튼 핸들러
 function handleSkewer(direction: 'left' | 'center' | 'right') {
   if (gameCompleted || !currentWave.value || skewerAnimation.value.active) return;
 
-  const ingredientsAtCrossing = checkIngredientsAtCrossing();
+  const targetX = SKEWER_TARGET_X[direction];
+  const ingredientsAtPosition = checkIngredientsAtPosition(targetX);
 
-  if (ingredientsAtCrossing.length === 0) {
-    // Miss - 겹침 지점에 재료 없음
+  if (ingredientsAtPosition.length === 0) {
+    // Miss - 해당 위치에 재료 없음
     showFeedback('Miss! 😢', 'miss');
     if (navigator.vibrate) {
       navigator.vibrate(100);
@@ -212,8 +226,8 @@ function handleSkewer(direction: 'left' | 'center' | 'right') {
   }
 
   // 꼬치 성공!
-  const skeweredCount = ingredientsAtCrossing.length;
-  ingredientsAtCrossing.forEach(ing => {
+  const skeweredCount = ingredientsAtPosition.length;
+  ingredientsAtPosition.forEach(ing => {
     ing.skewered = true;
   });
 
@@ -256,8 +270,7 @@ function handleSkewer(direction: 'left' | 'center' | 'right') {
     active: true,
     direction,
     progress: 0,
-    startY: 0,
-    ingredients: [...ingredientsAtCrossing]
+    ingredients: [...ingredientsAtPosition]
   };
 
   // 피니시 가능 상태로 변경
@@ -324,9 +337,6 @@ function update() {
     } else {
       ing.x -= ing.speed;
     }
-
-    // 약간의 흔들림 (위아래)
-    ing.y = ing.baseY + Math.sin(Date.now() / 200 + ing.type.charCodeAt(0)) * 3;
   }
 
   // 웨이브 완료 체크 (모든 재료가 화면 밖으로 나감)
@@ -374,46 +384,30 @@ function render() {
   c.fillStyle = gradient;
   c.fillRect(0, 0, width, height);
 
-  // 겹침 지점 표시 (타겟 영역)
-  c.fillStyle = 'rgba(255, 152, 0, 0.2)';
-  c.beginPath();
-  c.arc(CROSSING_X, CROSSING_Y, OVERLAP_THRESHOLD + 10, 0, Math.PI * 2);
-  c.fill();
-
-  c.strokeStyle = '#FF9800';
-  c.lineWidth = 3;
-  c.setLineDash([5, 5]);
-  c.beginPath();
-  c.arc(CROSSING_X, CROSSING_Y, OVERLAP_THRESHOLD + 10, 0, Math.PI * 2);
-  c.stroke();
-  c.setLineDash([]);
-
-  // 중심점 표시
-  c.fillStyle = '#FF9800';
-  c.beginPath();
-  c.arc(CROSSING_X, CROSSING_Y, 8, 0, Math.PI * 2);
-  c.fill();
-
-  // 가이드라인 (재료 이동 경로)
-  c.strokeStyle = 'rgba(139, 69, 19, 0.2)';
+  // 재료 이동 경로 가이드라인 (상/중/하)
+  c.strokeStyle = 'rgba(139, 69, 19, 0.15)';
   c.lineWidth = 2;
+  c.setLineDash([10, 10]);
 
-  // 좌→우 라인
+  // 상단 라인
   c.beginPath();
-  c.moveTo(0, CROSSING_Y - 25);
-  c.lineTo(width, CROSSING_Y - 25);
+  c.moveTo(0, Y_POSITIONS.top);
+  c.lineTo(width, Y_POSITIONS.top);
   c.stroke();
 
+  // 중단 라인
   c.beginPath();
-  c.moveTo(0, CROSSING_Y + 25);
-  c.lineTo(width, CROSSING_Y + 25);
+  c.moveTo(0, Y_POSITIONS.middle);
+  c.lineTo(width, Y_POSITIONS.middle);
   c.stroke();
 
-  // 우→좌 라인
+  // 하단 라인
   c.beginPath();
-  c.moveTo(0, CROSSING_Y);
-  c.lineTo(width, CROSSING_Y);
+  c.moveTo(0, Y_POSITIONS.bottom);
+  c.lineTo(width, Y_POSITIONS.bottom);
   c.stroke();
+
+  c.setLineDash([]);
 
   // 재료 렌더링
   if (currentWave.value) {
@@ -426,17 +420,17 @@ function render() {
       c.fillText(ing.emoji, ing.x, ing.y);
 
       // 방향 화살표 표시
-      c.font = '16px Arial';
-      c.fillStyle = 'rgba(0, 0, 0, 0.3)';
+      c.font = '14px Arial';
+      c.fillStyle = 'rgba(0, 0, 0, 0.25)';
       if (ing.direction === 'left-to-right') {
-        c.fillText('→', ing.x, ing.y + 30);
+        c.fillText('→', ing.x, ing.y + 28);
       } else {
-        c.fillText('←', ing.x, ing.y + 30);
+        c.fillText('←', ing.x, ing.y + 28);
       }
     }
   }
 
-  // 꼬치 애니메이션 렌더링 (아래에서 위로, 방향에 따라 대각선)
+  // 꼬치 애니메이션 렌더링 (가운데 아래에서 해당 방향으로)
   if (skewerAnimation.value.active) {
     const anim = skewerAnimation.value;
     const progress = anim.progress;
@@ -447,19 +441,16 @@ function render() {
     c.lineWidth = 6;
     c.lineCap = 'round';
 
-    // 시작점 (항상 중앙 아래)
-    const startX = CROSSING_X;
-    const startY = CROSSING_Y + 100;
+    // 시작점 (가운데 아래)
+    const startX = SKEWER_START_X;
+    const startY = SKEWER_START_Y;
 
     // 끝점 (방향에 따라 다름)
-    let endOffsetX = 0;
-    if (anim.direction === 'left') endOffsetX = -60;
-    if (anim.direction === 'right') endOffsetX = 60;
-    const endX = CROSSING_X + endOffsetX;
-    const endY = CROSSING_Y - 50;
+    const targetX = SKEWER_TARGET_X[anim.direction];
+    const endY = Y_POSITIONS.top - 30;
 
     // 현재 위치 (대각선 이동)
-    const currentX = startX + (endX - startX) * animProgress;
+    const currentX = startX + (targetX - startX) * animProgress;
     const currentY = startY + (endY - startY) * animProgress;
 
     c.beginPath();
@@ -467,23 +458,37 @@ function render() {
     c.lineTo(currentX, currentY);
     c.stroke();
 
-    // 꼬치 끝 (뾰족한 부분 - 위를 향함)
+    // 꼬치 끝 (뾰족한 부분)
     c.fillStyle = '#8B4513';
     c.beginPath();
-    c.moveTo(currentX - 8, currentY);
-    c.lineTo(currentX + 8, currentY);
-    c.lineTo(currentX, currentY - 15);
+
+    // 방향에 따라 삼각형 회전
+    const angle = Math.atan2(currentY - startY, currentX - startX);
+    c.save();
+    c.translate(currentX, currentY);
+    c.rotate(angle - Math.PI / 2);
+    c.moveTo(-8, 0);
+    c.lineTo(8, 0);
+    c.lineTo(0, -15);
     c.closePath();
     c.fill();
+    c.restore();
 
-    // 꽂힌 재료들 (꼬치 끝 아래에 순서대로)
-    if (progress > 0.5) {
-      const ingredientY = currentY + 20;  // 꼬치 끝 아래부터
+    // 꽂힌 재료들 (꼬치 막대 위에)
+    if (progress > 0.3) {
+      const ingredientProgress = Math.min((progress - 0.3) / 0.7, 1);
       anim.ingredients.forEach((ing, i) => {
-        c.font = '36px Arial';
+        // 꼬치 막대를 따라 재료 배치
+        const ingProgress = animProgress * (0.3 + i * 0.2);
+        const ingX = startX + (targetX - startX) * ingProgress;
+        const ingY = startY + (endY - startY) * ingProgress;
+
+        c.font = '32px Arial';
         c.textAlign = 'center';
         c.textBaseline = 'middle';
-        c.fillText(ing.emoji, currentX, ingredientY + i * 25);
+        c.globalAlpha = ingredientProgress;
+        c.fillText(ing.emoji, ingX, ingY);
+        c.globalAlpha = 1;
       });
     }
   }
