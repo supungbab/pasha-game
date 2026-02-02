@@ -5,7 +5,7 @@ import {
   BalloonPop,
   FruitSlice,
   WhackAMole,
-  PerfectJump,
+  SkewerMaster,
   RhythmTap,
   ColorMatch,
   SpeedClick,
@@ -92,7 +92,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'count',
     baseTimeLimit: 12,
     baseTargetScore: 60,
-    component: PerfectJump,
+    component: SkewerMaster,
     difficulty: 2,
   },
   {

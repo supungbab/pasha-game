@@ -6,7 +6,7 @@ import type { Component } from 'vue';
 import BalloonPop from './01_BalloonPop.vue';       // Mission 1: 풍선 터트리기
 import FruitSlice from './02_FruitSlice.vue';       // Mission 2: 과일 자르기
 import WhackAMole from './03_WhackAMole.vue';       // Mission 3: 두더지 잡기
-import PerfectJump from './04_PerfectJump.vue';     // Mission 4: 타이밍 점프
+import SkewerMaster from './04_SkewerMaster.vue';   // Mission 4: 꼬치 만들기
 import RhythmTap from './05_RhythmTap.vue';         // Mission 5: 리듬 탭
 import ColorMatch from './06_ColorMatch.vue';       // Mission 6: 색깔 매칭
 import SpeedClick from './07_SpeedClick.vue';       // Mission 7: 빠른 클릭
@@ -39,7 +39,7 @@ export {
   BalloonPop,
   FruitSlice,
   WhackAMole,
-  PerfectJump,
+  SkewerMaster,
   RhythmTap,
   ColorMatch,
   SpeedClick,
@@ -75,7 +75,7 @@ export const MINIGAME_COMPONENTS: Record<number, Component> = {
   1: BalloonPop,
   2: FruitSlice,
   3: WhackAMole,
-  4: PerfectJump,
+  4: SkewerMaster,
   5: RhythmTap,
   6: ColorMatch,
   7: SpeedClick,
