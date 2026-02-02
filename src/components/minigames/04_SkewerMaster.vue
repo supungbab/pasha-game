@@ -21,19 +21,19 @@
         class="skewer-btn"
         @touchstart.prevent="handleSkewer('left')"
       >
-        ↙️
+        ↖️
       </button>
       <button
         class="skewer-btn center"
         @touchstart.prevent="handleSkewer('center')"
       >
-        ⬇️
+        ⬆️
       </button>
       <button
         class="skewer-btn"
         @touchstart.prevent="handleSkewer('right')"
       >
-        ↘️
+        ↗️
       </button>
     </div>
 
@@ -436,7 +436,7 @@ function render() {
     }
   }
 
-  // 꼬치 애니메이션 렌더링
+  // 꼬치 애니메이션 렌더링 (아래에서 위로 올라옴)
   if (skewerAnimation.value.active) {
     const anim = skewerAnimation.value;
     const progress = anim.progress;
@@ -446,8 +446,8 @@ function render() {
     c.lineWidth = 6;
     c.lineCap = 'round';
 
-    const startY = CROSSING_Y - 100;
-    const endY = CROSSING_Y + 50;
+    const startY = CROSSING_Y + 100;  // 아래에서 시작
+    const endY = CROSSING_Y - 50;     // 위로 올라감
     const currentY = startY + (endY - startY) * Math.min(progress * 2, 1);
 
     let offsetX = 0;
@@ -459,18 +459,18 @@ function render() {
     c.lineTo(CROSSING_X + offsetX, currentY);
     c.stroke();
 
-    // 꼬치 끝 (뾰족한 부분)
+    // 꼬치 끝 (뾰족한 부분 - 위를 향함)
     c.fillStyle = '#8B4513';
     c.beginPath();
     c.moveTo(CROSSING_X + offsetX - 8, currentY);
     c.lineTo(CROSSING_X + offsetX + 8, currentY);
-    c.lineTo(CROSSING_X + offsetX, currentY + 15);
+    c.lineTo(CROSSING_X + offsetX, currentY - 15);
     c.closePath();
     c.fill();
 
-    // 꽂힌 재료들
+    // 꽂힌 재료들 (꼬치 끝 아래에 순서대로)
     if (progress > 0.5) {
-      const ingredientY = CROSSING_Y - 20;
+      const ingredientY = currentY + 20;  // 꼬치 끝 아래부터
       anim.ingredients.forEach((ing, i) => {
         c.font = '36px Arial';
         c.textAlign = 'center';
