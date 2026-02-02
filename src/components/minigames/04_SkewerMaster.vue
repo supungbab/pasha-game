@@ -436,35 +436,43 @@ function render() {
     }
   }
 
-  // 꼬치 애니메이션 렌더링 (아래에서 위로 올라옴)
+  // 꼬치 애니메이션 렌더링 (아래에서 위로, 방향에 따라 대각선)
   if (skewerAnimation.value.active) {
     const anim = skewerAnimation.value;
     const progress = anim.progress;
+    const animProgress = Math.min(progress * 2, 1);
 
     // 꼬치 막대 그리기
     c.strokeStyle = '#8B4513';
     c.lineWidth = 6;
     c.lineCap = 'round';
 
-    const startY = CROSSING_Y + 100;  // 아래에서 시작
-    const endY = CROSSING_Y - 50;     // 위로 올라감
-    const currentY = startY + (endY - startY) * Math.min(progress * 2, 1);
+    // 시작점 (항상 중앙 아래)
+    const startX = CROSSING_X;
+    const startY = CROSSING_Y + 100;
 
-    let offsetX = 0;
-    if (anim.direction === 'left') offsetX = -30;
-    if (anim.direction === 'right') offsetX = 30;
+    // 끝점 (방향에 따라 다름)
+    let endOffsetX = 0;
+    if (anim.direction === 'left') endOffsetX = -60;
+    if (anim.direction === 'right') endOffsetX = 60;
+    const endX = CROSSING_X + endOffsetX;
+    const endY = CROSSING_Y - 50;
+
+    // 현재 위치 (대각선 이동)
+    const currentX = startX + (endX - startX) * animProgress;
+    const currentY = startY + (endY - startY) * animProgress;
 
     c.beginPath();
-    c.moveTo(CROSSING_X + offsetX, startY);
-    c.lineTo(CROSSING_X + offsetX, currentY);
+    c.moveTo(startX, startY);
+    c.lineTo(currentX, currentY);
     c.stroke();
 
     // 꼬치 끝 (뾰족한 부분 - 위를 향함)
     c.fillStyle = '#8B4513';
     c.beginPath();
-    c.moveTo(CROSSING_X + offsetX - 8, currentY);
-    c.lineTo(CROSSING_X + offsetX + 8, currentY);
-    c.lineTo(CROSSING_X + offsetX, currentY - 15);
+    c.moveTo(currentX - 8, currentY);
+    c.lineTo(currentX + 8, currentY);
+    c.lineTo(currentX, currentY - 15);
     c.closePath();
     c.fill();
 
@@ -475,7 +483,7 @@ function render() {
         c.font = '36px Arial';
         c.textAlign = 'center';
         c.textBaseline = 'middle';
-        c.fillText(ing.emoji, CROSSING_X + offsetX, ingredientY + i * 25);
+        c.fillText(ing.emoji, currentX, ingredientY + i * 25);
       });
     }
   }
