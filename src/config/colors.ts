@@ -109,9 +109,9 @@ export function hexToRgba(hex: string, alpha: number = 1): string {
 }
 
 export function getRandomBrightColor(): string {
-  return BRIGHT_COLORS[Math.floor(Math.random() * BRIGHT_COLORS.length)];
+  return BRIGHT_COLORS[Math.floor(Math.random() * BRIGHT_COLORS.length)]!;
 }
 
 export function getRandomPastelColor(): string {
-  return PASTEL_COLORS[Math.floor(Math.random() * PASTEL_COLORS.length)];
+  return PASTEL_COLORS[Math.floor(Math.random() * PASTEL_COLORS.length)]!;
 }

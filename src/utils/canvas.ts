@@ -177,12 +177,13 @@ export class CanvasHelper {
    */
   drawPolygon(points: { x: number; y: number }[], color: string, fill: boolean = true): void {
     if (points.length < 3) return;
-    
+
+    const firstPoint = points[0]!;
     this.ctx.beginPath();
-    this.ctx.moveTo(points[0].x, points[0].y);
-    
+    this.ctx.moveTo(firstPoint.x, firstPoint.y);
+
     for (let i = 1; i < points.length; i++) {
-      this.ctx.lineTo(points[i].x, points[i].y);
+      this.ctx.lineTo(points[i]!.x, points[i]!.y);
     }
     
     this.ctx.closePath();

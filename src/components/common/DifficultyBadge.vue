@@ -19,8 +19,8 @@ const color = computed(() => getDifficultyColor(props.level));
 <template>
   <div class="difficulty-badge" :class="{ 'hard-mode': isHardMode }" :style="{ '--color': color }">
     <span v-if="isHardMode" class="hard-mode-icon">🔥</span>
-    <span class="emoji">{{ difficultyInfo.emoji }}</span>
-    <span class="name">{{ difficultyInfo.name }}</span>
+    <span class="emoji">{{ difficultyInfo?.emoji }}</span>
+    <span class="name">{{ difficultyInfo?.name }}</span>
   </div>
 </template>
 

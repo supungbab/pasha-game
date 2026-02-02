@@ -78,7 +78,7 @@ export function useJuicyFeedback() {
       fail: 'juicy-fail-pop',
     };
 
-    const className = classNames[type];
+    const className = classNames[type] ?? 'juicy-pop';
     element.classList.remove('juicy-pop', 'juicy-success-pop', 'juicy-fail-pop');
     void element.offsetWidth;
     element.classList.add(className);
@@ -86,7 +86,7 @@ export function useJuicyFeedback() {
     const durations: Record<string, number> = { normal: 400, success: 500, fail: 300 };
     setTimeout(() => {
       element.classList.remove(className);
-    }, durations[type]);
+    }, durations[type] ?? 400);
   }
 
   /**
@@ -101,7 +101,7 @@ export function useJuicyFeedback() {
       error: 'juicy-glow-error',
     };
 
-    const className = classNames[type];
+    const className = classNames[type] ?? 'juicy-glow';
     element.classList.remove('juicy-glow', 'juicy-glow-success', 'juicy-glow-error');
     void element.offsetWidth;
     element.classList.add(className);

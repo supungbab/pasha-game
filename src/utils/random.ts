@@ -8,7 +8,7 @@ export function shuffle<T>(array: T[]): T[] {
 
   for (let i = result.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
+    [result[i], result[j]] = [result[j]!, result[i]!];
   }
 
   return result;
@@ -32,7 +32,7 @@ export function randomFloat(min: number, max: number): number {
  * 배열에서 랜덤 요소 선택
  */
 export function randomChoice<T>(array: T[]): T {
-  return array[Math.floor(Math.random() * array.length)];
+  return array[Math.floor(Math.random() * array.length)]!;
 }
 
 /**
@@ -58,7 +58,7 @@ export function weightedRandom(weights: number[]): number {
   let random = Math.random() * total;
 
   for (let i = 0; i < weights.length; i++) {
-    random -= weights[i];
+    random -= weights[i]!;
     if (random <= 0) return i;
   }
 
@@ -234,7 +234,7 @@ export class SeededRandom {
    * 배열에서 랜덤 선택
    */
   choice<T>(array: T[]): T {
-    return array[Math.floor(this.next() * array.length)];
+    return array[Math.floor(this.next() * array.length)]!;
   }
 
   /**
@@ -245,7 +245,7 @@ export class SeededRandom {
 
     for (let i = result.length - 1; i > 0; i--) {
       const j = Math.floor(this.next() * (i + 1));
-      [result[i], result[j]] = [result[j], result[i]];
+      [result[i], result[j]] = [result[j]!, result[i]!];
     }
 
     return result;

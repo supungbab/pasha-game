@@ -10,7 +10,7 @@ export interface CanvasOptions {
   pixelRatio?: number;
 }
 
-export interface TouchEvent {
+export interface CanvasTouchEvent {
   x: number;
   y: number;
   type: 'start' | 'move' | 'end';
@@ -32,8 +32,8 @@ export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null>, options: Can
   } = options;
 
   // Touch/Mouse 이벤트
-  const touchStart = ref<TouchEvent | null>(null);
-  const touchCurrent = ref<TouchEvent | null>(null);
+  const touchStart = ref<CanvasTouchEvent | null>(null);
+  const touchCurrent = ref<CanvasTouchEvent | null>(null);
 
   /**
    * Canvas 초기화
@@ -95,10 +95,10 @@ export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null>, options: Can
   /**
    * Touch Start 핸들러
    */
-  function handleTouchStart(event: MouseEvent | TouchEvent) {
+  function handleTouchStart(event: MouseEvent | globalThis.TouchEvent) {
     event.preventDefault();
 
-    const touch = 'touches' in event ? event.touches[0] : event;
+    const touch = 'touches' in event && event.touches[0] ? event.touches[0] : event as MouseEvent;
     const coords = getCanvasCoordinates(touch);
 
     touchStart.value = { ...coords, type: 'start' };
@@ -108,12 +108,12 @@ export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null>, options: Can
   /**
    * Touch Move 핸들러
    */
-  function handleTouchMove(event: MouseEvent | TouchEvent) {
+  function handleTouchMove(event: MouseEvent | globalThis.TouchEvent) {
     event.preventDefault();
 
     if (!touchStart.value) return;
 
-    const touch = 'touches' in event ? event.touches[0] : event;
+    const touch = 'touches' in event && event.touches[0] ? event.touches[0] : event as MouseEvent;
     const coords = getCanvasCoordinates(touch);
 
     touchCurrent.value = { ...coords, type: 'move' };
@@ -122,12 +122,12 @@ export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null>, options: Can
   /**
    * Touch End 핸들러
    */
-  function handleTouchEnd(event: MouseEvent | TouchEvent) {
+  function handleTouchEnd(event: MouseEvent | globalThis.TouchEvent) {
     event.preventDefault();
 
     if (!touchStart.value) return;
 
-    const touch = 'changedTouches' in event ? event.changedTouches[0] : event;
+    const touch = 'changedTouches' in event && event.changedTouches[0] ? event.changedTouches[0] : event as MouseEvent;
     const coords = getCanvasCoordinates(touch);
 
     touchCurrent.value = { ...coords, type: 'end' };

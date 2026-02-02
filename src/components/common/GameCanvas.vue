@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, defineEmits } from 'vue';
+import { ref, onMounted } from 'vue';
 
 interface Props {
   width?: number;
@@ -61,9 +61,9 @@ function getCanvasCoordinates(event: TouchEvent | MouseEvent): { x: number; y: n
   const rect = canvasRef.value.getBoundingClientRect();
   let clientX: number, clientY: number;
 
-  if ('touches' in event && event.touches.length > 0) {
-    clientX = event.touches[0].clientX;
-    clientY = event.touches[0].clientY;
+  if ('touches' in event && event.touches && event.touches.length > 0) {
+    clientX = event.touches[0]!.clientX;
+    clientY = event.touches[0]!.clientY;
   } else if ('clientX' in event) {
     clientX = event.clientX;
     clientY = event.clientY;
