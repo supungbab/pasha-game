@@ -1,36 +1,62 @@
-# Mission 01: 풍선 터트리기 (Balloon Pop)
+# Mission 01: 새총 쏘기 (Slingshot Strike)
+
+> 이 문서는 미니게임의 기획 및 구현 명세입니다. 모든 미니게임은 동일한 디자인 시스템을 따릅니다.
+
+---
 
 ## 게임 정보
-- **ID**: 1
-- **이름**: 풍선 터트리기
-- **카테고리**: 액션/반사신경
-- **난이도**: ⭐ (쉬움)
+
+| 항목 | 내용 |
+|------|------|
+| **ID** | 1 |
+| **이름 (한글)** | 새총 쏘기 |
+| **이름 (영문)** | Slingshot Strike |
+| **카테고리** | 액션 |
+| **조작 방식** | 풀백 드래그 (터치→뒤로 당기기→놓으면 발사) |
+| **기본 제한시간** | 10초 |
+| **기본 목표점수** | 60점 |
+| **구현 파일** | `src/components/minigames/01_SlingShot.vue` |
+
+---
 
 ## 게임 설명
-화면에 떠오르는 풍선들을 터트리는 게임입니다. 풍선을 탭하면 터지며 점수를 획득합니다.
 
-## 조작 방법
-- **입력**: 탭 👆
-- **액션**: 풍선을 터트림
+화면 상단에 배치된 타겟들을 새총으로 맞추는 게임입니다. 하단의 새총 위치에서 터치를 시작해 뒤로 당기면 고무줄이 늘어나고, 손을 떼면 돌이 포물선으로 발사됩니다.
+
+---
 
 ## 시작 전 지시문
+
 ```
-탭! 👆
+새총으로 쏘세요! 🪨
 ```
+
+**지시문 이모지**: 🪨 (돌)
+
+---
 
 ## 게임 규칙
-1. 화면 하단에서 풍선들이 천천히 위로 떠오름
-2. 풍선을 탭하면 터지며 점수 획득
-3. 화면 상단을 벗어나면 풍선 사라짐 (점수 없음)
-4. 제한시간 내에 목표 점수 달성
+
+1. 화면 상단에 타겟(🎯)들이 배치됨
+2. 하단의 새총(Y자 기둥) 근처에서 터치 시작
+3. 아래/옆으로 드래그하면 고무줄이 늘어남 (당긴 거리 = 파워, 방향 = 각도)
+4. 손을 떼면 돌(🪨)이 포물선으로 발사
+5. 타겟 명중 시 파티클 + 10점
+6. 모든 타겟을 맞추면 새 타겟 세트 생성
+7. 제한시간 내에 목표 점수 달성 시 성공
+
+---
 
 ## 점수 시스템
+
+### 점수 계산 방식
 - **타입**: 성공 횟수 기반
-- **점수 계산**: `성공횟수 × 10점`
-- **기본 목표 점수**: 60점 (6개 터트리기)
+- **명중**: 10점
+- **기본 목표 점수**: 60점 (6개 명중)
 
 ### 난이도별 목표 점수
-| 난이도 | 목표 점수 | 필요 풍선 수 |
+
+| 난이도 | 목표 점수 | 필요 명중 수 |
 |--------|----------|-------------|
 | Lv.1 | 60점 | 6개 |
 | Lv.2 | 72점 | 7-8개 |
@@ -39,197 +65,88 @@
 | Lv.5 | 132점 | 13-14개 |
 | Lv.6 | 150점 | 15개 |
 
-## 제한 시간
-- **기본**: 10초
-- **난이도 조정**:
-  - Lv.1-2: 10초
-  - Lv.3-4: 9초
-  - Lv.5-6: 8초
+---
 
 ## 난이도별 변화
-| 난이도 | 풍선 속도 | 풍선 크기 | 생성 빈도 |
-|--------|----------|----------|----------|
-| Lv.1 | 느림 (50px/s) | 큼 (80px) | 1초당 1개 |
-| Lv.2 | 느림 (60px/s) | 큼 (75px) | 0.8초당 1개 |
-| Lv.3 | 보통 (70px/s) | 보통 (70px) | 0.7초당 1개 |
-| Lv.4 | 빠름 (85px/s) | 보통 (65px) | 0.6초당 1개 |
-| Lv.5 | 빠름 (100px/s) | 작음 (60px) | 0.5초당 1개 |
-| Lv.6 | 매우 빠름 (120px/s) | 작음 (55px) | 0.4초당 1개 |
 
-## 하드 모드
-- 풍선이 좌우로 흔들림 (진자운동)
-- 풍선 크기 10% 감소
-- 속도 20% 증가
+| 난이도 | 타겟 수 | 타겟 크기 | 타겟 이동 속도 |
+|--------|--------|----------|---------------|
+| Lv.1 | 5개 | 60px | 정적 (0) |
+| Lv.2 | 6개 | 55px | 느림 (0.3) |
+| Lv.3 | 7개 | 50px | 보통 (0.5) |
+| Lv.4 | 8개 | 45px | 빠름 (0.8) |
+| Lv.5 | 9개 | 40px | 빠름 (1.2) |
+| Lv.6 | 10개 | 35px | 매우 빠름 (1.8) |
 
-## 비주얼 구현 (Canvas + Emoji)
+---
 
-### 풍선 표현
-```javascript
-// Canvas로 원 그리기 + 이모지
-풍선 색상: ['#FF6B6B', '#4ECDC4', '#FFE66D', '#95E1D3', '#F38181']
-풍선 이모지: 🎈
+## 하드 모드 🔥
 
-// 터질 때 효과
-파티클: 작은 원들이 사방으로 퍼짐
-이모지 변화: 🎈 → 💥
-```
+- 타겟 크기 20% 감소
+- 타겟 이동 속도 30% 증가
+- 타겟 +1개 추가
+
+---
+
+## 비주얼 구현
 
 ### 화면 레이아웃
 ```
-┌─────────────────────────────┐
-│  점수: 40 / 60    ⏱️ 6.5초   │
-├─────────────────────────────┤
-│                             │
-│         🎈                  │
-│                   🎈        │
-│                             │
-│     🎈                      │
-│                       🎈    │
-│   🎈           🎈           │
-│                             │
-└─────────────────────────────┘
+┌─────────────────────────────────────┐
+│  점수: 40                           │
+├─────────────────────────────────────┤
+│  🎯   🎯      🎯                   │
+│       🎯   🎯                      │
+│                                     │
+│                                     │
+│         ··· (조준선)                │
+│                                     │
+│           Y ← 새총                  │
+│           |                         │
+│  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ (잔디)       │
+└─────────────────────────────────────┘
 ```
 
-## 구현 로직
-
-### 풍선 객체
-```typescript
-interface Balloon {
-  id: number;
-  x: number;          // X 위치
-  y: number;          // Y 위치
-  radius: number;     // 반지름
-  color: string;      // 색상
-  speed: number;      // 상승 속도
-  swingOffset?: number; // 흔들림 오프셋 (하드모드)
-  swingSpeed?: number;  // 흔들림 속도 (하드모드)
-}
+### 색상 팔레트
+```
+배경: 하늘색→갈색 그라데이션 (#4A90D9 → #87CEEB → #8B6F47)
+잔디: #4CAF50
+새총 기둥: #5D4037
+고무줄: #D32F2F
+돌: #666
+타겟 배경: 빨강/흰 과녁 패턴
 ```
 
-### 게임 로직
-```typescript
-// 풍선 생성
-function spawnBalloon() {
-  const balloon: Balloon = {
-    id: Date.now(),
-    x: randomInt(50, canvasWidth - 50),
-    y: canvasHeight + 50,
-    radius: getBalloonSize(difficulty),
-    color: randomChoice(colors),
-    speed: getBalloonSpeed(difficulty)
-  };
-  
-  if (isHardMode) {
-    balloon.swingOffset = 0;
-    balloon.swingSpeed = randomFloat(0.05, 0.1);
-  }
-  
-  balloons.push(balloon);
-}
+### 주요 인터랙션
+- 터치 시작: 새총 근처 80px 이내
+- 당기기 최대 거리: 120px
+- 최소 발사 거리: 15px
+- 발사 속도: 8~20 (당긴 거리에 비례)
+- 중력: 0.15 (포물선 궤적)
 
-// 풍선 업데이트
-function updateBalloons() {
-  balloons.forEach(balloon => {
-    balloon.y -= balloon.speed;
-    
-    if (isHardMode) {
-      balloon.swingOffset! += balloon.swingSpeed!;
-      balloon.x += Math.sin(balloon.swingOffset!) * 2;
-    }
-    
-    // 화면 밖으로 나가면 제거
-    if (balloon.y < -balloon.radius) {
-      removeBalloon(balloon.id);
-    }
-  });
-}
+---
 
-// 풍선 터트리기
-function handleTap(x: number, y: number) {
-  const tappedBalloon = balloons.find(b => {
-    const distance = Math.sqrt((b.x - x) ** 2 + (b.y - y) ** 2);
-    return distance <= b.radius;
-  });
-  
-  if (tappedBalloon) {
-    popBalloon(tappedBalloon);
-    score += 10;
-    playSound('pop');
-    vibrateSuccess();
-  }
-}
+## 사운드/진동
 
-// 풍선 터지는 효과
-function popBalloon(balloon: Balloon) {
-  // 파티클 효과 생성
-  createParticles(balloon.x, balloon.y, balloon.color);
-  
-  // 풍선 제거
-  removeBalloon(balloon.id);
-}
-```
+| 이벤트 | 진동 |
+|--------|------|
+| 발사 | 15ms |
+| 명중 | 25ms |
 
-### 렌더링
-```typescript
-function render() {
-  clear();
-  
-  // 배경 그라데이션
-  const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
-  gradient.addColorStop(0, '#87CEEB');
-  gradient.addColorStop(1, '#E0F6FF');
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-  
-  // 풍선 그리기
-  balloons.forEach(balloon => {
-    // 풍선 원
-    drawCircle(balloon.x, balloon.y, balloon.radius, balloon.color);
-    
-    // 풍선 하이라이트
-    drawCircle(
-      balloon.x - balloon.radius * 0.3,
-      balloon.y - balloon.radius * 0.3,
-      balloon.radius * 0.3,
-      'rgba(255, 255, 255, 0.6)'
-    );
-    
-    // 풍선 끈
-    ctx.strokeStyle = '#666';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(balloon.x, balloon.y + balloon.radius);
-    ctx.lineTo(balloon.x, balloon.y + balloon.radius + 20);
-    ctx.stroke();
-  });
-  
-  // 파티클 효과 렌더링
-  renderParticles();
-}
-```
-
-## 사운드 효과
-- **풍선 터질 때**: 짧은 "팡!" 소리
-- **목표 달성**: 경쾌한 "딩동!" 소리
-
-## 진동 효과
-- **풍선 터질 때**: 짧은 진동 (50ms)
-- **3개 연속 터트릴 때**: 강한 진동 (100ms)
-
-## 난이도 밸런싱 팁
-- Lv.1-2: 여유롭게 터트릴 수 있도록
-- Lv.3-4: 약간의 집중력 필요
-- Lv.5-6: 빠른 반응속도 필요, 놓치는 풍선 발생 가능
+---
 
 ## 테스트 체크리스트
-- [ ] 풍선이 자연스럽게 떠오르는가?
-- [ ] 탭 인식이 정확한가?
-- [ ] 풍선 터지는 효과가 만족스러운가?
-- [ ] 하드모드에서 흔들림이 적절한가?
-- [ ] 난이도별 속도 차이가 체감되는가?
-- [ ] 목표 점수가 적절한가?
 
-## 개선 아이디어 (TODO)
-- 콤보 시스템 (연속으로 터트리면 보너스)
-- 특수 풍선 (2배 점수, 시간 추가 등)
-- 터지면 안되는 폭탄 풍선
+- [ ] 새총 근처에서만 드래그가 시작되는가?
+- [ ] 당기기 거리에 비례해 파워가 적용되는가?
+- [ ] 포물선 궤적이 자연스러운가?
+- [ ] 타겟 명중 판정이 정확한가?
+- [ ] 모든 타겟 소진 시 새 세트가 생성되는가?
+- [ ] 난이도별 타겟 이동이 체감되는가?
+- [ ] 조준선이 직관적으로 표시되는가?
+
+---
+
+**문서 버전**: 2.0
+**최종 수정**: 2026-02-10
+**참고 자료**: `MISSIONS_SUMMARY.md`, `01_SlingShot.vue`

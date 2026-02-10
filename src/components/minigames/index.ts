@@ -3,16 +3,16 @@
 import type { Component } from 'vue';
 
 // Import all minigame components once
-import BalloonPop from './01_BalloonPop.vue';       // Mission 1: 풍선 터트리기
+import SlingShot from './01_SlingShot.vue';           // Mission 1: 새총 쏘기
 import FruitSlice from './02_FruitSlice.vue';       // Mission 2: 과일 자르기
 import WhackAMole from './03_WhackAMole.vue';       // Mission 3: 두더지 잡기
 import SkewerMaster from './04_SkewerMaster.vue';   // Mission 4: 꼬치 만들기
 import RhythmTap from './05_RhythmTap.vue';         // Mission 5: 리듬 탭
-import ColorMatch from './06_ColorMatch.vue';       // Mission 6: 색깔 매칭
+import PowerGauge from './06_PowerGauge.vue';         // Mission 6: 파워 게이지
 import SpeedClick from './07_SpeedClick.vue';       // Mission 7: 빠른 클릭
 import ReactionTest from './08_ReactionTest.vue';   // Mission 8: 반응 테스트
 import CatchBall from './09_CatchBall.vue';         // Mission 9: 공 받기
-import QuickShoot from './10_QuickShoot.vue';       // Mission 10: 슈팅 게임
+import ArrowDash from './10_ArrowDash.vue';           // Mission 10: 화살표 돌진
 import NumberMatch from './11_NumberMatch.vue';     // Mission 11: 숫자 맞추기
 import FindPair from './12_FindPair.vue';           // Mission 12: 같은 그림 찾기
 import MemorySequence from './13_MemorySequence.vue'; // Mission 13: 순서 기억
@@ -21,7 +21,7 @@ import QuickMath from './15_QuickMath.vue';         // Mission 15: 빠른 계산
 import PatternCopy from './16_PatternCopy.vue';     // Mission 16: 패턴 따라하기
 import HiddenObject from './17_HiddenObject.vue';   // Mission 17: 숨은 그림
 import SlidePuzzle from './18_SlidePuzzle.vue';     // Mission 18: 퍼즐 슬라이드
-import CoinCollector from './19_CoinCollector.vue'; // Mission 19: 동전 모으기
+import BombDefuse from './19_BombDefuse.vue';       // Mission 19: 폭탄 해제
 import DodgeIt from './20_DodgeIt.vue';             // Mission 20: 장애물 피하기
 import LadderClimb from './21_LadderClimb.vue';     // Mission 21: 사다리 오르기
 import MazeEscape from './22_MazeEscape.vue';       // Mission 22: 미로 탈출
@@ -36,16 +36,16 @@ import SortIt from './30_SortIt.vue';               // Mission 30: 순서 나열
 
 // Named exports for direct component usage
 export {
-  BalloonPop,
+  SlingShot,
   FruitSlice,
   WhackAMole,
   SkewerMaster,
   RhythmTap,
-  ColorMatch,
+  PowerGauge,
   SpeedClick,
   ReactionTest,
   CatchBall,
-  QuickShoot,
+  ArrowDash,
   NumberMatch,
   FindPair,
   MemorySequence,
@@ -54,7 +54,7 @@ export {
   PatternCopy,
   HiddenObject,
   SlidePuzzle,
-  CoinCollector,
+  BombDefuse,
   DodgeIt,
   LadderClimb,
   MazeEscape,
@@ -72,16 +72,16 @@ export {
  * 미니게임 ID를 컴포넌트와 매핑
  */
 export const MINIGAME_COMPONENTS: Record<number, Component> = {
-  1: BalloonPop,
+  1: SlingShot,
   2: FruitSlice,
   3: WhackAMole,
   4: SkewerMaster,
   5: RhythmTap,
-  6: ColorMatch,
+  6: PowerGauge,
   7: SpeedClick,
   8: ReactionTest,
   9: CatchBall,
-  10: QuickShoot,
+  10: ArrowDash,
   11: NumberMatch,
   12: FindPair,
   13: MemorySequence,
@@ -90,7 +90,7 @@ export const MINIGAME_COMPONENTS: Record<number, Component> = {
   16: PatternCopy,
   17: HiddenObject,
   18: SlidePuzzle,
-  19: CoinCollector,
+  19: BombDefuse,
   20: DodgeIt,
   21: LadderClimb,
   22: MazeEscape,
