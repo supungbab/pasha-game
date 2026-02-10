@@ -5,35 +5,38 @@
       @touchstart.prevent
     ></canvas>
 
-    <!-- 피니시 버튼 (상단) -->
-    <button
-      class="finish-btn"
-      :class="{ active: canFinish, disabled: !canFinish }"
-      :disabled="!canFinish"
-      @touchstart.prevent="handleFinish"
-    >
-      🏁
-    </button>
+    <!-- 하단 컨트롤 영역 -->
+    <div class="bottom-controls">
+      <!-- 꼬치 버튼 3개 -->
+      <div class="controls">
+        <button
+          class="skewer-btn"
+          @touchstart.prevent="handleSkewer('left')"
+        >
+          ↖️
+        </button>
+        <button
+          class="skewer-btn center"
+          @touchstart.prevent="handleSkewer('center')"
+        >
+          ⬆️
+        </button>
+        <button
+          class="skewer-btn"
+          @touchstart.prevent="handleSkewer('right')"
+        >
+          ↗️
+        </button>
+      </div>
 
-    <!-- 꼬치 버튼 3개 (하단) -->
-    <div class="controls">
+      <!-- 피니시 버튼 (꼬치 버튼 아래) -->
       <button
-        class="skewer-btn"
-        @touchstart.prevent="handleSkewer('left')"
+        class="finish-btn"
+        :class="{ active: canFinish, disabled: !canFinish }"
+        :disabled="!canFinish"
+        @touchstart.prevent="handleFinish"
       >
-        ↖️
-      </button>
-      <button
-        class="skewer-btn center"
-        @touchstart.prevent="handleSkewer('center')"
-      >
-        ⬆️
-      </button>
-      <button
-        class="skewer-btn"
-        @touchstart.prevent="handleSkewer('right')"
-      >
-        ↗️
+        🏁
       </button>
     </div>
 
@@ -136,7 +139,7 @@ const Y_POSITIONS = {
 
 // 꼬치 시작점 (가운데 아래)
 const SKEWER_START_X = width / 2;
-const SKEWER_START_Y = height * 0.75;
+const SKEWER_START_Y = height * 0.8;
 
 // 꼬치 방향별 목표 X (겹침 판정 위치)
 const SKEWER_TARGET_X = {
@@ -571,14 +574,26 @@ canvas {
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
 }
 
-.finish-btn {
+/* 하단 컨트롤 컨테이너 */
+.bottom-controls {
   position: absolute;
-  top: clamp(80px, 15vh, 120px);
-  left: 50%;
-  transform: translateX(-50%);
-  width: clamp(70px, 18vw, 90px);
-  height: clamp(70px, 18vw, 90px);
-  font-size: clamp(28px, 8vw, 40px);
+  bottom: clamp(15px, 4vw, 30px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(12px, 3vw, 20px);
+  z-index: 10;
+}
+
+.controls {
+  display: flex;
+  gap: clamp(15px, 5vw, 25px);
+}
+
+.finish-btn {
+  width: clamp(60px, 16vw, 80px);
+  height: clamp(60px, 16vw, 80px);
+  font-size: clamp(24px, 7vw, 36px);
   background: linear-gradient(135deg, #9C27B0, #7B1FA2);
   border: 4px solid #6A1B9A;
   border-radius: 50%;
@@ -586,7 +601,6 @@ canvas {
   transition: all 0.2s ease;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
   user-select: none;
-  z-index: 10;
   opacity: 0.5;
 }
 
@@ -602,26 +616,18 @@ canvas {
 }
 
 .finish-btn:active:not(.disabled) {
-  transform: translateX(-50%) scale(0.95);
+  transform: scale(0.95);
 }
 
 @keyframes pulse {
   0%, 100% {
-    transform: translateX(-50%) scale(1);
+    transform: scale(1);
     box-shadow: 0 6px 16px rgba(255, 215, 0, 0.4);
   }
   50% {
-    transform: translateX(-50%) scale(1.05);
+    transform: scale(1.05);
     box-shadow: 0 8px 24px rgba(255, 215, 0, 0.6);
   }
-}
-
-.controls {
-  position: absolute;
-  bottom: clamp(15px, 4vw, 30px);
-  display: flex;
-  gap: clamp(15px, 5vw, 25px);
-  z-index: 10;
 }
 
 .skewer-btn {
