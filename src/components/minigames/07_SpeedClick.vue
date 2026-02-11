@@ -164,7 +164,7 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--bg-game);
   position: relative;
   overflow: hidden;
 }
@@ -216,7 +216,7 @@ onMounted(() => {
 .click-count {
   font-size: clamp(36px, 12vw, 64px);
   font-weight: 800;
-  color: #667eea;
+  color: #F9A825;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -250,11 +250,11 @@ onMounted(() => {
 .progress-bar {
   width: 90%;
   height: 20px;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.08);
   border-radius: 10px;
   overflow: hidden;
   margin-top: 30px;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .progress-fill {
@@ -269,8 +269,8 @@ onMounted(() => {
   margin-top: 20px;
   font-size: 24px;
   font-weight: 700;
-  color: white;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  color: #333;
+  text-shadow: none;
   animation: bounce 1s ease-in-out infinite;
 }
 

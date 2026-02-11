@@ -257,7 +257,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--bg-game);
   padding: clamp(10px, 3vw, 20px);
   position: relative;
   overflow: hidden;
@@ -271,12 +271,14 @@ onMounted(() => {
 }
 
 .round-info {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.85);
   padding: 10px 20px;
   border-radius: 20px;
   font-size: 18px;
   font-weight: 700;
-  color: white;
+  color: #333;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .game-area {
@@ -291,9 +293,9 @@ onMounted(() => {
 .title {
   font-size: clamp(18px, 5vw, 24px);
   font-weight: 700;
-  color: white;
+  color: #333;
   margin-bottom: clamp(12px, 3vw, 20px);
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  text-shadow: none;
 }
 
 .pattern-grid {
@@ -301,9 +303,10 @@ onMounted(() => {
   grid-template-columns: repeat(var(--grid-size, 3), 1fr);
   gap: clamp(6px, 2vw, 10px);
   padding: clamp(12px, 3vw, 20px);
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.5);
   border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  border: 2px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   max-width: 90vw;
 }
 
@@ -391,17 +394,19 @@ onMounted(() => {
 .result-text {
   font-size: clamp(24px, 8vw, 32px);
   font-weight: 700;
-  color: white;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  color: #333;
+  text-shadow: none;
 }
 
 .score-display {
   margin-top: 20px;
   font-size: 20px;
   font-weight: 700;
-  color: white;
-  background: rgba(0, 0, 0, 0.3);
+  color: #333;
+  background: rgba(255, 255, 255, 0.85);
   padding: 12px 24px;
   border-radius: 20px;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 </style>

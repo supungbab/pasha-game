@@ -28,6 +28,7 @@
 
   /* Background Colors */
   --bg-main: linear-gradient(135deg, #FFFFFF 0%, #FFF8DC 100%);
+  --bg-game: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);
   --bg-card: #FFFFFF;
   --bg-overlay: rgba(0, 0, 0, 0.5);
 

@@ -240,7 +240,7 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  background: var(--bg-game);
   position: relative;
   overflow: hidden;
 }
@@ -387,17 +387,18 @@ onMounted(() => {
 .round-info {
   font-size: 20px;
   font-weight: 700;
-  color: white;
+  color: #333;
   padding: 12px 24px;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.85);
   border-radius: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .best-time {
   font-size: 18px;
   font-weight: 600;
-  color: #FFD700;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  color: #F9A825;
+  text-shadow: none;
 }
 </style>

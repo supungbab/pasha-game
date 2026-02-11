@@ -215,7 +215,7 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--bg-game);
   position: relative;
   overflow: hidden;
   padding: 20px;
@@ -306,12 +306,13 @@ onMounted(() => {
 .score-display {
   font-size: 24px;
   font-weight: 700;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  color: #333;
+  text-shadow: none;
   padding: 12px 24px;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.85);
   border-radius: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .separator {

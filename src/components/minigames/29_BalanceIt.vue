@@ -300,7 +300,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--bg-game);
   position: relative;
   overflow: hidden;
 }
@@ -323,12 +323,13 @@ canvas {
 .score-display {
   font-size: 28px;
   font-weight: 800;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  color: #333;
+  text-shadow: none;
   padding: 15px 30px;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(255, 255, 255, 0.85);
   border-radius: 24px;
-  border: 3px solid rgba(255, 255, 255, 0.4);
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   text-align: center;
 }
 
@@ -339,12 +340,13 @@ canvas {
   transform: translateX(-50%);
   font-size: 18px;
   font-weight: 600;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  background: rgba(0, 0, 0, 0.3);
+  color: #333;
+  text-shadow: none;
+  background: rgba(255, 255, 255, 0.85);
   padding: 12px 24px;
   border-radius: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   pointer-events: none;
 }
 </style>

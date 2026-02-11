@@ -37,7 +37,7 @@ const canvasRef = ref<HTMLCanvasElement | null>(null);
 const { ctx, width, height, clear } = useCanvas(canvasRef, {
   width: 800,
   height: 600,
-  backgroundColor: '#667eea'
+  backgroundColor: '#FFF8E1'
 });
 
 // Timer utilities
@@ -177,8 +177,8 @@ function render() {
 
   // 배경
   const gradient = c.createLinearGradient(0, 0, 0, height);
-  gradient.addColorStop(0, '#667eea');
-  gradient.addColorStop(1, '#764ba2');
+  gradient.addColorStop(0, '#FFF8E1');
+  gradient.addColorStop(1, '#FFECB3');
   c.fillStyle = gradient;
   c.fillRect(0, 0, width, height);
 
@@ -242,7 +242,7 @@ function render() {
   }
 
   // 목표 크기 텍스트
-  c.fillStyle = 'white';
+  c.fillStyle = '#333';
   c.font = 'bold 24px Arial';
   c.textAlign = 'center';
   c.textBaseline = 'middle';
@@ -314,7 +314,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--bg-game);
   position: relative;
   overflow: hidden;
 }
@@ -342,12 +342,13 @@ canvas {
 .score-display {
   font-size: 24px;
   font-weight: 700;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  color: #333;
+  text-shadow: none;
   padding: 12px 24px;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.85);
   border-radius: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .separator {
@@ -404,12 +405,13 @@ canvas {
   transform: translateX(-50%);
   font-size: 20px;
   font-weight: 600;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  background: rgba(0, 0, 0, 0.3);
+  color: #333;
+  text-shadow: none;
+  background: rgba(255, 255, 255, 0.85);
   padding: 12px 24px;
   border-radius: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   pointer-events: none;
 }
 </style>

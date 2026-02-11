@@ -303,7 +303,7 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--bg-game);
   position: relative;
   overflow: hidden;
   padding: 20px;
@@ -320,9 +320,10 @@ onMounted(() => {
   display: grid;
   gap: 8px;
   padding: clamp(10px, 3vw, 20px);
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.5);
   border-radius: 20px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   width: min(400px, 90vw);
   height: min(400px, 90vw);
   aspect-ratio: 1;
@@ -378,12 +379,13 @@ onMounted(() => {
 .stat {
   font-size: 28px;
   font-weight: 700;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  color: #333;
+  text-shadow: none;
   padding: 12px 24px;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.85);
   border-radius: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .ui-overlay {
@@ -397,11 +399,12 @@ onMounted(() => {
 .score-display {
   font-size: 28px;
   font-weight: 700;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  color: #333;
+  text-shadow: none;
   padding: 12px 24px;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.85);
   border-radius: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 </style>
