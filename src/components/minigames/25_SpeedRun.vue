@@ -278,11 +278,11 @@ function completeGame() {
   const elapsed = (Date.now() - startTime) / 1000;
   const timeRemaining = Math.max(props.timeLimit - elapsed, 0);
 
-  const finalScore = Math.floor(distance.value);
+  const finalDistance = Math.floor(distance.value);
 
   const result: MiniGameResult = {
-    success: finalScore >= props.targetScore,
-    score: finalScore * 10, // 거리 × 10 = 점수
+    success: finalDistance >= props.targetScore,
+    score: finalDistance, // 거리 = 점수 (목표와 동일 단위)
     timeRemaining
   };
 

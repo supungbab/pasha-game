@@ -1,5 +1,6 @@
 // src/config/miniGames.ts
 
+import { markRaw } from 'vue';
 import type { MiniGame } from '@/types/minigame';
 import {
   SlingShot,
@@ -53,7 +54,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'count',
     baseTimeLimit: 10,
     baseTargetScore: 60,
-    component: SlingShot,
+    component: markRaw(SlingShot),
     difficulty: 1,
   },
   {
@@ -66,7 +67,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'count',
     baseTimeLimit: 10,
     baseTargetScore: 50,
-    component: FruitSlice,
+    component: markRaw(FruitSlice),
     difficulty: 2,
   },
   {
@@ -79,7 +80,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'count',
     baseTimeLimit: 10,
     baseTargetScore: 40,
-    component: WhackAMole,
+    component: markRaw(WhackAMole),
     difficulty: 1,
   },
   {
@@ -92,7 +93,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'count',
     baseTimeLimit: 12,
     baseTargetScore: 60,
-    component: SkewerMaster,
+    component: markRaw(SkewerMaster),
     difficulty: 2,
   },
   {
@@ -105,7 +106,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'accuracy',
     baseTimeLimit: 15,
     baseTargetScore: 80,
-    component: RhythmTap,
+    component: markRaw(RhythmTap),
     difficulty: 3,
   },
   {
@@ -118,7 +119,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'accuracy',
     baseTimeLimit: 10,
     baseTargetScore: 70,
-    component: PowerGauge,
+    component: markRaw(PowerGauge),
     difficulty: 2,
   },
   {
@@ -131,7 +132,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'count',
     baseTimeLimit: 5,
     baseTargetScore: 50,
-    component: SpeedClick,
+    component: markRaw(SpeedClick),
     difficulty: 1,
   },
   {
@@ -144,7 +145,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'speed',
     baseTimeLimit: 10,
     baseTargetScore: 150,
-    component: ReactionTest,
+    component: markRaw(ReactionTest),
     difficulty: 2,
   },
   {
@@ -157,7 +158,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'count',
     baseTimeLimit: 12,
     baseTargetScore: 45,
-    component: CatchBall,
+    component: markRaw(CatchBall),
     difficulty: 2,
   },
   {
@@ -170,7 +171,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'speed',
     baseTimeLimit: 12,
     baseTargetScore: 90,
-    component: ArrowDash,
+    component: markRaw(ArrowDash),
     difficulty: 3,
   },
 
@@ -185,7 +186,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'accuracy',
     baseTimeLimit: 10,
     baseTargetScore: 80,
-    component: NumberMatch,
+    component: markRaw(NumberMatch),
     difficulty: 2,
   },
   {
@@ -198,7 +199,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'speed',
     baseTimeLimit: 15,
     baseTargetScore: 100,
-    component: FindPair,
+    component: markRaw(FindPair),
     difficulty: 3,
   },
   {
@@ -211,7 +212,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'accuracy',
     baseTimeLimit: 20,
     baseTargetScore: 100,
-    component: MemorySequence,
+    component: markRaw(MemorySequence),
     difficulty: 4,
   },
   {
@@ -224,7 +225,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'accuracy',
     baseTimeLimit: 10,
     baseTargetScore: 70,
-    component: ColorWord,
+    component: markRaw(ColorWord),
     difficulty: 3,
   },
   {
@@ -237,7 +238,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'speed',
     baseTimeLimit: 12,
     baseTargetScore: 80,
-    component: QuickMath,
+    component: markRaw(QuickMath),
     difficulty: 3,
   },
   {
@@ -250,7 +251,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'accuracy',
     baseTimeLimit: 15,
     baseTargetScore: 100,
-    component: PatternCopy,
+    component: markRaw(PatternCopy),
     difficulty: 3,
   },
   {
@@ -263,7 +264,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'speed',
     baseTimeLimit: 10,
     baseTargetScore: 100,
-    component: HiddenObject,
+    component: markRaw(HiddenObject),
     difficulty: 2,
   },
   {
@@ -276,7 +277,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'speed',
     baseTimeLimit: 20,
     baseTargetScore: 150,
-    component: SlidePuzzle,
+    component: markRaw(SlidePuzzle),
     difficulty: 4,
   },
 
@@ -291,7 +292,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'count',
     baseTimeLimit: 10,
     baseTargetScore: 50,
-    component: BombDefuse,
+    component: markRaw(BombDefuse),
     difficulty: 1,
   },
   {
@@ -304,7 +305,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'hybrid',
     baseTimeLimit: 15,
     baseTargetScore: 100,
-    component: DodgeIt,
+    component: markRaw(DodgeIt),
     difficulty: 3,
   },
   {
@@ -317,7 +318,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'speed',
     baseTimeLimit: 12,
     baseTargetScore: 120,
-    component: LadderClimb,
+    component: markRaw(LadderClimb),
     difficulty: 2,
   },
   {
@@ -330,7 +331,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'speed',
     baseTimeLimit: 15,
     baseTargetScore: 150,
-    component: MazeEscape,
+    component: markRaw(MazeEscape),
     difficulty: 4,
   },
   {
@@ -343,7 +344,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'count',
     baseTimeLimit: 10,
     baseTargetScore: 45,
-    component: StarGather,
+    component: markRaw(StarGather),
     difficulty: 2,
   },
   {
@@ -356,7 +357,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'hybrid',
     baseTimeLimit: 15,
     baseTargetScore: 80,
-    component: JumpUp,
+    component: markRaw(JumpUp),
     difficulty: 3,
   },
   {
@@ -369,7 +370,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'speed',
     baseTimeLimit: 10,
     baseTargetScore: 100,
-    component: SpeedRun,
+    component: markRaw(SpeedRun),
     difficulty: 2,
   },
 
@@ -384,7 +385,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'accuracy',
     baseTimeLimit: 10,
     baseTargetScore: 80,
-    component: DrawLine,
+    component: markRaw(DrawLine),
     difficulty: 2,
   },
   {
@@ -397,7 +398,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'accuracy',
     baseTimeLimit: 12,
     baseTargetScore: 70,
-    component: RotateObject,
+    component: markRaw(RotateObject),
     difficulty: 3,
   },
   {
@@ -410,7 +411,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'accuracy',
     baseTimeLimit: 10,
     baseTargetScore: 80,
-    component: SizeMatch,
+    component: markRaw(SizeMatch),
     difficulty: 2,
   },
   {
@@ -423,7 +424,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'hybrid',
     baseTimeLimit: 15,
     baseTargetScore: 100,
-    component: BalanceIt,
+    component: markRaw(BalanceIt),
     difficulty: 4,
   },
   {
@@ -436,7 +437,7 @@ export const MINI_GAMES: MiniGame[] = [
     scoreType: 'speed',
     baseTimeLimit: 12,
     baseTargetScore: 100,
-    component: SortIt,
+    component: markRaw(SortIt),
     difficulty: 3,
   },
 ];
