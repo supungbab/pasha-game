@@ -39,3 +39,6 @@ __screenshots__/
 
 # Serena
 .serena/*
+
+# Test
+test-screenshots/

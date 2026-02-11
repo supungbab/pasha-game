@@ -54,8 +54,8 @@ interface Player {
 }
 
 const player: Player = {
-  x: 400,
-  y: 500,
+  x: 0, // onMounted에서 첫 플랫폼 기준으로 설정
+  y: 0,
   width: 40,
   height: 40,
   velocityY: 0,
@@ -279,11 +279,21 @@ function completeGame() {
 onMounted(() => {
   startTime = Date.now();
 
-  // 초기 플랫폼 생성
-  platforms.value.push(createPlatform(500));
+  // 초기 플랫폼 생성 - 첫 플랫폼은 넓게
+  const firstPlatform = createPlatform(500);
+  firstPlatform.width = Math.max(firstPlatform.width, 150); // 첫 플랫폼은 넓게
+  firstPlatform.passed = true; // 시작 플랫폼은 이미 밟은 것으로
+  platforms.value.push(firstPlatform);
+
   for (let i = 1; i <= 5; i++) {
     platforms.value.push(createPlatform(500 - i * platformGap));
   }
+
+  // 플레이어를 첫 플랫폼 위에 배치
+  player.x = firstPlatform.x + firstPlatform.width / 2 - player.width / 2;
+  player.y = firstPlatform.y - player.height;
+  player.isJumping = false;
+  player.velocityY = 0;
 
   // 캔버스 초기화 후 게임 시작
   safeSetTimeout(() => {

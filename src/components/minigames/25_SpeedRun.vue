@@ -79,7 +79,7 @@ const GROUND_Y = 450;
 // 난이도별 속도
 const gameSpeed = 4 + props.difficulty * 0.5;
 let obstacleSpawnTimer = 0;
-const obstacleSpawnInterval = Math.max(100 - props.difficulty * 10, 60);
+const obstacleSpawnInterval = Math.max(70 - props.difficulty * 8, 35); // 더 자주 장애물 생성
 
 // 장애물 생성
 function createObstacle(): Obstacle {
@@ -135,8 +135,8 @@ function update() {
     }
   }
 
-  // 거리 증가
-  distance.value += gameSpeed * 0.1;
+  // 거리 증가 (감속하여 목표 도달까지 시간 확보)
+  distance.value += gameSpeed * 0.05;
 
   // 장애물 이동 및 생성
   obstacleSpawnTimer++;
@@ -293,6 +293,9 @@ function completeGame() {
 
 onMounted(() => {
   startTime = Date.now();
+
+  // 첫 장애물을 빠르게 생성하기 위해 타이머 미리 진행
+  obstacleSpawnTimer = Math.floor(obstacleSpawnInterval * 0.6);
 
   // 캔버스 초기화 후 게임 시작
   safeSetTimeout(() => {
