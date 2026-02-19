@@ -7,22 +7,6 @@
         </div>
       </div>
 
-      <div class="answers-grid">
-        <button
-          v-for="answer in currentQuestion.answers"
-          :key="answer"
-          class="answer-btn"
-          :class="{
-            correct: feedback && answer === currentQuestion.correct,
-            wrong: feedback && answer === selectedAnswer && answer !== currentQuestion.correct
-          }"
-          @touchstart.prevent="handleAnswer(answer)"
-          :disabled="!!feedback"
-        >
-          {{ answer }}
-        </button>
-      </div>
-
       <div v-if="feedback" class="feedback" :class="feedback.type">
         {{ feedback.text }}
       </div>
@@ -41,7 +25,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
-import { useCleanupTimers } from '@/composables';
+import { useCleanupTimers, useGameButtons } from '@/composables';
 
 const props = defineProps<MiniGameProps>();
 const emit = defineEmits<{
@@ -50,6 +34,9 @@ const emit = defineEmits<{
 
 // Timer utilities
 const { safeSetTimeout } = useCleanupTimers();
+
+// 3-버튼 시스템
+const { setButton } = useGameButtons();
 
 // 문제 타입
 interface Question {
@@ -120,11 +107,11 @@ function generateQuestion() {
 
   const text = `${num1} ${operator} ${num2} = ?`;
 
-  // 오답 생성
+  // 오답 2개 생성 (총 3개 보기)
   const wrongAnswers: number[] = [];
   const maxDiff = Math.max(10, Math.floor(correct * 0.3));
 
-  while (wrongAnswers.length < 3) {
+  while (wrongAnswers.length < 2) {
     const offset = Math.floor(Math.random() * maxDiff * 2) - maxDiff;
     const wrong = correct + offset;
 
@@ -133,7 +120,7 @@ function generateQuestion() {
     }
   }
 
-  // 답안 섞기
+  // 답안 섞기 (3개)
   const answers = [correct, ...wrongAnswers].sort(() => Math.random() - 0.5);
 
   currentQuestion.value = {
@@ -141,6 +128,18 @@ function generateQuestion() {
     correct,
     answers
   };
+
+  // 버튼에 답안 표시
+  answers.forEach((ans, i) => {
+    setButton(i as 0 | 1 | 2, {
+      visible: true,
+      label: String(ans),
+      disabled: false,
+      bg: 'white',
+      border: '#E0E0E0',
+      onPress: () => handleAnswer(ans),
+    });
+  });
 }
 
 // 답안 선택 핸들러
@@ -148,6 +147,8 @@ function handleAnswer(answer: number) {
   if (gameCompleted || feedback.value) return;
 
   selectedAnswer.value = answer;
+  // 중복 탭 방지
+  [0, 1, 2].forEach(i => setButton(i as 0 | 1 | 2, { disabled: true }));
 
   if (answer === currentQuestion.value.correct) {
     // 정답!
@@ -228,19 +229,22 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   background: var(--bg-game);
   position: relative;
   overflow: hidden;
 }
 
 .game-area {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 40px;
+  justify-content: center;
+  gap: 32px;
   width: 90%;
   max-width: 600px;
+  min-height: 0;
 }
 
 .question-box {
@@ -261,76 +265,6 @@ onMounted(() => {
   font-family: 'Courier New', monospace;
 }
 
-.answers-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-  width: 100%;
-}
-
-.answer-btn {
-  padding: clamp(15px, 4vw, 30px);
-  font-size: clamp(20px, 5vw, 32px);
-  font-weight: 700;
-  color: #2c3e50;
-  background: white;
-  border: 4px solid transparent;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  font-family: 'Courier New', monospace;
-}
-
-.answer-btn:hover:not(:disabled) {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-  background: linear-gradient(135deg, #FFD700, #FFC107);
-  border-color: #F9A825;
-}
-
-.answer-btn:active:not(:disabled) {
-  transform: translateY(-2px);
-}
-
-.answer-btn:disabled {
-  cursor: not-allowed;
-}
-
-.answer-btn.correct {
-  background: linear-gradient(135deg, #4CAF50, #45a049);
-  color: white;
-  border-color: #2e7d32;
-  animation: correctPulse 0.5s ease-out;
-}
-
-.answer-btn.wrong {
-  background: linear-gradient(135deg, #f44336, #d32f2f);
-  color: white;
-  border-color: #c62828;
-  animation: wrongShake 0.5s ease-out;
-}
-
-@keyframes correctPulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-}
-
-@keyframes wrongShake {
-  0%, 100% {
-    transform: translateX(0);
-  }
-  25% {
-    transform: translateX(-10px);
-  }
-  75% {
-    transform: translateX(10px);
-  }
-}
 
 .feedback {
   font-size: 32px;

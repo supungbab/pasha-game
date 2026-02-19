@@ -5,41 +5,6 @@
       @touchstart.prevent
     ></canvas>
 
-    <!-- 하단 컨트롤 영역 -->
-    <div class="bottom-controls">
-      <!-- 꼬치 버튼 3개 -->
-      <div class="controls">
-        <button
-          class="skewer-btn"
-          @touchstart.prevent="handleSkewer('left')"
-        >
-          ↖️
-        </button>
-        <button
-          class="skewer-btn center"
-          @touchstart.prevent="handleSkewer('center')"
-        >
-          ⬆️
-        </button>
-        <button
-          class="skewer-btn"
-          @touchstart.prevent="handleSkewer('right')"
-        >
-          ↗️
-        </button>
-      </div>
-
-      <!-- 피니시 버튼 (꼬치 버튼 아래) -->
-      <button
-        class="finish-btn"
-        :class="{ active: canFinish, disabled: !canFinish }"
-        :disabled="!canFinish"
-        @touchstart.prevent="handleFinish"
-      >
-        🏁
-      </button>
-    </div>
-
     <!-- UI 오버레이 -->
     <div class="ui-overlay">
       <div class="score-display">
@@ -54,9 +19,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
-import { useCanvas, useCleanupTimers } from '@/composables';
+import { useCanvas, useCleanupTimers, useGameButtons } from '@/composables';
 
 const props = defineProps<MiniGameProps>();
 const emit = defineEmits<{
@@ -73,6 +38,15 @@ const { ctx, width, height, clear } = useCanvas(canvasRef, {
 
 // Timer utilities
 const { safeSetTimeout, safeRequestAnimationFrame, cancelAnimationFrame } = useCleanupTimers();
+
+// 3-버튼 시스템
+const { setButton } = useGameButtons();
+
+function setupButtons() {
+  setButton(0, { visible: true, label: '↖️', onPress: () => handleSkewer('left') });
+  setButton(1, { visible: true, label: '⬆️', onPress: () => handleSkewer('center') });
+  setButton(2, { visible: true, label: '↗️', onPress: () => handleSkewer('right') });
+}
 
 // 게임 상태
 const score = ref(0);
@@ -541,7 +515,17 @@ function completeGame() {
   }, 500);
 }
 
+// canFinish 변화에 따라 중앙 버튼 토글: 꼬치↔피니시
+watch(canFinish, (val) => {
+  if (val) {
+    setButton(1, { label: '🏁', onPress: handleFinish, disabled: false });
+  } else {
+    setButton(1, { label: '⬆️', onPress: () => handleSkewer('center'), disabled: false });
+  }
+});
+
 onMounted(() => {
+  setupButtons();
   startTime = Date.now();
 
   // 첫 웨이브 생성
@@ -561,7 +545,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   background: linear-gradient(135deg, #FF9800 0%, #FF5722 100%);
   position: relative;
   overflow: hidden;
@@ -569,96 +553,10 @@ onMounted(() => {
 
 canvas {
   max-width: 100%;
-  max-height: 70%;
+  flex: 1;
+  min-height: 0;
   border-radius: 12px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-}
-
-/* 하단 컨트롤 컨테이너 */
-.bottom-controls {
-  position: absolute;
-  bottom: clamp(15px, 4vw, 30px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: clamp(12px, 3vw, 20px);
-  z-index: 10;
-}
-
-.controls {
-  display: flex;
-  gap: clamp(15px, 5vw, 25px);
-}
-
-.finish-btn {
-  width: clamp(60px, 16vw, 80px);
-  height: clamp(60px, 16vw, 80px);
-  font-size: clamp(24px, 7vw, 36px);
-  background: linear-gradient(135deg, #9C27B0, #7B1FA2);
-  border: 4px solid #6A1B9A;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-  user-select: none;
-  opacity: 0.5;
-}
-
-.finish-btn.active {
-  background: linear-gradient(135deg, #FFD700, #FFC107);
-  border-color: #FF9800;
-  opacity: 1;
-  animation: pulse 0.8s infinite;
-}
-
-.finish-btn.disabled {
-  cursor: not-allowed;
-}
-
-.finish-btn:active:not(.disabled) {
-  transform: scale(0.95);
-}
-
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow: 0 6px 16px rgba(255, 215, 0, 0.4);
-  }
-  50% {
-    transform: scale(1.05);
-    box-shadow: 0 8px 24px rgba(255, 215, 0, 0.6);
-  }
-}
-
-.skewer-btn {
-  width: clamp(70px, 22vw, 100px);
-  height: clamp(70px, 22vw, 100px);
-  font-size: clamp(28px, 8vw, 40px);
-  background: linear-gradient(135deg, #FF9800, #F57C00);
-  border: 4px solid #E65100;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.1s ease;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-  user-select: none;
-}
-
-.skewer-btn.center {
-  width: clamp(80px, 25vw, 110px);
-  height: clamp(80px, 25vw, 110px);
-  font-size: clamp(32px, 10vw, 48px);
-}
-
-.skewer-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-}
-
-.skewer-btn:active {
-  transform: scale(0.95);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
-  background: linear-gradient(135deg, #4CAF50, #45a049);
-  border-color: #2e7d32;
 }
 
 .ui-overlay {

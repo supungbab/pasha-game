@@ -9,23 +9,6 @@
         {{ currentWord.text }}
       </div>
 
-      <div class="color-buttons">
-        <button
-          v-for="option in colorOptions"
-          :key="option.name"
-          class="color-btn"
-          :class="{
-            correct: feedback && option.value === currentWord.color,
-            wrong: feedback && option.value === selectedColor && option.value !== currentWord.color
-          }"
-          :style="{ backgroundColor: option.value }"
-          @touchstart.prevent="handleColorSelect(option)"
-          :disabled="!!feedback"
-        >
-          <span class="color-label">{{ option.name }}</span>
-        </button>
-      </div>
-
       <div v-if="feedback" class="feedback" :class="feedback.type">
         {{ feedback.text }}
       </div>
@@ -44,7 +27,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
-import { useCleanupTimers } from '@/composables';
+import { useCleanupTimers, useGameButtons } from '@/composables';
 
 const props = defineProps<MiniGameProps>();
 const emit = defineEmits<{
@@ -54,7 +37,7 @@ const emit = defineEmits<{
 // Timer utilities
 const { safeSetTimeout } = useCleanupTimers();
 
-// 색상 정의
+// 색상 정의 (3개 슬롯)
 interface ColorOption {
   name: string;
   value: string;
@@ -64,8 +47,10 @@ const colorOptions: ColorOption[] = [
   { name: '빨강', value: '#f44336' },
   { name: '파랑', value: '#2196F3' },
   { name: '초록', value: '#4CAF50' },
-  { name: '노랑', value: '#FFC107' }
 ];
+
+// 3-버튼 시스템
+const { setButton } = useGameButtons();
 
 // 게임 상태
 interface WordDisplay {
@@ -81,6 +66,26 @@ const feedback = ref<{ text: string; type: 'correct' | 'wrong' } | null>(null);
 
 let gameCompleted = false;
 let startTime = 0;
+
+// 3-버튼 세팅 (색상별 배경색)
+function setupButtons() {
+  colorOptions.forEach((opt, i) => {
+    setButton(i as 0 | 1 | 2, {
+      visible: true,
+      label: opt.name,
+      bg: opt.value,
+      border: opt.value,
+      onPress: () => handleColorSelect(opt),
+    });
+  });
+}
+
+// 버튼 disabled 상태 토글
+function setButtonsDisabled(disabled: boolean) {
+  colorOptions.forEach((_, i) => {
+    setButton(i as 0 | 1 | 2, { disabled });
+  });
+}
 
 // 새로운 단어 생성
 function generateWord() {
@@ -114,6 +119,7 @@ function handleColorSelect(option: ColorOption) {
   if (gameCompleted || feedback.value) return;
 
   selectedColor.value = option.value;
+  setButtonsDisabled(true);
 
   if (option.value === currentWord.value.color) {
     // 정답!
@@ -147,6 +153,7 @@ function handleColorSelect(option: ColorOption) {
   safeSetTimeout(() => {
     feedback.value = null;
     selectedColor.value = null;
+    setButtonsDisabled(false);
     generateWord();
   }, 800);
 }
@@ -173,6 +180,7 @@ function completeGame() {
 }
 
 onMounted(() => {
+  setupButtons();
   generateWord();
   startTime = Date.now();
 
@@ -194,21 +202,24 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   background: var(--bg-game);
   position: relative;
   overflow: hidden;
 }
 
 .game-area {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: clamp(20px, 5vw, 40px);
   width: 90%;
   max-width: 700px;
   padding: 0 10px;
   box-sizing: border-box;
+  min-height: 0;
 }
 
 .instruction {
@@ -251,79 +262,6 @@ onMounted(() => {
   }
 }
 
-.color-buttons {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-  width: 100%;
-}
-
-.color-btn {
-  padding: clamp(20px, 5vw, 40px);
-  font-size: clamp(18px, 4vw, 28px);
-  font-weight: 700;
-  color: white;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-  border: 4px solid transparent;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-}
-
-.color-btn:hover:not(:disabled) {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
-  border-color: white;
-}
-
-.color-btn:active:not(:disabled) {
-  transform: translateY(-2px);
-}
-
-.color-btn:disabled {
-  cursor: not-allowed;
-}
-
-.color-label {
-  display: block;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 8px 16px;
-  border-radius: 12px;
-}
-
-.color-btn.correct {
-  border-color: #4CAF50;
-  box-shadow: 0 0 30px #4CAF50;
-  animation: correctPulse 0.5s ease-out;
-}
-
-.color-btn.wrong {
-  border-color: #f44336;
-  box-shadow: 0 0 30px #f44336;
-  animation: wrongShake 0.5s ease-out;
-}
-
-@keyframes correctPulse {
-  0%, 100% {
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    transform: translateY(-5px) scale(1.05);
-  }
-}
-
-@keyframes wrongShake {
-  0%, 100% {
-    transform: translateX(0);
-  }
-  25% {
-    transform: translateX(-10px);
-  }
-  75% {
-    transform: translateX(10px);
-  }
-}
 
 .feedback {
   font-size: 36px;

@@ -7,37 +7,19 @@
 
     <div class="ui-overlay">
       <div v-if="!isComplete" class="instruction">
-        출구까지 클릭하여 길을 만드세요!
+        셀을 탭하거나 버튼으로 이동하세요!
       </div>
       <div v-else class="success-message">
         🎉 탈출 성공!
       </div>
     </div>
-
-    <div class="controls">
-      <button
-        v-for="dir in directions"
-        :key="dir.key"
-        class="direction-btn"
-        :class="{
-          pressed: getDirTouchState(dir.key).touchId !== null,
-          'pressed-outside': getDirTouchState(dir.key).touchId !== null && !getDirTouchState(dir.key).isInside
-        }"
-        @touchstart="handleDirTouchStart($event, dir.key)"
-        @touchmove="handleDirTouchMove($event, dir.key)"
-        @touchend="handleDirTouchEnd($event, dir.key, dir.dx, dir.dy)"
-        @touchcancel="handleDirTouchCancel(dir.key)"
-      >
-        {{ dir.label }}
-      </button>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
-import { useCanvas, useCleanupTimers } from '@/composables';
+import { useCanvas, useCleanupTimers, useGameButtons } from '@/composables';
 
 const props = defineProps<MiniGameProps>();
 const emit = defineEmits<{
@@ -55,18 +37,13 @@ const { ctx, width, height, clear } = useCanvas(canvasRef, {
 // Timer utilities
 const { safeSetTimeout, safeRequestAnimationFrame } = useCleanupTimers();
 
+// 3-버튼 시스템: ⬅️ | ⬆️ | ➡️
+const { setButton } = useGameButtons();
+
 const isComplete = ref(false);
 
 let gameCompleted = false;
 let startTime = 0;
-
-// Touch state for direction buttons
-interface TouchState {
-  touchId: number | null;
-  isInside: boolean;
-}
-
-const dirTouchStates = reactive<Map<string, TouchState>>(new Map());
 
 // 미로 설정
 const cellSize = 40;
@@ -81,14 +58,6 @@ let playerY = 0;
 // 출구 위치
 let exitX = 0;
 let exitY = 0;
-
-// 방향 버튼
-const directions = [
-  { key: 'up', label: '⬆️', dx: 0, dy: -1 },
-  { key: 'down', label: '⬇️', dx: 0, dy: 1 },
-  { key: 'left', label: '⬅️', dx: -1, dy: 0 },
-  { key: 'right', label: '➡️', dx: 1, dy: 0 }
-];
 
 // 미로 생성 (간단한 랜덤 미로)
 function generateMaze() {
@@ -236,68 +205,6 @@ function handleEscape() {
   }, 1500);
 }
 
-// Touch handling for direction buttons
-function getDirTouchState(key: string): TouchState {
-  if (!dirTouchStates.has(key)) {
-    dirTouchStates.set(key, { touchId: null, isInside: false });
-  }
-  return dirTouchStates.get(key)!;
-}
-
-function isTouchInsideElement(touch: Touch, element: HTMLElement): boolean {
-  const rect = element.getBoundingClientRect();
-  return (
-    touch.clientX >= rect.left &&
-    touch.clientX <= rect.right &&
-    touch.clientY >= rect.top &&
-    touch.clientY <= rect.bottom
-  );
-}
-
-function handleDirTouchStart(event: TouchEvent, key: string) {
-  const touch = event.touches[0];
-  if (!touch) return;
-
-  event.preventDefault();
-  const state = getDirTouchState(key);
-  state.touchId = touch.identifier;
-  state.isInside = true;
-}
-
-function handleDirTouchMove(event: TouchEvent, key: string) {
-  const state = getDirTouchState(key);
-  if (state.touchId === null) return;
-
-  const touch = Array.from(event.touches).find(t => t.identifier === state.touchId);
-  if (!touch) return;
-
-  const element = event.currentTarget as HTMLElement;
-  state.isInside = isTouchInsideElement(touch, element);
-}
-
-function handleDirTouchEnd(event: TouchEvent, key: string, dx: number, dy: number) {
-  const state = getDirTouchState(key);
-  if (state.touchId === null) return;
-
-  event.preventDefault();
-
-  const touch = Array.from(event.changedTouches).find(t => t.identifier === state.touchId);
-  const element = event.currentTarget as HTMLElement;
-
-  if (touch && isTouchInsideElement(touch, element) && state.isInside) {
-    move(dx, dy);
-  }
-
-  state.touchId = null;
-  state.isInside = false;
-}
-
-function handleDirTouchCancel(key: string) {
-  const state = getDirTouchState(key);
-  state.touchId = null;
-  state.isInside = false;
-}
-
 // 렌더링
 function render() {
   if (!ctx.value) return;
@@ -429,6 +336,11 @@ function handleKeyDown(e: KeyboardEvent) {
 }
 
 onMounted(() => {
+  // 3-버튼: ⬅️ | ⬆️ | ➡️ (아래 이동은 캔버스 탭으로)
+  setButton(0, { visible: true, label: '⬅️', onPress: () => move(-1, 0) });
+  setButton(1, { visible: true, label: '⬆️', onPress: () => move(0, -1) });
+  setButton(2, { visible: true, label: '➡️', onPress: () => move(1, 0) });
+
   startTime = Date.now();
 
   generateMaze();
@@ -456,7 +368,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   background: var(--bg-game);
   position: relative;
   overflow: hidden;
@@ -464,7 +376,8 @@ onUnmounted(() => {
 
 canvas {
   max-width: 100%;
-  max-height: 80%;
+  flex: 1;
+  min-height: 0;
   border-radius: 12px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
   cursor: pointer;
@@ -514,65 +427,4 @@ canvas {
   }
 }
 
-.controls {
-  position: absolute;
-  bottom: clamp(15px, 4vw, 30px);
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(2, 1fr);
-  gap: clamp(5px, 2vw, 10px);
-  z-index: 10;
-}
-
-.direction-btn {
-  width: clamp(50px, 15vw, 70px);
-  height: clamp(50px, 15vw, 70px);
-  font-size: clamp(22px, 6vw, 32px);
-  background: linear-gradient(135deg, #FFD700, #FFC107);
-  border: 3px solid #F9A825;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  user-select: none;
-}
-
-.direction-btn:nth-child(1) {
-  grid-column: 2;
-  grid-row: 1;
-}
-
-.direction-btn:nth-child(2) {
-  grid-column: 2;
-  grid-row: 2;
-}
-
-.direction-btn:nth-child(3) {
-  grid-column: 1;
-  grid-row: 2;
-}
-
-.direction-btn:nth-child(4) {
-  grid-column: 3;
-  grid-row: 2;
-}
-
-.direction-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-}
-
-.direction-btn:active,
-.direction-btn.pressed {
-  transform: scale(0.95);
-  background: linear-gradient(135deg, #4CAF50, #45a049);
-  border-color: #2e7d32;
-}
-
-.direction-btn.pressed-outside {
-  opacity: 0.7;
-  transform: scale(0.97);
-  background: linear-gradient(135deg, #FFD700, #FFC107);
-  border-color: #F9A825;
-}
 </style>

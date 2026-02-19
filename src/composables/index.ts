@@ -6,3 +6,5 @@ export { useCanvas } from './useCanvas';
 export { useCleanupTimers } from './useCleanupTimers';
 export { useJuicyFeedback } from './useJuicyFeedback';
 export type { ScorePopupType, ShakeIntensity } from './useJuicyFeedback';
+export { useGameButtons, provideGameButtons } from './useGameButtons';
+export type { GameButtonConfig, GameButtonsContext } from './useGameButtons';

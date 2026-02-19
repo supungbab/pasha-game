@@ -24,15 +24,34 @@
     <!-- Playing Phase -->
     <main v-else-if="gameState.state.value.phase === 'playing'" class="game-area">
       <div class="game-box">
-        <component
-          v-if="currentGameData"
-          :is="currentGameData.component"
-          :difficulty="gameState.state.value.currentDifficulty"
-          :time-limit="adjustedTimeLimit"
-          :target-score="adjustedTargetScore"
-          :is-hard-mode="gameState.state.value.isHardMode"
-          @complete="handleGameComplete"
-        />
+        <!-- 미니게임 콘텐츠 영역 -->
+        <div class="game-content">
+          <component
+            v-if="currentGameData"
+            :is="currentGameData.component"
+            :difficulty="gameState.state.value.currentDifficulty"
+            :time-limit="adjustedTimeLimit"
+            :target-score="adjustedTargetScore"
+            :is-hard-mode="gameState.state.value.isHardMode"
+            @complete="handleGameComplete"
+          />
+        </div>
+        <!-- 하단 고정 버튼 영역 (미니게임이 inject로 제어) -->
+        <div
+          class="game-btn-area"
+          v-show="gameButtons.some(b => b.visible)"
+        >
+          <button
+            v-for="(btn, i) in gameButtons"
+            :key="i"
+            v-show="btn.visible"
+            :disabled="btn.disabled"
+            class="game-btn"
+            :style="btn.bg ? { background: btn.bg, borderColor: btn.border || 'transparent' } : {}"
+            @touchstart.prevent="btn.onPress()"
+            @touchend.prevent="btn.onRelease && btn.onRelease()"
+          >{{ btn.label }}</button>
+        </div>
       </div>
     </main>
 
@@ -64,7 +83,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
-import { useGameState, useCleanupTimers } from '@/composables';
+import { useGameState, useCleanupTimers, provideGameButtons } from '@/composables';
 import { MINI_GAMES } from '@/config/miniGames';
 import { IMPLEMENTED_MINIGAME_IDS } from '@/components/minigames';
 import { GAME_CONSTANTS, DIFFICULTY_MULTIPLIERS } from '@/types/game';
@@ -81,6 +100,9 @@ const emit = defineEmits<{
 
 // Game state management
 const gameState = useGameState();
+
+// 3-버튼 시스템 - 미니게임들이 inject로 제어
+const { buttons: gameButtons } = provideGameButtons();
 
 // Timer utilities (auto-cleanup on unmount)
 const { safeSetInterval, safeSetTimeout, clearInterval } = useCleanupTimers();
@@ -374,6 +396,55 @@ function handleExit() {
   overflow: hidden;
   background: var(--white);
   box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+}
+
+/* 미니게임 콘텐츠 영역 */
+.game-content {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+/* 하단 3-버튼 고정 영역 */
+.game-btn-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(12px, 5vw, 24px);
+  padding: 14px 16px 20px;
+  flex-shrink: 0;
+  background: var(--bg-game, #FFF8E1);
+}
+
+.game-btn {
+  width: clamp(72px, 22vw, 96px);
+  height: clamp(72px, 22vw, 96px);
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FFD700, #FFC107);
+  border: 4px solid #F9A825;
+  font-size: clamp(28px, 8vw, 40px);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.game-btn:active {
+  transform: scale(0.92);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+}
+
+.game-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* Result Screen */
