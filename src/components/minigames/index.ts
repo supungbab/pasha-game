@@ -20,7 +20,7 @@ import ColorWord from './14_ColorWord.vue';         // Mission 14: 색깔 이름
 import QuickMath from './15_QuickMath.vue';         // Mission 15: 빠른 계산
 import PatternCopy from './16_PatternCopy.vue';     // Mission 16: 패턴 따라하기
 import HiddenObject from './17_HiddenObject.vue';   // Mission 17: 숨은 그림
-import SlidePuzzle from './18_SlidePuzzle.vue';     // Mission 18: 퍼즐 슬라이드
+import LineStop from './18_LineStop.vue';             // Mission 18: 줄 맞추기
 import BombDefuse from './19_BombDefuse.vue';       // Mission 19: 폭탄 해제
 import DodgeIt from './20_DodgeIt.vue';             // Mission 20: 장애물 피하기
 import LadderClimb from './21_LadderClimb.vue';     // Mission 21: 사다리 오르기
@@ -53,7 +53,7 @@ export {
   QuickMath,
   PatternCopy,
   HiddenObject,
-  SlidePuzzle,
+  LineStop,
   BombDefuse,
   DodgeIt,
   LadderClimb,
@@ -89,7 +89,7 @@ export const MINIGAME_COMPONENTS: Record<number, Component> = {
   15: QuickMath,
   16: PatternCopy,
   17: HiddenObject,
-  18: SlidePuzzle,
+  18: LineStop,
   19: BombDefuse,
   20: DodgeIt,
   21: LadderClimb,
