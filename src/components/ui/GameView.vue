@@ -233,6 +233,8 @@ function handleExit() {
 <style scoped>
 .game-view {
   width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
   height: 100vh;
   height: 100dvh;
   display: flex;
