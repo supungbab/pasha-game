@@ -86,9 +86,10 @@ export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null>, options: Can
     if (!canvasRef.value) return { x: 0, y: 0 };
 
     const rect = canvasRef.value.getBoundingClientRect();
+    // CSS 표시 크기와 드로잉 버퍼 크기가 다를 수 있으므로 스케일 보정
     return {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top
+      x: (event.clientX - rect.left) * (width / rect.width),
+      y: (event.clientY - rect.top) * (height / rect.height),
     };
   }
 

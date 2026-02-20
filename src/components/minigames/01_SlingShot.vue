@@ -453,6 +453,12 @@ onMounted(() => {
   }
 
   safeSetTimeout(() => {
+    // useCanvas가 설정한 inline width/height를 제거하여
+    // CSS aspect-ratio가 비율을 제어하도록 함
+    if (canvasRef.value) {
+      canvasRef.value.style.removeProperty('width')
+      canvasRef.value.style.removeProperty('height')
+    }
     startGame()
   }, 100)
 })
@@ -478,6 +484,8 @@ onUnmounted(() => {
 }
 
 canvas {
+  /* 버튼 영역 높이에 맞게 비율을 유지하며 축소 */
+  aspect-ratio: 400 / 600;
   max-width: 100%;
   max-height: 100%;
   touch-action: none;
