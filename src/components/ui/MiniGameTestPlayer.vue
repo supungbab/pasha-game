@@ -199,19 +199,16 @@ onMounted(() => {
             />
           </div>
           <!-- 하단 3-버튼 영역 (useGameButtons 쓰는 미니게임용) -->
-          <div
-            class="game-btn-area"
-            v-show="gameButtons.some(b => b.visible)"
-          >
+          <div class="game-btn-area">
             <button
               v-for="(btn, i) in gameButtons"
               :key="i"
-              v-show="btn.visible"
               :disabled="btn.disabled"
               class="game-btn"
-              :style="btn.bg ? { background: btn.bg, borderColor: btn.border || 'transparent' } : {}"
-              @touchstart.prevent="btn.onPress()"
-              @touchend.prevent="btn.onRelease && btn.onRelease()"
+              :class="{ 'game-btn--inactive': btn.disabled }"
+              :style="!btn.disabled && btn.bg ? { background: btn.bg, borderColor: btn.border || 'transparent' } : {}"
+              @touchstart.prevent="!btn.disabled && btn.onPress()"
+              @touchend.prevent="!btn.disabled && btn.onRelease && btn.onRelease()"
             >{{ btn.label }}</button>
           </div>
         </div>
@@ -530,7 +527,9 @@ onMounted(() => {
   border-radius: 50%;
   background: linear-gradient(135deg, #FFD700, #FFC107);
   border: 4px solid #F9A825;
-  font-size: clamp(28px, 8vw, 40px);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #5E35B1;
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
@@ -541,14 +540,19 @@ onMounted(() => {
   justify-content: center;
 }
 
-.game-btn:active {
+.game-btn:active:not(:disabled) {
   transform: scale(0.92);
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
 }
 
+.game-btn--inactive,
 .game-btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
+  background: linear-gradient(135deg, #E0E0E0, #BDBDBD);
+  border-color: #9E9E9E;
+  color: #757575;
+  box-shadow: none;
+  opacity: 0.4;
+  cursor: default;
   transform: none;
 }
 

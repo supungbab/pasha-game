@@ -22,12 +22,26 @@ export interface GameButtonsContext {
   buttons: Ref<[GameButtonConfig, GameButtonConfig, GameButtonConfig]>;
   setButton: (index: 0 | 1 | 2, config: Partial<GameButtonConfig>) => void;
   resetButtons: () => void;
+  /** 1버튼 모드: 3개 모두 같은 액션 */
+  setOneButton: (onPress: () => void, onRelease?: () => void) => void;
+  /** 2버튼 모드: 좌(0)·우(2) 활성, 가운데(1) 비활성 */
+  setTwoButtons: (
+    left: Partial<GameButtonConfig> & { onPress: () => void },
+    right: Partial<GameButtonConfig> & { onPress: () => void },
+  ) => void;
+  /** 3버튼 모드: 전부 활성 */
+  setThreeButtons: (
+    left: Partial<GameButtonConfig> & { onPress: () => void },
+    center: Partial<GameButtonConfig> & { onPress: () => void },
+    right: Partial<GameButtonConfig> & { onPress: () => void },
+  ) => void;
 }
 
 const GAME_BUTTONS_KEY = Symbol('gameButtons');
 
+// 기본값: 항상 visible, disabled(비활성), 빈 라벨
 function makeDefault(): GameButtonConfig {
-  return { visible: false, label: '', disabled: false, onPress: () => {} };
+  return { visible: true, label: '', disabled: true, onPress: () => {} };
 }
 
 /** GameView에서 호출 - 버튼 상태를 provide */
@@ -47,6 +61,24 @@ export function provideGameButtons() {
     },
     resetButtons() {
       buttons.value = [makeDefault(), makeDefault(), makeDefault()];
+    },
+    setOneButton(onPress, onRelease) {
+      const btn: GameButtonConfig = { visible: true, label: '', disabled: false, onPress, onRelease };
+      buttons.value = [{ ...btn }, { ...btn }, { ...btn }];
+    },
+    setTwoButtons(left, right) {
+      buttons.value = [
+        { ...makeDefault(), disabled: false, ...left },
+        makeDefault(), // 가운데는 비활성 유지
+        { ...makeDefault(), disabled: false, ...right },
+      ];
+    },
+    setThreeButtons(left, center, right) {
+      buttons.value = [
+        { ...makeDefault(), disabled: false, ...left },
+        { ...makeDefault(), disabled: false, ...center },
+        { ...makeDefault(), disabled: false, ...right },
+      ];
     },
   };
 

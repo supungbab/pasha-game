@@ -618,13 +618,13 @@ function completeGame() {
 // ===== Mount =====
 onMounted(() => {
   setButton(0, {
-    visible: true, label: '◀',
+    visible: true, label: '◀', disabled: false,
     bg: 'linear-gradient(135deg, #7E57C2, #5E35B1)',
     border: '#4527A0',
     onPress: rotateLeft,
   });
   setButton(2, {
-    visible: true, label: '▶',
+    visible: true, label: '▶', disabled: false,
     bg: 'linear-gradient(135deg, #FF9800, #F57C00)',
     border: '#E65100',
     onPress: rotateRight,

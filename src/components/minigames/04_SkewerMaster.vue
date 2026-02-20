@@ -40,12 +40,14 @@ const { ctx, width, height, clear } = useCanvas(canvasRef, {
 const { safeSetTimeout, safeRequestAnimationFrame, cancelAnimationFrame } = useCleanupTimers();
 
 // 3-버튼 시스템
-const { setButton } = useGameButtons();
+const { setButton, setThreeButtons } = useGameButtons();
 
 function setupButtons() {
-  setButton(0, { visible: true, label: '↖️', onPress: () => handleSkewer('left') });
-  setButton(1, { visible: true, label: '⬆️', onPress: () => handleSkewer('center') });
-  setButton(2, { visible: true, label: '↗️', onPress: () => handleSkewer('right') });
+  setThreeButtons(
+    { onPress: () => handleSkewer('left') },
+    { onPress: () => handleSkewer('center') },
+    { onPress: () => handleSkewer('right') },
+  );
 }
 
 // 게임 상태
@@ -518,9 +520,9 @@ function completeGame() {
 // canFinish 변화에 따라 중앙 버튼 토글: 꼬치↔피니시
 watch(canFinish, (val) => {
   if (val) {
-    setButton(1, { label: '🏁', onPress: handleFinish, disabled: false });
+    setButton(1, { label: 'DONE', onPress: handleFinish, disabled: false });
   } else {
-    setButton(1, { label: '⬆️', onPress: () => handleSkewer('center'), disabled: false });
+    setButton(1, { label: '', onPress: () => handleSkewer('center'), disabled: false });
   }
 });
 

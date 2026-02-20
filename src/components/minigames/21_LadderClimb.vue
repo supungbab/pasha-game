@@ -34,8 +34,8 @@ const { ctx, width, height, clear } = useCanvas(canvasRef, {
 // Timer utilities
 const { safeSetTimeout, safeRequestAnimationFrame, cancelAnimationFrame } = useCleanupTimers();
 
-// 3-버튼 시스템: 슬롯 0=왼쪽, 2=오른쪽 (슬롯 1은 숨김)
-const { setButton } = useGameButtons();
+// 3-버튼 시스템: 슬롯 0=왼쪽, 2=오른쪽 (슬롯 1은 비활성)
+const { setTwoButtons } = useGameButtons();
 
 // 게임 상태
 const climberY = ref(0);
@@ -235,16 +235,10 @@ function completeGame() {
 }
 
 onMounted(() => {
-  setButton(0, {
-    visible: true, label: '⬅️',
-    onPress: () => handlePress('left'),
-    onRelease: handleRelease,
-  });
-  setButton(2, {
-    visible: true, label: '➡️',
-    onPress: () => handlePress('right'),
-    onRelease: handleRelease,
-  });
+  setTwoButtons(
+    { onPress: () => handlePress('left'), onRelease: handleRelease },
+    { onPress: () => handlePress('right'), onRelease: handleRelease },
+  );
 
   startTime = Date.now();
 

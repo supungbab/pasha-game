@@ -37,7 +37,7 @@ const { ctx, width, height, clear } = useCanvas(canvasRef, {
 // Timer utilities
 const { safeSetTimeout, safeRequestAnimationFrame } = useCleanupTimers();
 
-// 3-버튼 시스템: ⬅️ | ⬆️ | ➡️
+// 3-버튼 시스템: ← | ↑ | →
 const { setButton } = useGameButtons();
 
 const isComplete = ref(false);
@@ -336,10 +336,10 @@ function handleKeyDown(e: KeyboardEvent) {
 }
 
 onMounted(() => {
-  // 3-버튼: ⬅️ | ⬆️ | ➡️ (아래 이동은 캔버스 탭으로)
-  setButton(0, { visible: true, label: '⬅️', onPress: () => move(-1, 0) });
-  setButton(1, { visible: true, label: '⬆️', onPress: () => move(0, -1) });
-  setButton(2, { visible: true, label: '➡️', onPress: () => move(1, 0) });
+  // 3-버튼: ← | ↑ | → (아래 이동은 캔버스 탭으로)
+  setButton(0, { visible: true, label: '←', disabled: false, onPress: () => move(-1, 0) });
+  setButton(1, { visible: true, label: '↑', disabled: false, onPress: () => move(0, -1) });
+  setButton(2, { visible: true, label: '→', disabled: false, onPress: () => move(1, 0) });
 
   startTime = Date.now();
 

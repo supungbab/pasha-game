@@ -73,6 +73,7 @@ function setupButtons() {
     setButton(i as 0 | 1 | 2, {
       visible: true,
       label: opt.name,
+      disabled: false,
       bg: opt.value,
       border: opt.value,
       onPress: () => handleColorSelect(opt),
