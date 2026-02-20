@@ -6,10 +6,14 @@ import { IMPLEMENTED_MINIGAME_IDS } from '@/components/minigames';
 import { DIFFICULTY_MULTIPLIERS, type DifficultyLevel } from '@/types/game';
 import { Button, Card } from '@/components/base';
 import { PauseMenu } from '@/components/common';
+import { provideGameButtons } from '@/composables';
 import type { MiniGameResult } from '@/types/minigame';
 
 // Pause state
 const isPaused = ref(false);
+
+// 3-버튼 시스템 provide (useGameButtons 쓰는 미니게임 지원)
+const { buttons: gameButtons } = provideGameButtons();
 
 const router = useRouter();
 const route = useRoute();
@@ -181,16 +185,36 @@ onMounted(() => {
       </header>
 
       <main class="game-container">
-        <component
-          v-if="gameData?.component"
-          :is="gameData.component"
-          :key="`game-${gameId}-${gameKey}`"
-          :difficulty="testDifficulty"
-          :time-limit="adjustedTimeLimit"
-          :target-score="adjustedTargetScore"
-          :is-hard-mode="testHardMode"
-          @complete="handleGameComplete"
-        />
+        <div class="game-box">
+          <div class="game-content">
+            <component
+              v-if="gameData?.component"
+              :is="gameData.component"
+              :key="`game-${gameId}-${gameKey}`"
+              :difficulty="testDifficulty"
+              :time-limit="adjustedTimeLimit"
+              :target-score="adjustedTargetScore"
+              :is-hard-mode="testHardMode"
+              @complete="handleGameComplete"
+            />
+          </div>
+          <!-- 하단 3-버튼 영역 (useGameButtons 쓰는 미니게임용) -->
+          <div
+            class="game-btn-area"
+            v-show="gameButtons.some(b => b.visible)"
+          >
+            <button
+              v-for="(btn, i) in gameButtons"
+              :key="i"
+              v-show="btn.visible"
+              :disabled="btn.disabled"
+              class="game-btn"
+              :style="btn.bg ? { background: btn.bg, borderColor: btn.border || 'transparent' } : {}"
+              @touchstart.prevent="btn.onPress()"
+              @touchend.prevent="btn.onRelease && btn.onRelease()"
+            >{{ btn.label }}</button>
+          </div>
+        </div>
       </main>
 
       <!-- Pause Menu -->
@@ -474,6 +498,63 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+}
+
+.game-box {
+  width: 100%;
+  max-width: 400px;
+  height: 100%;
+  max-height: 600px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #FFF8E1;
+  display: flex;
+  flex-direction: column;
+}
+
+.game-content {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.game-btn-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(12px, 5vw, 24px);
+  padding: 14px 16px 20px;
+  flex-shrink: 0;
+  background: #FFF8E1;
+}
+
+.game-btn {
+  width: clamp(72px, 22vw, 96px);
+  height: clamp(72px, 22vw, 96px);
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FFD700, #FFC107);
+  border: 4px solid #F9A825;
+  font-size: clamp(28px, 8vw, 40px);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.game-btn:active {
+  transform: scale(0.92);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+}
+
+.game-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* Result Screen */
