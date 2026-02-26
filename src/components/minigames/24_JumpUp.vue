@@ -20,7 +20,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
-import { useCanvas, useCleanupTimers } from '@/composables';
+import { useCanvas, useCleanupTimers, useGameButtons } from '@/composables';
 
 const props = defineProps<MiniGameProps>();
 const emit = defineEmits<{
@@ -37,6 +37,7 @@ const { ctx, width, height, clear } = useCanvas(canvasRef, {
 
 // Timer utilities
 const { safeSetTimeout, safeRequestAnimationFrame } = useCleanupTimers();
+const { setOneButton } = useGameButtons();
 
 const maxHeight = ref(0);
 
@@ -277,6 +278,7 @@ function completeGame() {
 }
 
 onMounted(() => {
+  setOneButton(handleJump);
   startTime = Date.now();
 
   // 초기 플랫폼 생성 - 첫 플랫폼은 넓게

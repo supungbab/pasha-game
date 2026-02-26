@@ -11,7 +11,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame'
-import { useCanvas, useCleanupTimers, useJuicyFeedback } from '@/composables'
+import { useCanvas, useCleanupTimers, useJuicyFeedback, useGameButtons } from '@/composables'
 import { ScorePopup } from '@/components/common'
 
 const props = defineProps<MiniGameProps>()
@@ -37,6 +37,7 @@ const {
 } = useCleanupTimers()
 
 const { scorePopups, createScorePopup, shake } = useJuicyFeedback()
+const { setOneButton } = useGameButtons()
 
 // ─── Layout ──────────────────────────────────────────────────────────────────
 const TRACK_LEFT = 110
@@ -372,6 +373,8 @@ function startGame() {
 }
 
 onMounted(() => {
+  setOneButton(handleTouch)
+
   if (containerRef.value) {
     containerRef.value.classList.add('juicy-pop')
   }

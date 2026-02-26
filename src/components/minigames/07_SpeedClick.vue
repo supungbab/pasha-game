@@ -34,7 +34,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
-import { useCleanupTimers } from '@/composables';
+import { useCleanupTimers, useGameButtons } from '@/composables';
 
 const props = defineProps<MiniGameProps>();
 const emit = defineEmits<{
@@ -43,6 +43,7 @@ const emit = defineEmits<{
 
 // Timer utilities
 const { safeSetTimeout } = useCleanupTimers();
+const { setOneButton } = useGameButtons();
 
 // 게임 상태
 const clicks = ref(0);
@@ -83,6 +84,16 @@ function handleTouchClick(event: TouchEvent) {
   const y = touch.clientY - rect.top;
 
   processClick(x, y);
+}
+
+// 버튼 클릭 처리
+function handleButtonPress() {
+  if (gameCompleted) return;
+  clicks.value++;
+  if (navigator.vibrate) navigator.vibrate(10);
+  if (clicks.value >= targetClicks.value && !gameCompleted) {
+    completeGame();
+  }
 }
 
 // 공통 클릭 처리
@@ -143,6 +154,7 @@ function completeGame() {
 }
 
 onMounted(() => {
+  setOneButton(handleButtonPress);
   startTime = Date.now();
 
   // 제한시간 타이머

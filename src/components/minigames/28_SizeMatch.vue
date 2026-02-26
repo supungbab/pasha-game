@@ -25,7 +25,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
-import { useCanvas, useCleanupTimers } from '@/composables';
+import { useCanvas, useCleanupTimers, useGameButtons } from '@/composables';
 
 const props = defineProps<MiniGameProps>();
 const emit = defineEmits<{
@@ -42,6 +42,7 @@ const { ctx, width, height, clear } = useCanvas(canvasRef, {
 
 // Timer utilities
 const { safeSetTimeout, safeRequestAnimationFrame } = useCleanupTimers();
+const { setOneButton } = useGameButtons();
 
 // 게임 상태
 const score = ref(0);
@@ -296,6 +297,7 @@ function completeGame() {
 }
 
 onMounted(() => {
+  setOneButton(handleStop);
   startTime = Date.now();
 
   // 캔버스 초기화 후 게임 시작

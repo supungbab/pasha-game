@@ -44,7 +44,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
-import { useCleanupTimers } from '@/composables';
+import { useCleanupTimers, useGameButtons } from '@/composables';
 
 const props = defineProps<MiniGameProps>();
 const emit = defineEmits<{
@@ -53,6 +53,7 @@ const emit = defineEmits<{
 
 // Timer utilities
 const { safeSetTimeout, clearTimeout: safeClearTimeout } = useCleanupTimers();
+const { setOneButton } = useGameButtons();
 
 type GameState = 'waiting' | 'ready' | 'go' | 'result' | 'tooEarly';
 
@@ -221,6 +222,8 @@ function completeGame() {
 }
 
 onMounted(() => {
+  setOneButton(handleClick);
+
   // 초기 대기 후 첫 라운드 시작
   safeSetTimeout(() => {
     if (!gameCompleted) {

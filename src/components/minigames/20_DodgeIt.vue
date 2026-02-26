@@ -12,7 +12,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import type { MiniGameProps, MiniGameResult } from '@/types/minigame';
-import { useCanvas, useCleanupTimers } from '@/composables';
+import { useCanvas, useCleanupTimers, useGameButtons } from '@/composables';
 import { circlesIntersect } from '@/utils/canvas';
 import type { Particle } from '@/utils/canvas';
 
@@ -31,6 +31,11 @@ const { ctx, helper, width, height, clear, getCanvasCoordinates } = useCanvas(ca
 
 // Timer utilities
 const { safeSetTimeout, safeSetInterval, safeRequestAnimationFrame, cancelAnimationFrame, clearInterval } = useCleanupTimers();
+const { setTwoButtons } = useGameButtons();
+
+// Button-based movement
+let buttonMoveDir = 0; // -1 = left, 0 = none, 1 = right
+const BUTTON_MOVE_SPEED = 8;
 
 // Game state
 const score = ref(0);
@@ -101,6 +106,14 @@ function spawnObstacle() {
 // Update game state
 function update() {
   if (isGameOver.value) return;
+
+  // Button-based movement
+  if (buttonMoveDir !== 0) {
+    const newX = player.value.x + buttonMoveDir * BUTTON_MOVE_SPEED;
+    const minX = player.value.radius + 10;
+    const maxX = width - player.value.radius - 10;
+    player.value.x = Math.max(minX, Math.min(maxX, newX));
+  }
 
   const playerPos = player.value;
 
@@ -309,6 +322,10 @@ function startGame() {
 }
 
 onMounted(() => {
+  setTwoButtons(
+    { onPress: () => { buttonMoveDir = -1; }, onRelease: () => { if (buttonMoveDir === -1) buttonMoveDir = 0; } },
+    { onPress: () => { buttonMoveDir = 1; }, onRelease: () => { if (buttonMoveDir === 1) buttonMoveDir = 0; } },
+  );
   safeSetTimeout(startGame, 100);
 });
 
