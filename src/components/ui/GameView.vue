@@ -413,44 +413,113 @@ function handleExit() {
   align-items: center;
   justify-content: center;
   gap: clamp(12px, 5vw, 24px);
-  padding: 14px 16px 20px;
+  padding: 14px 16px 22px;
   flex-shrink: 0;
-  background: var(--bg-game, #FFF8E1);
+  background: linear-gradient(180deg, var(--bg-game, #FFF8E1) 0%, #F0EBD8 100%);
 }
 
+/* 반구(돔) 형태 3D 버튼 공통 */
 .game-btn {
   width: clamp(72px, 22vw, 96px);
   height: clamp(72px, 22vw, 96px);
   border-radius: 50%;
-  background: linear-gradient(135deg, #FFD700, #FFC107);
-  border: 4px solid #F9A825;
+  border: none;
   font-size: 1.2rem;
   font-weight: 700;
-  color: #5E35B1;
+  color: #fff;
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  -webkit-touch-callout: none;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
 }
 
-.game-btn:active:not(:disabled) {
-  transform: scale(0.92);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+/* 돔 하이라이트 반사광 */
+.game-btn::before {
+  content: '';
+  position: absolute;
+  top: 10%;
+  left: 18%;
+  width: 40%;
+  height: 30%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(255, 255, 255, 0.55) 0%, transparent 100%);
+  pointer-events: none;
+  transition: opacity 0.08s ease;
 }
 
+/* 빨강 버튼 (왼쪽) */
+.game-btn:nth-child(1) {
+  background: radial-gradient(circle at 38% 32%, #FF8A80 0%, #F44336 45%, #C62828 100%);
+  box-shadow:
+    0 7px 0 #8E1414,
+    0 9px 18px rgba(0, 0, 0, 0.35),
+    inset 0 -4px 8px rgba(0, 0, 0, 0.2);
+}
+.game-btn:nth-child(1):active:not(:disabled) {
+  transform: translateY(5px);
+  box-shadow:
+    0 2px 0 #8E1414,
+    0 3px 6px rgba(0, 0, 0, 0.25),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* 노랑 버튼 (가운데) */
+.game-btn:nth-child(2) {
+  background: radial-gradient(circle at 38% 32%, #FFF59D 0%, #FFD700 45%, #F9A825 100%);
+  box-shadow:
+    0 7px 0 #C47F00,
+    0 9px 18px rgba(0, 0, 0, 0.35),
+    inset 0 -4px 8px rgba(0, 0, 0, 0.15);
+  color: #5E35B1;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.4);
+}
+.game-btn:nth-child(2):active:not(:disabled) {
+  transform: translateY(5px);
+  box-shadow:
+    0 2px 0 #C47F00,
+    0 3px 6px rgba(0, 0, 0, 0.25),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* 파랑 버튼 (오른쪽) */
+.game-btn:nth-child(3) {
+  background: radial-gradient(circle at 38% 32%, #90CAF9 0%, #2196F3 45%, #1565C0 100%);
+  box-shadow:
+    0 7px 0 #0A3D7A,
+    0 9px 18px rgba(0, 0, 0, 0.35),
+    inset 0 -4px 8px rgba(0, 0, 0, 0.2);
+}
+.game-btn:nth-child(3):active:not(:disabled) {
+  transform: translateY(5px);
+  box-shadow:
+    0 2px 0 #0A3D7A,
+    0 3px 6px rgba(0, 0, 0, 0.25),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* 비활성/disabled 상태 - 납작한 돔 */
 .game-btn--inactive,
 .game-btn:disabled {
-  background: linear-gradient(135deg, #E0E0E0, #BDBDBD);
-  border-color: #9E9E9E;
-  color: #757575;
-  box-shadow: none;
-  opacity: 0.4;
+  background: radial-gradient(circle at 38% 32%, #E0E0E0 0%, #BDBDBD 45%, #9E9E9E 100%) !important;
+  box-shadow:
+    0 3px 0 #757575,
+    0 4px 8px rgba(0, 0, 0, 0.15),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.1) !important;
+  color: #9E9E9E !important;
+  text-shadow: none;
+  opacity: 0.5;
   cursor: default;
-  transform: none;
+  transform: none !important;
+}
+
+.game-btn:disabled::before {
+  opacity: 0.3;
 }
 
 /* Result Screen */
